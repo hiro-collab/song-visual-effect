@@ -1,0 +1,69 @@
+# Shared Note
+
+## Project Intent
+
+Build a web-based interactive music effect for MaouDamashii "Shining Star" using local music assets, lyrics, and Songle/TextAlive-style analysis data.
+
+## Current Material Status
+
+- Workspace: `C:\Users\kawai\works\music-effect`
+- Existing source folder: `music_src`
+- Existing lyrics file: `music_src/Lyrics.txt`
+- The lyrics text is UTF-8. Be careful not to corrupt Japanese text when reading or editing.
+- Songle JSON has not been downloaded yet.
+
+## Songle Source
+
+Songle page:
+
+https://songle.jp/songs/www.youtube.com%2Fwatch%3Fv=Qd01-6xVSHk
+
+Likely REST JSON endpoints via Songle Widget API:
+
+- `https://widget.songle.jp/api/v1/song.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
+- `https://widget.songle.jp/api/v1/song/beat.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
+- `https://widget.songle.jp/api/v1/song/chord.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
+- `https://widget.songle.jp/api/v1/song/melody.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
+- `https://widget.songle.jp/api/v1/song/chorus.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
+
+Use downloaded JSON as timing input. Do not analyze the audio file itself.
+
+Important license safety note from user:
+
+- MaouDamashii music must not be used for AI training.
+- Do not ask Codex or code to analyze the audio waveform.
+- The app may play the audio in the browser, but timing should be driven by downloaded Songle/TextAlive JSON, lyrics text, and manual markers.
+
+## Visual Direction
+
+- Soft, warm, bright light.
+- Avoid hard, high-contrast binary cyber visuals.
+- Use grayscale/midtones, gradients, blur, damping, and ramped color filters.
+- Use moving points connected by timed lines as soft light rays.
+- Let color and light follow music events with damping instead of exact hard jumps.
+
+## Cyber Basic Techniques In This Example
+
+- Control: continuous values, damping, brightness/particle/line/blur control.
+- Parallel: layered rendering for background glow, ramp color filter, points/lines, particles, lyrics.
+- Wiring: connect dynamic points with lines at musical or timed triggers.
+
+## Live Performance Direction
+
+The user wants this to become usable in live/event contexts:
+
+- Sequence bar and song position overview.
+- BPM display/control.
+- Fine timing adjustment for live performance drift.
+- Keyboard operation to switch effect mood during the event.
+- Color options/presets to match the venue mood.
+
+Current priority: build the base system first, then add those live controls iteratively.
+
+## Manual Lyric Timing
+
+- Manual lyric timing is captured from keyboard input only. It must not analyze the audio waveform.
+- The `Lyric Timing` panel toggles capture mode on/off.
+- In capture mode, `A` stamps the current lyric line boundary; `D` stamps the next lyric line boundary.
+- Manual keyframes autosave to `localStorage`, apply immediately, support undo/clear, and export as `lyrics_timing.manual.json`.
+- For bundled reuse, place the exported JSON at `music_src/analysis/lyrics_timing.json`.

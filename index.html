@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#14151f" />
+    <title>Shining Star Music Effect</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="visualizer" aria-label="music visualizer"></canvas>
+      <section class="lyric-stage" aria-live="polite">
+        <p id="lyric-current"></p>
+        <p id="lyric-next"></p>
+      </section>
+      <aside id="timing-panel" class="timing-panel" aria-label="Lyric timing editor">
+        <div class="timing-panel-head">
+          <div>
+            <strong>Lyric Timing</strong>
+            <span id="timing-count">0 / 0</span>
+          </div>
+          <button id="timing-toggle" class="mini-button" type="button" aria-pressed="false">Off</button>
+        </div>
+        <div class="timing-keys">
+          <span id="timing-left">A: current line</span>
+          <span id="timing-right">D: next line</span>
+        </div>
+        <p id="timing-last">Tで記録モード、A/Dで打刻</p>
+        <div class="timing-actions">
+          <button id="timing-undo" class="mini-button" type="button">Undo</button>
+          <button id="timing-clear" class="mini-button" type="button">Clear</button>
+          <button id="timing-export" class="mini-button" type="button">Export</button>
+        </div>
+      </aside>
+      <header class="topbar">
+        <div>
+          <h1>Shining Star</h1>
+          <p>魔王魂 / 森田交一</p>
+        </div>
+        <div id="data-status" class="status-pill">loading</div>
+      </header>
+      <footer class="controlbar">
+        <button id="play-toggle" class="icon-button" type="button" aria-label="Play">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path id="play-icon-path" d="M8 5v14l11-7z"></path>
+          </svg>
+        </button>
+        <label class="file-button" for="audio-input">Audio</label>
+        <input id="audio-input" type="file" accept="audio/*" />
+        <div class="progress-shell" aria-label="Playback progress">
+          <div id="progress-bar"></div>
+        </div>
+        <label class="range-field">
+          <span>Glow</span>
+          <input id="glow-range" type="range" min="0.45" max="1.45" step="0.01" value="1" />
+        </label>
+        <button id="fullscreen-toggle" class="icon-button" type="button" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 10V5h5v2H7v3H5Zm9-5h5v5h-2V7h-3V5ZM7 14v3h3v2H5v-5h2Zm10 3v-3h2v5h-5v-2h3Z"></path>
+          </svg>
+        </button>
+      </footer>
+      <audio id="audio" preload="metadata"></audio>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
