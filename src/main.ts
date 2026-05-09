@@ -1,11 +1,18 @@
 import "./styles.css";
 import { loadMusicMap, findBundledAudio } from "./data/assets";
-import type { Beat, LyricCue, LyricKeyframe, MusicMap, PointerState, Range } from "./types";
+import type { Beat, LyricCue, LyricKeyframe, LyricTimingAdjustments, MusicMap, PointerState, Range } from "./types";
 import { DampValue, clamp, decayPulse, smoothstep } from "./effects/damping";
 import { ColorRamp } from "./effects/palette";
 import { ParticleField } from "./effects/particles";
 import { LightNetwork } from "./effects/lightNetwork";
-import { buildLyricsFromKeyframes, makeTimingExport, normalizeKeyframes } from "./lyrics/manualTiming";
+import {
+  applyLyricAdjustments,
+  buildLyricsFromKeyframes,
+  clampTime,
+  makeTimingExport,
+  normalizeAdjustments,
+  normalizeKeyframes
+} from "./lyrics/manualTiming";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#visualizer");
 const audio = document.querySelector<HTMLAudioElement>("#audio");
@@ -27,6 +34,22 @@ const timingLast = document.querySelector<HTMLParagraphElement>("#timing-last");
 const timingUndo = document.querySelector<HTMLButtonElement>("#timing-undo");
 const timingClear = document.querySelector<HTMLButtonElement>("#timing-clear");
 const timingExport = document.querySelector<HTMLButtonElement>("#timing-export");
+const timingOffsetReadout = document.querySelector<HTMLSpanElement>("#timing-offset-readout");
+const timingFromLabel = document.querySelector<HTMLSpanElement>("#timing-from-label");
+const sequenceReadout = document.querySelector<HTMLSpanElement>("#timing-sequence-readout");
+const sequenceBar = document.querySelector<HTMLDivElement>("#timing-sequence-bar");
+const sequenceProgress = document.querySelector<HTMLDivElement>("#timing-sequence-progress");
+const sequenceStones = document.querySelector<HTMLDivElement>("#timing-sequence-stones");
+const offsetAllEarlierBig = document.querySelector<HTMLButtonElement>("#offset-all-earlier-big");
+const offsetAllEarlier = document.querySelector<HTMLButtonElement>("#offset-all-earlier");
+const offsetAllReset = document.querySelector<HTMLButtonElement>("#offset-all-reset");
+const offsetAllLater = document.querySelector<HTMLButtonElement>("#offset-all-later");
+const offsetAllLaterBig = document.querySelector<HTMLButtonElement>("#offset-all-later-big");
+const offsetFromEarlierBig = document.querySelector<HTMLButtonElement>("#offset-from-earlier-big");
+const offsetFromEarlier = document.querySelector<HTMLButtonElement>("#offset-from-earlier");
+const offsetFromReset = document.querySelector<HTMLButtonElement>("#offset-from-reset");
+const offsetFromLater = document.querySelector<HTMLButtonElement>("#offset-from-later");
+const offsetFromLaterBig = document.querySelector<HTMLButtonElement>("#offset-from-later-big");
 
 if (
   !canvas ||
@@ -48,13 +71,40 @@ if (
   !timingLast ||
   !timingUndo ||
   !timingClear ||
-  !timingExport
+  !timingExport ||
+  !timingOffsetReadout ||
+  !timingFromLabel ||
+  !sequenceReadout ||
+  !sequenceBar ||
+  !sequenceProgress ||
+  !sequenceStones ||
+  !offsetAllEarlierBig ||
+  !offsetAllEarlier ||
+  !offsetAllReset ||
+  !offsetAllLater ||
+  !offsetAllLaterBig ||
+  !offsetFromEarlierBig ||
+  !offsetFromEarlier ||
+  !offsetFromReset ||
+  !offsetFromLater ||
+  !offsetFromLaterBig
 ) {
   throw new Error("Missing app element");
 }
 
 const ctx = canvas.getContext("2d", { alpha: false });
 if (!ctx) throw new Error("Canvas 2D is unavailable");
+
+type TimingSnapshot = {
+  keyframes: LyricKeyframe[];
+  adjustments: LyricTimingAdjustments;
+};
+
+type SequenceStoneElement = {
+  ghost: HTMLDivElement;
+  link: HTMLDivElement;
+  stone: HTMLDivElement;
+};
 
 const pointer: PointerState = { x: 0, y: 0, active: false, down: false };
 const particles = new ParticleField(260);
@@ -75,12 +125,17 @@ let lastFrame = performance.now();
 let lastBeatIndex = -1;
 let clickRipples: Array<{ x: number; y: number; age: number }> = [];
 let baseLyrics: LyricCue[] = [];
+let rawLyrics: LyricCue[] = [];
 let workingLyrics: LyricCue[] = [];
 let manualKeyframes: LyricKeyframe[] = [];
-let timingHistory: LyricKeyframe[][] = [];
+let lyricAdjustments: LyricTimingAdjustments = { globalOffset: 0, ranges: [] };
+let timingHistory: TimingSnapshot[] = [];
 let timingCapture = false;
+let sequenceSeeking = false;
+let sequenceStoneElements: SequenceStoneElement[] = [];
 
 const storageKey = () => `music-effect:lyric-keyframes:v1:${musicMap.title}`;
+const adjustmentStorageKey = () => `music-effect:lyric-adjustments:v1:${musicMap.title}`;
 
 const hasAudioSource = () => Boolean(audio.getAttribute("src"));
 
@@ -200,6 +255,10 @@ const saveManualKeyframes = () => {
   localStorage.setItem(storageKey(), JSON.stringify(manualKeyframes));
 };
 
+const saveAdjustments = () => {
+  localStorage.setItem(adjustmentStorageKey(), JSON.stringify(lyricAdjustments));
+};
+
 const readManualKeyframes = () => {
   try {
     const raw = localStorage.getItem(storageKey());
@@ -227,10 +286,48 @@ const readManualKeyframes = () => {
   }
 };
 
-const rebuildWorkingLyrics = () => {
-  workingLyrics = buildLyricsFromKeyframes(musicMap.lyricLines, manualKeyframes, musicMap.duration, baseLyrics);
-  musicMap.lyrics = workingLyrics;
+const readAdjustments = () => {
+  try {
+    const raw = localStorage.getItem(adjustmentStorageKey());
+    if (!raw) return { globalOffset: 0, ranges: [] };
+    return normalizeAdjustments(JSON.parse(raw) as Partial<LyricTimingAdjustments>, musicMap.lyricLines.length);
+  } catch {
+    return { globalOffset: 0, ranges: [] };
+  }
 };
+
+const rebuildWorkingLyrics = () => {
+  rawLyrics = buildLyricsFromKeyframes(musicMap.lyricLines, manualKeyframes, musicMap.duration, baseLyrics);
+  workingLyrics = applyLyricAdjustments(rawLyrics, lyricAdjustments, musicMap.duration);
+  musicMap.lyrics = workingLyrics;
+  updateSequenceStones(currentTime() % musicMap.duration);
+};
+
+const applyTimingState = (message: string, time = currentTime() % (musicMap?.duration ?? 1)) => {
+  lyricAdjustments = normalizeAdjustments(lyricAdjustments, musicMap.lyricLines.length);
+  rebuildWorkingLyrics();
+  saveManualKeyframes();
+  saveAdjustments();
+  timingLast.textContent = message;
+  updateTimingPanel(time);
+};
+
+const offsetForLyricIndex = (index: number) =>
+  lyricAdjustments.globalOffset +
+  lyricAdjustments.ranges.reduce((sum, range) => {
+    const rangeEnd = range.endIndex ?? musicMap.lyricLines.length - 1;
+    return index >= range.startIndex && index <= rangeEnd ? sum + range.offset : sum;
+  }, 0);
+
+const currentLyricIndex = (time = currentTime() % (musicMap?.duration ?? 1)) => {
+  const index = lyricIndexAt(time, workingLyrics);
+  return Math.min(Math.max(0, index), Math.max(0, musicMap.lyricLines.length - 1));
+};
+
+const fromRangeForIndex = (startIndex: number) =>
+  lyricAdjustments.ranges.find((range) => range.startIndex === startIndex && range.endIndex === undefined);
+
+const formatOffset = (offset: number) => `${offset >= 0 ? "+" : ""}${offset.toFixed(3)}s`;
 
 const updateTimingPanel = (time = currentTime() % (musicMap?.duration ?? 1)) => {
   if (!musicMap) return;
@@ -244,8 +341,14 @@ const updateTimingPanel = (time = currentTime() % (musicMap?.duration ?? 1)) => 
   const nextIndex = Math.min(musicMap.lyricLines.length - 1, currentIndex + 1);
   const currentText = musicMap.lyricLines[currentIndex] ?? "";
   const nextText = musicMap.lyricLines[nextIndex] ?? "";
+  const fromOffset = fromRangeForIndex(currentIndex)?.offset ?? 0;
   timingLeft.textContent = `A: #${currentIndex + 1} ${currentText}`;
   timingRight.textContent = `D: #${nextIndex + 1} ${nextText}`;
+  timingFromLabel.textContent = `From #${currentIndex + 1}`;
+  timingOffsetReadout.textContent = `All ${formatOffset(lyricAdjustments.globalOffset)} / From #${currentIndex + 1} ${formatOffset(fromOffset)}`;
+  const activeCue = workingLyrics[currentIndex];
+  sequenceReadout.textContent = activeCue ? `#${currentIndex + 1} / ${formatTime(activeCue.time)}` : "#1 / 0.000s";
+  updateSequenceStones(time);
 };
 
 const setTimingCapture = (enabled: boolean) => {
@@ -257,11 +360,137 @@ const setTimingCapture = (enabled: boolean) => {
 };
 
 const pushTimingHistory = () => {
-  timingHistory.push(manualKeyframes.map((keyframe) => ({ ...keyframe })));
+  timingHistory.push({
+    keyframes: manualKeyframes.map((keyframe) => ({ ...keyframe })),
+    adjustments: {
+      globalOffset: lyricAdjustments.globalOffset,
+      ranges: lyricAdjustments.ranges.map((range) => ({ ...range }))
+    }
+  });
   if (timingHistory.length > 80) timingHistory = timingHistory.slice(-80);
 };
 
 const formatTime = (time: number) => `${time.toFixed(3)}s`;
+
+const seekTo = (time: number, announce = true) => {
+  const target = clampTime(time, musicMap.duration);
+  if (hasAudioSource()) {
+    const audioDuration = Number.isFinite(audio.duration) ? audio.duration : musicMap.duration;
+    audio.currentTime = clampTime(target, audioDuration);
+  } else {
+    pausedAt = target;
+    if (clockPlaying) startedAt = performance.now();
+  }
+  lastBeatIndex = -1;
+  updateLyrics(target);
+  progressBar.style.transform = `scaleX(${clamp(target / musicMap.duration)})`;
+  if (announce) timingLast.textContent = `Seek ${formatTime(target)}`;
+};
+
+const seekFromSequencePointer = (event: PointerEvent, announce = true) => {
+  if (!musicMap) return;
+  const rect = sequenceBar.getBoundingClientRect();
+  const ratio = rect.width > 0 ? clamp((event.clientX - rect.left) / rect.width) : 0;
+  seekTo(ratio * musicMap.duration, announce);
+};
+
+const ensureSequenceElements = () => {
+  if (sequenceStoneElements.length === workingLyrics.length) return;
+  sequenceStones.innerHTML = "";
+  sequenceStoneElements = workingLyrics.map((cue, index) => {
+    const ghost = document.createElement("div");
+    const link = document.createElement("div");
+    const stone = document.createElement("div");
+    ghost.className = "lyric-ghost";
+    link.className = "lyric-shift-link";
+    stone.className = "lyric-stone";
+    stone.title = `#${index + 1} ${cue.text}`;
+    sequenceStones.append(ghost, link, stone);
+    return { ghost, link, stone };
+  });
+};
+
+const updateSequenceStones = (time: number) => {
+  if (!musicMap || !rawLyrics.length || !workingLyrics.length) return;
+  ensureSequenceElements();
+  const activeIndex = lyricIndexAt(time, workingLyrics);
+  const manualIndexes = new Set(manualKeyframes.map((keyframe) => keyframe.index));
+  const duration = Math.max(1, musicMap.duration);
+  sequenceProgress.style.transform = `translateX(${clamp(time / duration) * sequenceBar.clientWidth}px)`;
+
+  for (let index = 0; index < sequenceStoneElements.length; index++) {
+    const rawCue = rawLyrics[index];
+    const workingCue = workingLyrics[index];
+    const elements = sequenceStoneElements[index];
+    if (!rawCue || !workingCue) continue;
+
+    const rawPercent = clamp(rawCue.time / duration) * 100;
+    const adjustedPercent = clamp(workingCue.time / duration) * 100;
+    const left = Math.min(rawPercent, adjustedPercent);
+    const widthPercent = Math.abs(adjustedPercent - rawPercent);
+    const affected = Math.abs(offsetForLyricIndex(index)) > 0.001 || Math.abs(adjustedPercent - rawPercent) > 0.02;
+
+    elements.ghost.style.left = `${rawPercent}%`;
+    elements.link.style.left = `${left}%`;
+    elements.link.style.width = `${widthPercent}%`;
+    elements.stone.style.left = `${adjustedPercent}%`;
+    elements.link.classList.toggle("is-shifted", affected);
+    elements.stone.classList.toggle("is-manual", manualIndexes.has(index));
+    elements.stone.classList.toggle("is-affected", affected);
+    elements.stone.classList.toggle("is-active", index === activeIndex);
+    elements.stone.title = `#${index + 1} ${formatTime(workingCue.time)} ${workingCue.text}`;
+  }
+};
+
+const shiftAllLyrics = (delta: number) => {
+  pushTimingHistory();
+  lyricAdjustments = normalizeAdjustments(
+    { ...lyricAdjustments, globalOffset: lyricAdjustments.globalOffset + delta },
+    musicMap.lyricLines.length
+  );
+  applyTimingState(`All ${formatOffset(lyricAdjustments.globalOffset)}: 全ストーンを補正しました`);
+};
+
+const resetAllLyricsShift = () => {
+  pushTimingHistory();
+  lyricAdjustments = normalizeAdjustments({ ...lyricAdjustments, globalOffset: 0 }, musicMap.lyricLines.length);
+  applyTimingState("All offsetを0に戻しました");
+};
+
+const shiftFromCurrentLyric = (delta: number) => {
+  const startIndex = currentLyricIndex();
+  pushTimingHistory();
+  const existing = fromRangeForIndex(startIndex);
+  const ranges = lyricAdjustments.ranges.filter((range) => !(range.startIndex === startIndex && range.endIndex === undefined));
+  const nextOffset = (existing?.offset ?? 0) + delta;
+  lyricAdjustments = normalizeAdjustments(
+    {
+      ...lyricAdjustments,
+      ranges: [...ranges, { startIndex, offset: nextOffset }]
+    },
+    musicMap.lyricLines.length
+  );
+  applyTimingState(`From #${startIndex + 1} ${formatOffset(nextOffset)}: 以降のストーンを補正しました`);
+};
+
+const resetFromCurrentLyricShift = () => {
+  const startIndex = currentLyricIndex();
+  const existing = fromRangeForIndex(startIndex);
+  if (!existing) {
+    timingLast.textContent = `From #${startIndex + 1} の補正はありません`;
+    updateTimingPanel();
+    return;
+  }
+  pushTimingHistory();
+  lyricAdjustments = normalizeAdjustments(
+    {
+      ...lyricAdjustments,
+      ranges: lyricAdjustments.ranges.filter((range) => !(range.startIndex === startIndex && range.endIndex === undefined))
+    },
+    musicMap.lyricLines.length
+  );
+  applyTimingState(`From #${startIndex + 1} offsetを0に戻しました`);
+};
 
 const recordLyricKeyframe = (direction: "current" | "next") => {
   if (!musicMap.lyricLines.length) return;
@@ -274,9 +503,10 @@ const recordLyricKeyframe = (direction: "current" | "next") => {
       : Math.min(musicMap.lyricLines.length - 1, baseIndex + 1);
 
   pushTimingHistory();
+  const storedTime = clampTime(time - offsetForLyricIndex(targetIndex), musicMap.duration);
   const nextKeyframe: LyricKeyframe = {
     index: targetIndex,
-    time,
+    time: storedTime,
     text: musicMap.lyricLines[targetIndex] ?? ""
   };
   manualKeyframes = normalizeKeyframes(
@@ -296,10 +526,12 @@ const undoLyricKeyframe = () => {
     timingLast.textContent = "Undoできる打刻がありません";
     return;
   }
-  manualKeyframes = previous;
+  manualKeyframes = previous.keyframes;
+  lyricAdjustments = previous.adjustments;
   rebuildWorkingLyrics();
   saveManualKeyframes();
-  timingLast.textContent = "1つ前の打刻に戻しました";
+  saveAdjustments();
+  timingLast.textContent = "1つ前の調整に戻しました";
   updateTimingPanel();
 };
 
@@ -310,14 +542,11 @@ const clearLyricKeyframes = () => {
   }
   pushTimingHistory();
   manualKeyframes = [];
-  rebuildWorkingLyrics();
-  saveManualKeyframes();
-  timingLast.textContent = "手動キーフレームを消去しました";
-  updateTimingPanel();
+  applyTimingState("手動キーフレームを消去しました");
 };
 
 const exportLyricTiming = () => {
-  const payload = makeTimingExport(musicMap, manualKeyframes);
+  const payload = makeTimingExport(musicMap, manualKeyframes, lyricAdjustments, workingLyrics);
   const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: "application/json" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
@@ -384,7 +613,7 @@ const updateLyrics = (time: number) => {
   const lyric = lyricAt(time, musicMap.lyrics);
   lyricCurrent.textContent = lyric.current?.text ?? "";
   lyricNext.textContent = lyric.next?.text ?? "";
-  if (timingCapture) updateTimingPanel(time);
+  updateTimingPanel(time);
 };
 
 const tick = (now: number) => {
@@ -454,6 +683,38 @@ const setupInput = () => {
     else void document.documentElement.requestFullscreen();
   });
 
+  sequenceBar.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    sequenceSeeking = true;
+    sequenceBar.classList.add("is-seeking");
+    sequenceBar.setPointerCapture(event.pointerId);
+    seekFromSequencePointer(event);
+  });
+
+  sequenceBar.addEventListener("pointermove", (event) => {
+    if (!sequenceSeeking) return;
+    event.preventDefault();
+    event.stopPropagation();
+    seekFromSequencePointer(event, false);
+  });
+
+  sequenceBar.addEventListener("pointerup", (event) => {
+    if (!sequenceSeeking) return;
+    event.preventDefault();
+    event.stopPropagation();
+    sequenceSeeking = false;
+    sequenceBar.classList.remove("is-seeking");
+    seekFromSequencePointer(event);
+    sequenceBar.releasePointerCapture(event.pointerId);
+  });
+
+  sequenceBar.addEventListener("pointercancel", (event) => {
+    sequenceSeeking = false;
+    sequenceBar.classList.remove("is-seeking");
+    if (sequenceBar.hasPointerCapture(event.pointerId)) sequenceBar.releasePointerCapture(event.pointerId);
+  });
+
   timingToggle.addEventListener("click", () => {
     setTimingCapture(!timingCapture);
   });
@@ -461,6 +722,16 @@ const setupInput = () => {
   timingUndo.addEventListener("click", undoLyricKeyframe);
   timingClear.addEventListener("click", clearLyricKeyframes);
   timingExport.addEventListener("click", exportLyricTiming);
+  offsetAllEarlierBig.addEventListener("click", () => shiftAllLyrics(-1));
+  offsetAllEarlier.addEventListener("click", () => shiftAllLyrics(-0.1));
+  offsetAllReset.addEventListener("click", resetAllLyricsShift);
+  offsetAllLater.addEventListener("click", () => shiftAllLyrics(0.1));
+  offsetAllLaterBig.addEventListener("click", () => shiftAllLyrics(1));
+  offsetFromEarlierBig.addEventListener("click", () => shiftFromCurrentLyric(-1));
+  offsetFromEarlier.addEventListener("click", () => shiftFromCurrentLyric(-0.1));
+  offsetFromReset.addEventListener("click", resetFromCurrentLyricShift);
+  offsetFromLater.addEventListener("click", () => shiftFromCurrentLyric(0.1));
+  offsetFromLaterBig.addEventListener("click", () => shiftFromCurrentLyric(1));
 
   window.addEventListener("keydown", (event) => {
     const target = event.target as HTMLElement | null;
@@ -470,6 +741,13 @@ const setupInput = () => {
       target instanceof HTMLSelectElement ||
       target?.isContentEditable;
     if (isTyping || event.repeat) return;
+
+    if (event.code === "Space") {
+      event.preventDefault();
+      if (isPlaying()) pause();
+      else void play();
+      return;
+    }
 
     if (event.code === "KeyT") {
       event.preventDefault();
@@ -515,6 +793,7 @@ const boot = async () => {
   musicMap = await loadMusicMap();
   baseLyrics = musicMap.lyrics.map((cue) => ({ ...cue }));
   manualKeyframes = readManualKeyframes();
+  lyricAdjustments = readAdjustments();
   rebuildWorkingLyrics();
   ramp = new ColorRamp(musicMap.palette);
   const audioPath = await findBundledAudio();

@@ -94,7 +94,7 @@ input {
   top: 86px;
   right: 22px;
   z-index: 4;
-  width: min(360px, calc(100vw - 44px));
+  width: min(430px, calc(100vw - 44px));
   padding: 12px;
   border: 1px solid rgba(255, 244, 211, 0.18);
   border-radius: 8px;
@@ -110,6 +110,10 @@ input {
   box-shadow:
     0 18px 70px rgba(0, 0, 0, 0.22),
     0 0 36px rgba(255, 232, 168, 0.12);
+}
+
+.timing-panel:not(.is-active) .timing-mode-control {
+  display: none;
 }
 
 .timing-panel-head,
@@ -155,6 +159,179 @@ input {
   text-overflow: ellipsis;
 }
 
+.timing-offsets {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 244, 211, 0.14);
+}
+
+.timing-offset-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.timing-offset-head span:first-child {
+  color: rgba(255, 250, 238, 0.9);
+  font-weight: 650;
+}
+
+#timing-offset-readout {
+  overflow: hidden;
+  color: rgba(255, 248, 232, 0.56);
+  text-align: right;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.timing-offset-row {
+  display: grid;
+  grid-template-columns: minmax(58px, 0.9fr) repeat(5, minmax(42px, 1fr));
+  gap: 6px;
+  align-items: center;
+}
+
+.timing-offset-row + .timing-offset-row {
+  margin-top: 6px;
+}
+
+.timing-offset-row > span {
+  overflow: hidden;
+  color: rgba(255, 248, 232, 0.64);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.timing-sequence {
+  margin-top: 10px;
+}
+
+.timing-sequence-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.timing-sequence-head span:first-child {
+  color: rgba(255, 250, 238, 0.9);
+  font-weight: 650;
+}
+
+#timing-sequence-readout {
+  overflow: hidden;
+  color: rgba(255, 248, 232, 0.56);
+  text-align: right;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.timing-sequence-bar {
+  position: relative;
+  height: 42px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 244, 211, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 250, 232, 0.1), rgba(255, 250, 232, 0.04)),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent calc(10% - 1px),
+      rgba(255, 244, 211, 0.08) 10%
+    );
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.timing-sequence-bar.is-seeking {
+  border-color: rgba(255, 232, 168, 0.58);
+  cursor: grabbing;
+}
+
+#timing-sequence-progress {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 0;
+  width: 2px;
+  border-radius: 99px;
+  background: rgba(255, 250, 238, 0.9);
+  box-shadow: 0 0 16px rgba(255, 232, 168, 0.55);
+  transform: translateX(0);
+  z-index: 3;
+}
+
+#timing-sequence-stones {
+  position: absolute;
+  inset: 0 7px;
+  pointer-events: none;
+}
+
+.lyric-ghost,
+.lyric-stone,
+.lyric-shift-link {
+  position: absolute;
+  top: 50%;
+}
+
+.lyric-ghost {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 248, 232, 0.2);
+  transform: translate(-50%, -50%);
+}
+
+.lyric-shift-link {
+  height: 2px;
+  border-radius: 99px;
+  background: rgba(255, 232, 168, 0.28);
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.lyric-shift-link.is-shifted {
+  opacity: 1;
+}
+
+.lyric-stone {
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(255, 250, 238, 0.62);
+  border-radius: 50%;
+  background: rgba(255, 232, 168, 0.56);
+  box-shadow: 0 0 10px rgba(255, 232, 168, 0.42);
+  transform: translate(-50%, -50%);
+  transition: left 180ms ease;
+}
+
+.lyric-stone.is-manual {
+  width: 11px;
+  height: 11px;
+  background: rgba(255, 250, 238, 0.86);
+  box-shadow: 0 0 16px rgba(255, 232, 168, 0.72);
+}
+
+.lyric-stone.is-affected {
+  border-color: rgba(207, 231, 255, 0.82);
+}
+
+.lyric-stone.is-active {
+  width: 15px;
+  height: 15px;
+  border-color: rgba(255, 250, 238, 0.96);
+  background: rgba(255, 250, 238, 0.96);
+  box-shadow:
+    0 0 2px rgba(20, 21, 32, 0.7),
+    0 0 22px rgba(255, 232, 168, 0.9);
+  z-index: 4;
+}
+
 #timing-last {
   min-height: 1.3em;
   margin: 10px 0 12px;
@@ -170,6 +347,12 @@ input {
   background: rgba(255, 250, 232, 0.08);
   color: rgba(255, 250, 238, 0.9);
   cursor: pointer;
+}
+
+.timing-offset-row .mini-button {
+  min-width: 0;
+  padding: 0 6px;
+  font-size: 11px;
 }
 
 .mini-button:hover {
@@ -336,8 +519,13 @@ input {
   .timing-panel {
     top: 76px;
     right: 14px;
-    width: min(300px, calc(100vw - 28px));
+    width: min(340px, calc(100vw - 28px));
     padding: 10px;
+  }
+
+  .timing-offset-row {
+    grid-template-columns: minmax(50px, 0.9fr) repeat(5, minmax(36px, 1fr));
+    gap: 4px;
   }
 
   .controlbar {

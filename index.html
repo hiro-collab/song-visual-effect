@@ -21,12 +21,44 @@
           </div>
           <button id="timing-toggle" class="mini-button" type="button" aria-pressed="false">Off</button>
         </div>
-        <div class="timing-keys">
+        <div class="timing-keys timing-mode-control">
           <span id="timing-left">A: current line</span>
           <span id="timing-right">D: next line</span>
         </div>
+        <div class="timing-offsets timing-mode-control">
+          <div class="timing-offset-head">
+            <span>Shift</span>
+            <span id="timing-offset-readout">All +0.000s / From #1 +0.000s</span>
+          </div>
+          <div class="timing-offset-row" aria-label="Shift all lyrics">
+            <span>All</span>
+            <button id="offset-all-earlier-big" class="mini-button" type="button">-1.0</button>
+            <button id="offset-all-earlier" class="mini-button" type="button">-0.1</button>
+            <button id="offset-all-reset" class="mini-button" type="button">0</button>
+            <button id="offset-all-later" class="mini-button" type="button">+0.1</button>
+            <button id="offset-all-later-big" class="mini-button" type="button">+1.0</button>
+          </div>
+          <div class="timing-offset-row" aria-label="Shift lyrics from current line">
+            <span id="timing-from-label">From #1</span>
+            <button id="offset-from-earlier-big" class="mini-button" type="button">-1.0</button>
+            <button id="offset-from-earlier" class="mini-button" type="button">-0.1</button>
+            <button id="offset-from-reset" class="mini-button" type="button">0</button>
+            <button id="offset-from-later" class="mini-button" type="button">+0.1</button>
+            <button id="offset-from-later-big" class="mini-button" type="button">+1.0</button>
+          </div>
+          <div class="timing-sequence">
+            <div class="timing-sequence-head">
+              <span>Sequence</span>
+              <span id="timing-sequence-readout">#1 / 0.000s</span>
+            </div>
+            <div id="timing-sequence-bar" class="timing-sequence-bar" aria-label="Lyric timing stones">
+              <div id="timing-sequence-progress"></div>
+              <div id="timing-sequence-stones"></div>
+            </div>
+          </div>
+        </div>
         <p id="timing-last">Tで記録モード、A/Dで打刻</p>
-        <div class="timing-actions">
+        <div class="timing-actions timing-mode-control">
           <button id="timing-undo" class="mini-button" type="button">Undo</button>
           <button id="timing-clear" class="mini-button" type="button">Clear</button>
           <button id="timing-export" class="mini-button" type="button">Export</button>

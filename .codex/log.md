@@ -43,3 +43,10 @@
   - `D` records the next lyric line's start time.
   - Keyframes are saved to `localStorage`, applied immediately to the lyric display, undoable, clearable, and exportable as JSON.
   - The implementation uses playback time and lyric text only; it does not analyze audio or use music for AI learning.
+- Added visual lyric sequence bar and button-based offset controls:
+  - Pale ghost dots show pre-adjustment lyric switching times.
+  - Bright stones show adjusted lyric switching times.
+  - `All` moves every stone; `From #n` moves the current lyric line and later stones.
+  - The active lyric display reads from adjusted stone timing immediately, so live adjustment does not require reloading JSON.
+- Added sequence-bar seeking. Clicking or dragging the lyric sequence bar updates `audio.currentTime` when audio is loaded, or the internal playback clock when no audio source is present.
+- Added Space key playback toggle, while preserving normal typing behavior when form controls are focused.

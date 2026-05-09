@@ -24,6 +24,17 @@ export type LyricKeyframe = {
   text: string;
 };
 
+export type LyricOffsetRange = {
+  startIndex: number;
+  endIndex?: number;
+  offset: number;
+};
+
+export type LyricTimingAdjustments = {
+  globalOffset: number;
+  ranges: LyricOffsetRange[];
+};
+
 export type LyricTimingExport = {
   schema: "music-effect.lyrics-timing.v1";
   title: string;
@@ -31,6 +42,7 @@ export type LyricTimingExport = {
   duration: number;
   generatedAt: string;
   note: string;
+  adjustments: LyricTimingAdjustments;
   keyframes: Array<{ index: number; at: number; text: string }>;
   lyrics: Array<{ index: number; start: number; end: number; text: string }>;
 };

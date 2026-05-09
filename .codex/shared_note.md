@@ -66,4 +66,8 @@ Current priority: build the base system first, then add those live controls iter
 - The `Lyric Timing` panel toggles capture mode on/off.
 - In capture mode, `A` stamps the current lyric line boundary; `D` stamps the next lyric line boundary.
 - Manual keyframes autosave to `localStorage`, apply immediately, support undo/clear, and export as `lyrics_timing.manual.json`.
+- Lyric timing adjustments now have a visual sequence bar. Pale ghost dots show raw timing; bright stones show adjusted timing. Lyrics switch from the adjusted stone positions immediately, without reloading JSON.
+- Shift controls are button-based: `All` moves every lyric stone, and `From #n` moves the current lyric line and later stones.
+- The sequence bar is also a playback scrubber: click or drag it to seek the current playback/internal clock without reloading.
+- Space toggles playback except while a text/input control is focused.
 - For bundled reuse, place the exported JSON at `music_src/analysis/lyrics_timing.json`.
