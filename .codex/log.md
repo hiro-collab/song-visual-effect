@@ -2,161 +2,72 @@
 
 ## 2026-05-10
 
-- User wants to test a PoC using MaouDamashii "Shining Star".
-- Current workspace only contains `music_src/Lyrics.txt` at the start.
-- User noted that Songle JSON is not downloaded yet and should be downloadable from the related Songle URL.
-- Confirmed via web docs that Songle Widget API exposes REST endpoints for song metadata and music maps such as beat, chord, melody, and chorus.
-- Need to preserve UTF-8 when handling the existing lyrics text file.
-- Next implementation direction:
-  - Scaffold a Vite + TypeScript web app.
-  - Keep `music_src` as source material and copy or expose assets under `public/music_src`.
-  - Add scripts/docs for downloading Songle JSON into an analysis folder.
-  - Build a local JSON-first timing loader.
-  - Implement soft layered Canvas/Pixi-style visual effects with damping, ramps, moving nodes, light lines, particles, lyrics, and pointer/click interaction.
-- User clarified live-use goals:
-  - sequence bar, BPM, timing micro-adjustment for live performance,
-  - keyboard mood switching,
-  - optional color changes.
-- Agreed to build the base system first, then layer those controls on top.
-- User warned that music AI training is prohibited by license. Added explicit project note: do not analyze audio or use it for AI training; use JSON/text/manual markers only for timing.
-- Implemented base system:
-  - Vite + TypeScript app.
-  - Canvas2D layered soft light renderer.
-  - Songle JSON download script.
-  - UTF-8 lyrics loader.
-  - Songle beat/chorus parser with fallbacks.
-  - Pointer attraction and click ripples.
-  - Internal clock fallback when no audio file is present.
-  - Projector-friendly minimal playback UI.
-- Downloaded Songle JSON files into `music_src/analysis`.
-- Verified `npm run build` passes.
-- Started Vite dev server on `http://127.0.0.1:5173`.
-- Browser verification:
-  - Page renders nonblank.
-  - Lyrics and controls are visible.
-  - Play button works with internal clock when audio is not present.
-  - `audio` element has no `src` when no valid audio content type is found.
-  - Status currently says `rough lyrics` because timed lyric JSON is not present yet.
-- Added manual lyric keyframe adjustment mode:
-  - `Lyric Timing` panel toggles capture on/off.
-  - `A` records the current lyric line's start time.
-  - `D` records the next lyric line's start time.
-  - Keyframes are saved to `localStorage`, applied immediately to the lyric display, undoable, clearable, and exportable as JSON.
-  - The implementation uses playback time and lyric text only; it does not analyze audio or use music for AI learning.
-- Added visual lyric sequence bar and button-based offset controls:
-  - Pale ghost dots show pre-adjustment lyric switching times.
-  - Bright stones show adjusted lyric switching times.
-  - `All` moves every stone; `From #n` moves the current lyric line and later stones.
-  - The active lyric display reads from adjusted stone timing immediately, so live adjustment does not require reloading JSON.
-- Added sequence-bar seeking. Clicking or dragging the lyric sequence bar updates `audio.currentTime` when audio is loaded, or the internal playback clock when no audio source is present.
-- Added Space key playback toggle, while preserving normal typing behavior when form controls are focused.
+- User started a PoC using MaouDamashii "Shining Star".
+- Initial material included UTF-8 lyrics under `music_src/Lyrics.txt`.
+- Songle JSON endpoints were identified and downloaded for beat, chord, melody, chorus, and song metadata.
+- License safety rule was established: do not analyze audio waveforms and do not use music for AI training. Browser playback is allowed; timing must come from JSON/text/manual markers/user input.
+- Implemented the first Vite + TypeScript Canvas2D visualizer with soft light rendering, Songle JSON parsing, UTF-8 lyric loading, pointer interaction, click ripples, and internal clock fallback.
+- Added manual lyric timing:
+  - `Lyric Timing` mode.
+  - `A` / `D` keyframe capture.
+  - localStorage autosave, undo, clear, export.
+  - sequence-bar stones, all/from-current offset controls, sequence-bar seeking, and Space playback toggle.
 
-## 2026-05-20
+## 2026-05-20 Base Separation
 
 - User asked to separate reusable system code from song-specific application code.
-- Clarified design principle: the system server must be a helper runtime, not a controller that forces a song into one model. Other runtimes and adapters must remain possible.
-- Before refactor, committed current adjusted lyric timing data:
-  - `87c4c25 Add adjusted lyric timing data`
-- Started manifest/song-package separation:
-  - Added `music_src/manifest.json` for backward-compatible single-server use.
-  - Added `song-packs/shining-star/manifest.json` for separate song-pack server use.
-  - Copied lyrics and analysis JSON into `song-packs/shining-star`.
-  - Added `CREDITS.md` and `design/cues.json`.
-  - Added a Node static song-pack server with CORS support: `scripts/serve-song-packs.mjs`.
-  - Added `npm run dev:system` and `npm run dev:songs`.
-- Added workflow documentation inspired by JSON-driven app-flow maps:
-  - `docs/workflows.html`
-  - `docs/workflows.json`
-- Added agent context documentation:
-  - `AGENTS.md`
-  - `docs/architecture.md`
-  - `docs/module-map.md`
-  - `docs/decisions.md`
-  - `docs/plans.md`
-  - `docs/known-issues.md`
-  - `docs/handoff.md`
-- Updated `README.md` with Workflow Map and Agent Context sections.
-
-## 2026-05-20 Later
-
-- The repository was shifted from a Shining Star-centered PoC toward a
-  system-neutral host.
-- New song authoring must start from `docs/system-overview.md` and
-  `docs/song-authoring.md`, not from existing `song-packs/*`.
-- `music_src` is obsolete; song package data lives under `song-packs/`.
-- The dev manager starts/stops the system app and song-pack server together.
-- `song-packs/traffic-jam/` was added as a planning package for 煮ル果実
-  「トラフィック・ジャム」. It should not become a template for later songs.
-
-## 2026-05-20 Worktree Setup
-
-- User paused implementation to prepare parallel Codex work.
-- Stopped local development servers before reorganizing.
-- Added `_worktrees/` to `.gitignore` and committed it on `main`.
-- Checkpointed in-progress adapter cues / Traffic Jam work on `codex/wip-adapter-cues-traffic-jam`.
-- Created local worktrees under the project root:
-  - `_worktrees/adapter-cues`
-  - `_worktrees/download-security`
-  - `_worktrees/traffic-jam-effect`
-  - `_worktrees/launch-manager`
-- Added `docs/worktree-guide.md` to explain the worktree layout and parallel-work cautions.
-- Added a local worktree sync notice tool:
+- Clarified principle: the system must help songs, not constrain their structure. Other runtimes and adapters should remain possible.
+- Added manifest/song-package separation:
+  - `song-packs/shining-star/manifest.json`
+  - copied Shining Star lyrics/analysis into song-pack form
+  - `scripts/serve-song-packs.mjs`
+  - `docs/workflows.html` / `docs/workflows.json`
+  - AGENTS and docs context files
+- Added local worktree setup under `_worktrees/` and the sync notice tool:
   - `npm run sync:ready`
   - `npm run sync:check`
   - `npm run sync:merge`
   - `npm run sync:list`
   - `npm run sync:watch`
-- The sync notice board is stored under Git's common directory, so all local worktrees can see it without committing the notice log.
 
 ## 2026-05-20 Adapter Cues Resume
 
-- Added a first-pass same-build adapter experiment and improved
-  `scripts/download-songle-json.ps1` with a post-download summary: title,
-  duration, Songle recognized/updated times, beat count, BPM median/average,
-  and chorus repeat ranges.
-- The song-specific adapter experiment was later superseded by the system kit
-  refactor below. New song adapters should not be added to the kit itself.
+- Added a first-pass same-build adapter experiment and improved `scripts/download-songle-json.ps1` with a post-download summary.
+- This song-specific adapter experiment was later superseded by the system kit refactor. New song adapters should not be added to the kit itself.
 
 ## 2026-05-20 System Kit Refactor
 
-- Shifted the project from a host-centered shape to `system/kit` plus
-  `examples/fixture-player`.
-- Removed the system-side Traffic Jam adapter. `song-packs/traffic-jam` now has
-  no `webAdapter` binding in the system kit branch.
-- Moved reusable helpers to `system/kit`: asset loading, safe fetch, transport,
-  frame loop, timing helpers, damping/palette helpers, manual lyric timing data,
-  and song adapter context.
-- Moved runnable UI, fixture renderer, fixture adapter registry, lyric timing UI,
-  particles, and light network effects under `examples/fixture-player`.
-- Renamed the individual Vite script from `dev:system` to `dev:player` so the
-  launch manager starts a fixture player rather than implying a required host.
+- Shifted the project from a host-centered shape to `system/kit` plus `examples/fixture-player`.
+- Removed the system-side Traffic Jam adapter. `song-packs/traffic-jam` has no system-side `webAdapter` binding in the system kit branch.
+- Moved reusable helpers to `system/kit`: asset loading, safe fetch, transport, frame loop, timing helpers, damping/palette helpers, manual lyric timing data, and song adapter context.
+- Moved runnable UI, fixture renderer, fixture adapter registry, lyric timing UI, particles, and light network effects under `examples/fixture-player`.
+- Renamed the individual Vite script from `dev:system` to `dev:player`.
 - Added `system/kit/index.ts` as the public helper API entry.
-- Added `DEV_MANAGER_PORT`, `PLAYER_PORT`, and `SONG_PACK_PORT` support to the
-  dev manager for parallel worktrees, and verified start/stop on
-  `5182/5183/5184`.
+- Added `DEV_MANAGER_PORT`, `PLAYER_PORT`, and `SONG_PACK_PORT` support to the dev manager for parallel worktrees.
 
 ## 2026-05-20 Visual Independence Guardrails
 
-- Received feedback from the song implementation thread: avoiding existing
-  `song-packs/*` was not enough because the fixture renderer's central glow,
-  radial lines, light network, particles, and soft-light composition still
-  acted as a visual anchor.
-- Added `docs/song-visual-independence.md` with allowed files, anchor-prone
-  files, implementation-before checklist, and first-preview review items.
-- Added `templates/neutral-song-app/` with an empty Canvas2D adapter scaffold
-  and a `visual-brief.md` sheet for fixing each song's main visual structure
-  before writing effects.
-- Updated `AGENTS.md`, `docs/song-authoring.md`, `docs/workflows.json`, and
-  handoff docs so new song work starts from the neutral brief rather than
-  fixture renderers or old song effects.
+- Received feedback from the song implementation thread: avoiding existing `song-packs/*` was not enough because the fixture renderer's central glow, radial lines, light network, particles, and soft-light composition still acted as a visual anchor.
+- Added `docs/song-visual-independence.md` with allowed files, anchor-prone files, implementation-before checklist, and first-preview review items.
+- Added `templates/neutral-song-app/` with an empty Canvas2D adapter scaffold and a `visual-brief.md` sheet for fixing each song's main visual structure before writing effects.
+- Updated `AGENTS.md`, `docs/song-authoring.md`, `docs/workflows.json`, and handoff docs so new song work starts from the neutral brief rather than fixture renderers or old song effects.
 
 ## 2026-05-20 Thread Start Workflow
 
-- Added `docs/thread-start.md` as the first-read workflow for new Codex
-  threads.
-- Documented the required startup checks: `git status --short --branch` and
-  `npm run sync:check`.
-- Clarified that ready notices are merge candidates, not automatic merge
-  commands.
-- Linked the new thread workflow from `AGENTS.md`, `README.md`,
-  `docs/handoff.md`, `docs/module-map.md`, and `.codex/shared_note.md`.
+- Added `docs/thread-start.md` as the first-read workflow for new Codex threads.
+- Documented startup checks: `git status --short --branch` and `npm run sync:check`.
+- Clarified that ready notices are merge candidates, not automatic merge commands.
+- Linked the new thread workflow from `AGENTS.md`, `README.md`, `docs/handoff.md`, `docs/module-map.md`, and `.codex/shared_note.md`.
+
+## 2026-05-20 Traffic Jam Redo Brief
+
+- Merged the redo direction from `main`.
+- `codex/traffic-jam-effect` commit `81876a7 Add traffic jam visual adapter` is rejected as a visual implementation because it reused too much of the previous fixture visual grammar.
+- Added `docs/traffic-jam-redo-brief.md` as the replacement brief for a future Traffic Jam implementation thread.
+- Future threads must not merge the rejected Traffic Jam implementation; they should use the redo brief instead.
+
+## 2026-05-20 Security Merge
+
+- Merged loopback hardening from `codex/download-security`.
+- Dev servers reject non-loopback host binding.
+- Asset loading and security docs were updated to keep local development servers private by default.

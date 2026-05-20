@@ -31,19 +31,23 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 - `AGENTS.md` に、新しい曲作成時は既存の `song-packs/*` を読まないと明記する。
 - 既存曲はテンプレートではなくfixtureとして扱う。
 
-## fixture rendererはexamplesに隔離したが、まだ目立ちやすい
+## fixture rendererが新曲の視覚アンカーになる危険
 
-現在同梱している柔らかい光表現は、`examples/fixture-player/` にあります。
+既存曲パッケージを読まなくても、fixture rendererやサンプル実装の視覚文法に引っ張られることがあります。
 
-曲実装担当からのフィードバック:
-
-- 既存 `song-packs/*` を読まなくても、fixture rendererの中央発光、放射線、光ネットワーク、グローに引っ張られることがある。
-- 「既存曲を読まない」だけでなく、「既存fixture rendererを視覚テンプレートにしない」ルールが必要。
+実際に、`codex/traffic-jam-effect` の `81876a7 Add traffic jam visual adapter` は、中央収束、放射線、グロー、光ネットワークの構図が前作に近くなったため採用しません。
 
 現在の対策:
 
 - `docs/song-visual-independence.md` を追加した。
 - `templates/neutral-song-app/` に空のadapter scaffoldとvisual briefを追加した。
+- 煮ル果実「トラフィック・ジャム」の再実装方針を `docs/traffic-jam-redo-brief.md` に分離した。
+- 新曲作成時は、既存 `song-packs/*` だけでなく、既存fixture rendererの構図もテンプレート扱いしない。
+- `SoftLightRenderer` 的な表現を使う場合は、意図して使う理由を先に明文化する。
+
+注意:
+
+- `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても、その通知は破棄予定の古い実装です。取り込まないでください。
 
 次の改善:
 
@@ -115,6 +119,7 @@ song-pack serverは、ローカル曲パッケージをブラウザへ配信し�
 - CORSは既定でfixture playerのoriginだけを許可する。
 - 隠しファイルと未許可拡張子は配信しない。
 - URLデコード失敗や不正な範囲リクエストはエラーとして扱う。
+- loopback host以外へのbindを起動時に拒否する。
 
 注意:
 
