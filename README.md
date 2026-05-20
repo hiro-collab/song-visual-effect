@@ -48,6 +48,7 @@ npm run dev
 ```text
 docs/system-overview.md
 docs/song-authoring.md
+docs/song-visual-independence.md
 ```
 
 重要なルール:
@@ -55,7 +56,10 @@ docs/song-authoring.md
 - 既存の `song-packs/*` はテンプレートではありません。
 - 新しい曲を作るときは、既存曲のmanifest、analysis、design、adapter、演出コードを見ないでください。
 - 既存曲を見るのは、その曲自体を直すとき、回帰確認をするとき、またはユーザーが明示的に許可したときだけです。
+- `examples/fixture-player` のsoft light rendererやeffect群も、新曲の視覚テンプレートとして読まないでください。
 - 曲ごとの構成は自由です。既存曲の構成に合わせる必要はありません。
+
+曲アプリを作る場合は、空に近い出発点として `templates/neutral-song-app/` を使えます。最初のプレビュー後は `docs/song-visual-independence.md` で、構図、色、主役、線/光、カメラ視点が前作に寄りすぎていないか確認してください。
 
 ## Song Package
 
@@ -143,6 +147,7 @@ Codexや別エージェントに作業を渡すときは、まず `AGENTS.md` �
 AGENTS.md
 docs/system-overview.md
 docs/song-authoring.md
+docs/song-visual-independence.md
 docs/decisions.md
 ```
 

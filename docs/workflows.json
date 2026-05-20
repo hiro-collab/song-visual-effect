@@ -163,6 +163,26 @@
       "x": 50,
       "y": 86,
       "description": "新しい曲を作るときに既存曲を読まないためのルールです。曲ごとの自由な構成を守ります。"
+    },
+    {
+      "id": "visualIndependence",
+      "label": "視覚独立チェック",
+      "kind": "knowledge-base",
+      "group": "文脈",
+      "file": "docs/song-visual-independence.md",
+      "x": 70,
+      "y": 86,
+      "description": "既存fixture rendererの中央発光、放射線、光ネットワーク、グローに引っ張られないためのチェックリストです。"
+    },
+    {
+      "id": "neutralTemplate",
+      "label": "空のadapter scaffold",
+      "kind": "template",
+      "group": "文脈",
+      "file": "templates/neutral-song-app",
+      "x": 91,
+      "y": 86,
+      "description": "新曲の初期adapterを既存エフェクト継承ではなく空の描画ループから始めるためのテンプレートです。"
     }
   ],
   "flows": [
@@ -233,8 +253,22 @@
           "from": "agents",
           "to": "songAuthoringDocs",
           "action": "アンカー回避ルールを読む",
-          "payload": "docs/system-overview.md と docs/song-authoring.md",
-          "note": "既存曲はテンプレートではなく、許可なしに参照しません。"
+          "payload": "docs/system-overview.md、docs/song-authoring.md、docs/song-visual-independence.md",
+          "note": "既存曲だけでなく、fixture rendererも許可なしに視覚テンプレートとして参照しません。"
+        },
+        {
+          "from": "songAuthoringDocs",
+          "to": "visualIndependence",
+          "action": "視覚アンカーを確認",
+          "payload": "読んでよいファイル、読まないファイル、前作似チェック",
+          "note": "soft light rendererの中央発光、放射線、光ネットワーク、粒子、グローを新曲の出発点にしません。"
+        },
+        {
+          "from": "visualIndependence",
+          "to": "neutralTemplate",
+          "action": "空の出発点を選ぶ",
+          "payload": "visual-brief.md、必要な場合だけadapter.ts",
+          "note": "曲の主役構造を先に決め、既存fixtureの構図や部品を継承しません。"
         },
         {
           "from": "songAuthoringDocs",
@@ -455,7 +489,7 @@
           "from": "contextDocs",
           "to": "main",
           "action": "関連実装を読む",
-          "payload": "対象機能に関係するsrcファイル。新規曲作成では既存song-packを読まない",
+          "payload": "対象機能に関係するsystem/kitやexamplesファイル。新規曲作成では既存song-packやfixture rendererを読まない",
           "note": "調査、計画、実装の順で進めます。新しい曲では既存曲に引っ張られないことを優先します。"
         },
         {

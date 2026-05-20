@@ -30,7 +30,9 @@ Start from:
 - `AGENTS.md`
 - `docs/system-overview.md`
 - `docs/song-authoring.md`
+- `docs/song-visual-independence.md`
 - `docs/decisions.md`
+- `templates/neutral-song-app/visual-brief.md`
 
 Do not start from:
 
@@ -38,9 +40,13 @@ Do not start from:
 - existing `analysis/`
 - existing `design/`
 - existing fixture player or renderer behavior
+- `examples/fixture-player/renderers/*`
+- `examples/fixture-player/effects/*`
+- `examples/fixture-player/adapters/fixtureSoftLight.ts`
 - old Shining Star notes
 
 Existing song packs are fixtures or specific song workspaces, not templates.
+Existing fixture renderers are regression examples, not visual templates.
 
 ## Current Song Packs
 

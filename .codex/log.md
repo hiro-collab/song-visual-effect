@@ -134,3 +134,18 @@
 - Added `DEV_MANAGER_PORT`, `PLAYER_PORT`, and `SONG_PACK_PORT` support to the
   dev manager for parallel worktrees, and verified start/stop on
   `5182/5183/5184`.
+
+## 2026-05-20 Visual Independence Guardrails
+
+- Received feedback from the song implementation thread: avoiding existing
+  `song-packs/*` was not enough because the fixture renderer's central glow,
+  radial lines, light network, particles, and soft-light composition still
+  acted as a visual anchor.
+- Added `docs/song-visual-independence.md` with allowed files, anchor-prone
+  files, implementation-before checklist, and first-preview review items.
+- Added `templates/neutral-song-app/` with an empty Canvas2D adapter scaffold
+  and a `visual-brief.md` sheet for fixing each song's main visual structure
+  before writing effects.
+- Updated `AGENTS.md`, `docs/song-authoring.md`, `docs/workflows.json`, and
+  handoff docs so new song work starts from the neutral brief rather than
+  fixture renderers or old song effects.

@@ -35,7 +35,8 @@
 
 - `system/kit/index.ts` で公開API入口を明示した。今後はここを太らせすぎず、必要なhelperだけをexportする。
 - fixture playerのUIやrendererをさらに「例」として隔離する。
-- 曲アプリ雛形を作る場合も、既存曲ではなく空のscaffoldから始める。
+- 曲アプリ雛形を作る場合も、既存曲やfixture rendererではなく `templates/neutral-song-app/` の空scaffoldから始める。
+- `docs/song-visual-independence.md` の前作似チェックを新曲実装フローに組み込む。
 
 非目的:
 
@@ -67,6 +68,7 @@
 案:
 
 新しい曲を作るときは既存曲のadapterを読まず、曲ごとに空の設計から始める。
+既存fixture rendererも視覚テンプレートとして読まず、必要なら `templates/neutral-song-app/adapter.ts` の空ループから始める。
 
 インターフェース案:
 

@@ -35,6 +35,16 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 
 現在同梱している柔らかい光表現は、`examples/fixture-player/` にあります。
 
+曲実装担当からのフィードバック:
+
+- 既存 `song-packs/*` を読まなくても、fixture rendererの中央発光、放射線、光ネットワーク、グローに引っ張られることがある。
+- 「既存曲を読まない」だけでなく、「既存fixture rendererを視覚テンプレートにしない」ルールが必要。
+
+現在の対策:
+
+- `docs/song-visual-independence.md` を追加した。
+- `templates/neutral-song-app/` に空のadapter scaffoldとvisual briefを追加した。
+
 次の改善:
 
 - READMEやdocsで、fixture playerが新しい曲のテンプレートではないことを維持する。
