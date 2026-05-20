@@ -140,3 +140,29 @@ song-packs/
 - Adapter: Web、TouchDesigner、Unityなど、実行環境ごとの接続コードを後付けできるようにする。
 
 今の実装では、まず `manifest.json` と `?song=` により曲データの外部化を始めています。次の段階で、Shining Star固有の演出を曲側の Web adapter へ移す予定です。
+
+## Workflow Map
+
+主要な流れは `docs/workflows.html` で確認できます。
+
+```text
+http://127.0.0.1:5173/docs/workflows.html
+```
+
+左の操作名を選ぶと、関係するコンポーネントと受け渡しが強調表示されます。表示内容は `docs/workflows.json` から読み込まれます。このJSONは、機能追加やバグ修正時にLLMへ「このアプリの流れ」を説明するための共有資料としても使えます。
+
+## Agent Context
+
+Codexや別エージェントに作業を渡すときは、まず `AGENTS.md` と `docs/handoff.md` を読ませます。
+
+```text
+AGENTS.md
+docs/architecture.md
+docs/module-map.md
+docs/decisions.md
+docs/plans.md
+docs/known-issues.md
+docs/handoff.md
+```
+
+`AGENTS.md` は短い入口に留め、全体設計、判断、未解決事項、次の作業は `docs/` に分けています。作業後は `docs/handoff.md` と、必要に応じて `docs/plans.md` / `docs/known-issues.md` / `docs/workflows.json` を更新してください。

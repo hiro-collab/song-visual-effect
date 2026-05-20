@@ -64,3 +64,15 @@
   - Added `CREDITS.md` and `design/cues.json`.
   - Added a Node static song-pack server with CORS support: `scripts/serve-song-packs.mjs`.
   - Added `npm run dev:system` and `npm run dev:songs`.
+- Added workflow documentation inspired by JSON-driven app-flow maps:
+  - `docs/workflows.html`
+  - `docs/workflows.json`
+- Added agent context documentation:
+  - `AGENTS.md`
+  - `docs/architecture.md`
+  - `docs/module-map.md`
+  - `docs/decisions.md`
+  - `docs/plans.md`
+  - `docs/known-issues.md`
+  - `docs/handoff.md`
+- Updated `README.md` with Workflow Map and Agent Context sections.

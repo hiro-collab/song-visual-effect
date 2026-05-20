@@ -79,6 +79,21 @@ Current implementation direction:
 - Existing `music_src` remains as a compatibility public directory for the current Vite app.
 - Next architectural step after manifest loading: move Shining Star specific effect wiring into a web adapter, leaving the system host thinner.
 
+## Agent Context Files
+
+The repo now uses file-based context for future Codex/agent work:
+
+- `AGENTS.md`: short always-read agent guide.
+- `docs/architecture.md`: system architecture and main flows.
+- `docs/module-map.md`: directory/file roles.
+- `docs/decisions.md`: design decisions and rationale.
+- `docs/plans.md`: next implementation candidates.
+- `docs/known-issues.md`: known risks and unresolved issues.
+- `docs/handoff.md`: first file for a new Codex thread to read after `AGENTS.md`.
+- `docs/workflows.json`: JSON flow map useful for both humans and LLMs.
+
+Keep `AGENTS.md` small. Put details in `docs/`. Update `docs/handoff.md` after meaningful architecture or workflow changes.
+
 ## Manual Lyric Timing
 
 - Manual lyric timing is captured from keyboard input only. It must not analyze the audio waveform.

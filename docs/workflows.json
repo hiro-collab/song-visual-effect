@@ -1,0 +1,377 @@
+{
+  "schema": "music-effect.workflow-map.v1",
+  "title": "Music Effect Workflow Map",
+  "language": "ja",
+  "description": "Music Effectの主要な構成要素と、曲パッケージ読み込み、再生、歌詞タイミング調整、分離サーバー運用の流れを記録するJSONです。人間向けの図示と、LLMへ流れを説明するための共有データを兼ねます。",
+  "components": [
+    {
+      "id": "browser",
+      "label": "ブラウザ",
+      "kind": "runtime",
+      "group": "実行環境",
+      "file": "index.html",
+      "x": 8,
+      "y": 38,
+      "description": "HTML、Canvas、Audio、ボタン、キー入力、ポインタ入力を実行する場所です。"
+    },
+    {
+      "id": "main",
+      "label": "main.ts",
+      "kind": "host",
+      "group": "システム",
+      "file": "src/main.ts",
+      "x": 28,
+      "y": 38,
+      "description": "現在の司令塔です。起動、入力登録、再生状態、フレーム更新、歌詞表示、エフェクト描画をまとめます。"
+    },
+    {
+      "id": "manifest",
+      "label": "manifest.json",
+      "kind": "song-package",
+      "group": "曲パッケージ",
+      "file": "song-packs/shining-star/manifest.json",
+      "x": 49,
+      "y": 14,
+      "description": "曲パッケージの入口です。歌詞、解析JSON、音源、クレジット、設計資料への相対パスを持ちます。"
+    },
+    {
+      "id": "assets",
+      "label": "assets.ts",
+      "kind": "loader",
+      "group": "システム",
+      "file": "src/data/assets.ts",
+      "x": 50,
+      "y": 38,
+      "description": "manifestを読み、Songle JSON、歌詞、手動タイミング、palette、markersをMusicMapへ変換します。"
+    },
+    {
+      "id": "songPack",
+      "label": "曲素材",
+      "kind": "data",
+      "group": "曲パッケージ",
+      "file": "song-packs/shining-star",
+      "x": 72,
+      "y": 14,
+      "description": "歌詞、Songle解析JSON、手動調整済みlyrics_timing.json、palette、markers、CREDITSを含む曲側の素材群です。"
+    },
+    {
+      "id": "transport",
+      "label": "再生制御",
+      "kind": "system-service",
+      "group": "システム",
+      "file": "src/main.ts",
+      "x": 72,
+      "y": 38,
+      "description": "audio要素または内部クロックから現在時刻を作り、再生、停止、シークを制御します。将来はcore/transportへ分離予定です。"
+    },
+    {
+      "id": "frameLoop",
+      "label": "フレームループ",
+      "kind": "system-service",
+      "group": "システム",
+      "file": "src/main.ts",
+      "x": 28,
+      "y": 66,
+      "description": "requestAnimationFrame(tick)で毎フレーム更新します。現在時刻を見て、歌詞と映像を更新します。"
+    },
+    {
+      "id": "effects",
+      "label": "エフェクト群",
+      "kind": "visual",
+      "group": "演出",
+      "file": "src/effects",
+      "x": 50,
+      "y": 66,
+      "description": "粒子、光線ネットワーク、色ramp、ダンピング制御を担当します。現在はShining Star向けの柔らかい光表現です。"
+    },
+    {
+      "id": "timingEditor",
+      "label": "歌詞タイミング編集",
+      "kind": "tool",
+      "group": "ツール",
+      "file": "src/lyrics/manualTiming.ts",
+      "x": 72,
+      "y": 66,
+      "description": "A/Dキー、全体補正、途中から補正、ストーン表示、Export用JSON生成を担当します。音声波形は解析しません。"
+    },
+    {
+      "id": "storage",
+      "label": "保存先",
+      "kind": "storage",
+      "group": "保存",
+      "file": "localStorage / lyrics_timing.json",
+      "x": 91,
+      "y": 66,
+      "description": "調整中はlocalStorageに保存します。確定版はlyrics_timing.jsonとして曲パッケージへ入れます。"
+    },
+    {
+      "id": "songServer",
+      "label": "曲パックサーバー",
+      "kind": "server",
+      "group": "サーバー",
+      "file": "scripts/serve-song-packs.mjs",
+      "x": 91,
+      "y": 14,
+      "description": "song-packsを別ポートで配信します。CORSを許可し、システムサーバーからmanifestやJSONを読めるようにします。"
+    },
+    {
+      "id": "agents",
+      "label": "AGENTS.md",
+      "kind": "agent-guide",
+      "group": "文脈",
+      "file": "AGENTS.md",
+      "x": 8,
+      "y": 86,
+      "description": "Codex/エージェントが最初に読む短い入口です。詳細な設計情報はdocsへ誘導します。"
+    },
+    {
+      "id": "contextDocs",
+      "label": "設計docs",
+      "kind": "knowledge-base",
+      "group": "文脈",
+      "file": "docs",
+      "x": 28,
+      "y": 86,
+      "description": "architecture、module-map、decisions、plans、known-issues、handoffで作業文脈を保持します。"
+    }
+  ],
+  "flows": [
+    {
+      "id": "boot-with-manifest",
+      "label": "曲パッケージを読み込んで起動",
+      "summary": "URLの?song=からmanifestを読み、曲素材をMusicMapへ変換して画面を起動します。",
+      "trigger": "http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json を開く",
+      "steps": [
+        {
+          "from": "browser",
+          "to": "main",
+          "action": "boot()を実行",
+          "payload": "DOM要素、Canvas、Audio、URLクエリ",
+          "note": "main.tsは最初に1回読み込まれ、boot()が起動処理を始めます。"
+        },
+        {
+          "from": "main",
+          "to": "assets",
+          "action": "loadMusicMap()を呼ぶ",
+          "payload": "?songで指定されたmanifest URL",
+          "note": "曲の中身をmain.tsに固定せず、manifest経由で取得します。"
+        },
+        {
+          "from": "assets",
+          "to": "manifest",
+          "action": "manifestを取得",
+          "payload": "title、artist、lyrics、analysis、audio、creditsの相対パス",
+          "note": "相対パスはmanifestの場所を基準に解決します。"
+        },
+        {
+          "from": "manifest",
+          "to": "songPack",
+          "action": "曲素材の場所を示す",
+          "payload": "Lyrics.txt、beat.json、chorus.json、lyrics_timing.json、palette.json、markers.json",
+          "note": "音源はブラウザ再生用で、AI学習や波形解析には使いません。"
+        },
+        {
+          "from": "assets",
+          "to": "main",
+          "action": "MusicMapを返す",
+          "payload": "beats、chorus、lyrics、lyricLines、markers、palette、source",
+          "note": "以後の表示と演出はこのMusicMapを読みます。"
+        }
+      ]
+    },
+    {
+      "id": "frame-render",
+      "label": "再生中の映像更新",
+      "summary": "requestAnimationFrameで現在時刻を読み、歌詞とエフェクトを毎フレーム更新します。",
+      "trigger": "boot()の最後でrequestAnimationFrame(tick)が予約される",
+      "steps": [
+        {
+          "from": "main",
+          "to": "frameLoop",
+          "action": "tick()を予約",
+          "payload": "requestAnimationFrame(tick)",
+          "note": "tick()自身も次のtickを予約するので、画面更新が続きます。"
+        },
+        {
+          "from": "frameLoop",
+          "to": "transport",
+          "action": "現在時刻を読む",
+          "payload": "audio.currentTime または内部クロック",
+          "note": "音源がない場合も内部クロックで映像だけ動かせます。"
+        },
+        {
+          "from": "frameLoop",
+          "to": "effects",
+          "action": "発光、粒子、光線を更新",
+          "payload": "time、dt、beat、chorus、markers、pointer",
+          "note": "値は即時ジャンプさせず、ダンピングで柔らかく追従します。"
+        },
+        {
+          "from": "effects",
+          "to": "browser",
+          "action": "Canvasへ描画",
+          "payload": "背景発光、粒子、光線、波紋",
+          "note": "ブラウザのCanvas2Dに重ねて描画します。"
+        },
+        {
+          "from": "frameLoop",
+          "to": "browser",
+          "action": "歌詞とシーケンスバーを更新",
+          "payload": "現在歌詞、次歌詞、進行率",
+          "note": "表示歌詞は調整済みタイミングに即時追従します。"
+        }
+      ]
+    },
+    {
+      "id": "manual-lyric-timing",
+      "label": "歌詞タイミングを手動調整",
+      "summary": "Lyric TimingをOnにし、A/Dキーや補正ボタンで歌詞切り替えストーンを調整します。",
+      "trigger": "Lyric TimingをOnにして、再生中にA/Dキーまたは補正ボタンを押す",
+      "steps": [
+        {
+          "from": "browser",
+          "to": "main",
+          "action": "キー入力またはボタン入力",
+          "payload": "A、D、Undo、Clear、All +/-、From #n +/-",
+          "note": "Lyric TimingがOffのときは誤操作防止のためA/D調整は無効です。"
+        },
+        {
+          "from": "main",
+          "to": "timingEditor",
+          "action": "キーフレームと補正値を更新",
+          "payload": "LyricKeyframe、LyricTimingAdjustments",
+          "note": "元の音声は解析せず、ユーザーが押した時刻だけを記録します。"
+        },
+        {
+          "from": "timingEditor",
+          "to": "main",
+          "action": "workingLyricsを再構築",
+          "payload": "baseLyrics + manualKeyframes + adjustments",
+          "note": "JSONリロードなしで、現在の表示歌詞とストーン位置が変わります。"
+        },
+        {
+          "from": "main",
+          "to": "storage",
+          "action": "localStorageへ保存",
+          "payload": "曲タイトルごとのkeyframesとadjustments",
+          "note": "調整中の状態はブラウザに自動保存されます。"
+        },
+        {
+          "from": "timingEditor",
+          "to": "songPack",
+          "action": "Export JSONを曲パッケージへ反映可能",
+          "payload": "lyrics_timing.manual.json -> analysis/lyrics_timing.json",
+          "note": "確定版として同梱すれば、次回起動時にそのタイミングを読みます。"
+        }
+      ]
+    },
+    {
+      "id": "split-server",
+      "label": "システムと曲サーバーを分けて起動",
+      "summary": "Webシステムは5173、曲パックは5174で起動し、システムは外部manifestを読むだけにします。",
+      "trigger": "npm run dev:system と npm run dev:songs を別々に起動する",
+      "steps": [
+        {
+          "from": "browser",
+          "to": "main",
+          "action": "システムURLを開く",
+          "payload": "http://127.0.0.1:5173/?song=...",
+          "note": "システム本体は曲の中身を固定しません。"
+        },
+        {
+          "from": "main",
+          "to": "songServer",
+          "action": "外部manifestを取得",
+          "payload": "http://127.0.0.1:5174/shining-star/manifest.json",
+          "note": "曲パックサーバーはCORSを許可してJSONを返します。"
+        },
+        {
+          "from": "songServer",
+          "to": "songPack",
+          "action": "静的ファイルを配信",
+          "payload": "manifest、歌詞、解析JSON、設計資料、任意の音源",
+          "note": "音源ファイルはライセンス上コミットせず、ローカル配置にします。"
+        },
+        {
+          "from": "assets",
+          "to": "main",
+          "action": "曲ごとのMusicMapを返す",
+          "payload": "source.baseUrlとsource.audioUrlを含む",
+          "note": "別曲でも同じシステム補助を使えます。"
+        }
+      ]
+    },
+    {
+      "id": "future-adapter",
+      "label": "将来の曲別Web Adapter化",
+      "summary": "Shining Star固有の演出配線を曲側のadapterへ移し、システムは補助contextだけを渡します。",
+      "trigger": "次段階のリファクタリングでcreateSongApp(context)形式を導入する",
+      "steps": [
+        {
+          "from": "manifest",
+          "to": "songPack",
+          "action": "webAdapterを指定",
+          "payload": "adapters/web/app.js",
+          "note": "manifestは曲側の実装入口を持てますが、別システム用adapterも併存できます。"
+        },
+        {
+          "from": "main",
+          "to": "transport",
+          "action": "contextを用意",
+          "payload": "transport、frame、input、assets、surface、tools、storage",
+          "note": "曲アプリは必要な補助だけを使います。"
+        },
+        {
+          "from": "main",
+          "to": "effects",
+          "action": "曲adapterへ制御を渡す",
+          "payload": "createSongApp(context)",
+          "note": "曲の意味、演出判断、どのツールを使うかは曲側が決めます。"
+        },
+        {
+          "from": "songPack",
+          "to": "browser",
+          "action": "曲固有の演出を実行",
+          "payload": "Web adapter、または別ランタイム用adapter",
+          "note": "Webシステムは唯一の正解ではなく、実行環境の一つに留めます。"
+        }
+      ]
+    },
+    {
+      "id": "agent-handoff",
+      "label": "Codex作業の引き継ぎ",
+      "summary": "会話に閉じた記憶ではなく、AGENTS.mdとdocs群を読ませてから調査、計画、実装へ進みます。",
+      "trigger": "新しいCodexスレッドや別エージェントに作業を渡す",
+      "steps": [
+        {
+          "from": "browser",
+          "to": "agents",
+          "action": "常時指示を読む",
+          "payload": "作業方針、重要原則、最初に読むファイル",
+          "note": "AGENTS.mdは短い入口に留め、詳細を詰め込みすぎません。"
+        },
+        {
+          "from": "agents",
+          "to": "contextDocs",
+          "action": "詳細な文脈へ進む",
+          "payload": "architecture、module-map、decisions、plans、known-issues、handoff",
+          "note": "長い会話の代わりに、リポジトリ内のファイルを共有記憶として扱います。"
+        },
+        {
+          "from": "contextDocs",
+          "to": "main",
+          "action": "関連実装を読む",
+          "payload": "対象機能に関係するsrcファイルとsong-pack",
+          "note": "調査、計画、実装の順で進め、いきなり大きく書き換えません。"
+        },
+        {
+          "from": "main",
+          "to": "contextDocs",
+          "action": "作業後に更新する",
+          "payload": "handoff、plans、known-issues、workflows.json",
+          "note": "次の作業者が同じ文脈から再開できるようにします。"
+        }
+      ]
+    }
+  ]
+}
