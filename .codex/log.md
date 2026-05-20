@@ -76,3 +76,14 @@
   - `docs/known-issues.md`
   - `docs/handoff.md`
 - Updated `README.md` with Workflow Map and Agent Context sections.
+
+- User paused implementation to prepare parallel Codex work.
+- Stopped local development servers before reorganizing.
+- Added `_worktrees/` to `.gitignore` and committed it on `main`.
+- Checkpointed in-progress adapter cues / Traffic Jam work on `codex/wip-adapter-cues-traffic-jam`.
+- Created local worktrees under the project root:
+  - `_worktrees/adapter-cues`
+  - `_worktrees/download-security`
+  - `_worktrees/traffic-jam-effect`
+  - `_worktrees/launch-manager`
+- Added `docs/worktree-guide.md` to explain the worktree layout and parallel-work cautions.

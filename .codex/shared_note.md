@@ -94,6 +94,18 @@ The repo now uses file-based context for future Codex/agent work:
 
 Keep `AGENTS.md` small. Put details in `docs/`. Update `docs/handoff.md` after meaningful architecture or workflow changes.
 
+## Local Git Worktrees
+
+- The root worktree stays at `C:\Users\kawai\works\music-effect` on `main`.
+- Local parallel worktrees are kept under `C:\Users\kawai\works\music-effect\_worktrees`.
+- `_worktrees/` is ignored by Git, so the parent directory and root status stay clean.
+- Current worktrees:
+  - `_worktrees/adapter-cues`: `codex/wip-adapter-cues-traffic-jam`
+  - `_worktrees/download-security`: `codex/download-security`
+  - `_worktrees/traffic-jam-effect`: `codex/traffic-jam-effect`
+  - `_worktrees/launch-manager`: `codex/launch-manager`
+- See `docs/worktree-guide.md` before starting parallel Codex threads.
+
 ## Manual Lyric Timing
 
 - Manual lyric timing is captured from keyboard input only. It must not analyze the audio waveform.
