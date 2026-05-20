@@ -173,10 +173,10 @@
       "label": "Launch仕様",
       "kind": "spec",
       "group": "文脈",
-      "file": "docs/launch-manager-spec.md",
+      "file": "docs/launch-manager-spec.md / docs/launch-manager-spec.html",
       "x": 10,
       "y": 14,
-      "description": "複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様です。"
+      "description": "複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様です。HTMLはレビュー用の見取り図です。"
     },
     {
       "id": "agents",
