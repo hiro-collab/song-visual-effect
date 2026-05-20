@@ -68,6 +68,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 
 ## docs
 
+- `docs/thread-start.md`: 新しいCodexスレッドの開始手順。最初に実行する確認、読むファイル、ready通知への対応、merge判断をまとめる。
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。
 - `docs/song-visual-independence.md`: 既存fixtureの見た目に引っ張られないためのチェックリスト。

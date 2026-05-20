@@ -141,6 +141,14 @@ http://127.0.0.1:5173/docs/workflows.html
 
 Codexや別エージェントに作業を渡すときは、まず `AGENTS.md` を読ませます。
 
+新しく作業を始めるスレッドには、次も読ませてください。
+
+```text
+docs/thread-start.md
+```
+
+ここに、作業開始時の `git status` / `sync:check`、ready通知の扱い、mergeしてよい変更と止めるべき変更の判断基準を書いています。
+
 新しい曲を作る場合は、既存曲の中身を読ませず、次だけを入口にしてください。
 
 ```text
