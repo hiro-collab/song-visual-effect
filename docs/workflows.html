@@ -436,9 +436,66 @@
         background-size: 64px 64px;
       }
 
+      .overview-zones {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .overview-zone {
+        position: absolute;
+        border: 1px dashed var(--line-strong);
+        border-radius: 8px;
+        padding: 10px;
+        display: grid;
+        align-content: start;
+        gap: 4px;
+        overflow: hidden;
+      }
+
+      .overview-zone strong {
+        width: fit-content;
+        max-width: calc(100% - 18px);
+        display: inline-flex;
+        padding: 4px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        background: rgba(13, 15, 22, 0.84);
+        color: var(--text);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .overview-zone span {
+        display: none;
+      }
+
+      .overview-zone.is-song {
+        border-color: rgba(245, 201, 111, 0.36);
+        background: rgba(245, 201, 111, 0.055);
+      }
+
+      .overview-zone.is-kit {
+        border-color: rgba(128, 199, 232, 0.34);
+        background: rgba(128, 199, 232, 0.052);
+      }
+
+      .overview-zone.is-fixture {
+        border-color: rgba(148, 216, 173, 0.32);
+        background: rgba(148, 216, 173, 0.045);
+      }
+
+      .overview-zone.is-support,
+      .overview-zone.is-context {
+        border-color: rgba(239, 161, 161, 0.3);
+        background: rgba(239, 161, 161, 0.04);
+      }
+
       .overview-edges {
         position: absolute;
         inset: 0;
+        z-index: 1;
         width: 100%;
         height: 100%;
         pointer-events: none;
@@ -469,6 +526,22 @@
         transform: translate(-50%, -50%);
         box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
         cursor: pointer;
+      }
+
+      .overview-node.is-song {
+        border-color: rgba(245, 201, 111, 0.5);
+      }
+
+      .overview-node.is-kit {
+        border-color: rgba(128, 199, 232, 0.52);
+      }
+
+      .overview-node.is-fixture {
+        border-color: rgba(148, 216, 173, 0.46);
+      }
+
+      .overview-node.is-support {
+        border-color: rgba(239, 161, 161, 0.44);
       }
 
       .overview-node.is-active {
@@ -517,6 +590,23 @@
         font-size: 11px;
         line-height: 1.4;
         background: rgba(255, 255, 255, 0.035);
+      }
+
+      .legend-item.is-song {
+        border-color: rgba(245, 201, 111, 0.42);
+      }
+
+      .legend-item.is-kit {
+        border-color: rgba(128, 199, 232, 0.42);
+      }
+
+      .legend-item.is-fixture {
+        border-color: rgba(148, 216, 173, 0.38);
+      }
+
+      .legend-item.is-support,
+      .legend-item.is-context {
+        border-color: rgba(239, 161, 161, 0.36);
       }
 
       .panel {
@@ -988,10 +1078,11 @@
           <section class="panel overview-panel" aria-label="二次元構成マップ">
             <div class="panel-head">
               <h3>二次元構成マップ</h3>
-              <p>全体構成を俯瞰するためのノードグラフです。長文は詳細欄へ分け、ここでは位置関係と接続だけを見ます。狭い画面では横スクロールできます。</p>
+              <p>曲ごとの自由領域、汎用補助、検証画面、起動・文脈支援を分けて読むためのノードグラフです。長文は詳細欄へ分け、ここでは位置関係と境界を見ます。狭い画面では横スクロールできます。</p>
             </div>
             <div class="overview-map-wrap">
               <div id="overview-map" class="overview-map">
+                <div id="overview-zones" class="overview-zones"></div>
                 <svg id="overview-edges" class="overview-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
               </div>
             </div>
@@ -1085,6 +1176,22 @@
 
       const componentById = (id) => state.data.components.find((item) => item.id === id);
       const labelOf = (id) => componentById(id)?.label ?? id;
+
+      const layerVariantByComponentId = () => {
+        const map = new Map();
+        const variants = {
+          "song-side": "song",
+          "system-kit": "kit",
+          "fixture-player": "fixture",
+          support: "support"
+        };
+        for (const layer of state.data.layers ?? []) {
+          for (const componentId of layer.componentIds ?? []) {
+            map.set(componentId, variants[layer.id] ?? layer.id);
+          }
+        }
+        return map;
+      };
 
       const activeFlow = () => state.data.flows.find((item) => item.id === state.activeFlowId) ?? state.data.flows[0];
 
@@ -1218,13 +1325,28 @@
       const renderOverviewMap = () => {
         const map = byId("overview-map");
         const svg = byId("overview-edges");
+        const zones = byId("overview-zones");
         const legend = byId("overview-legend");
         const activeIds = activeComponentIds();
         const activeEdges = new Set((activeFlow()?.steps ?? []).map((step) => edgeKey(step.from, step.to)));
+        const componentLayers = layerVariantByComponentId();
 
         map.querySelectorAll(".overview-node").forEach((node) => node.remove());
+        zones.replaceChildren();
         svg.replaceChildren();
         legend.replaceChildren();
+
+        for (const zone of state.data.mapZones ?? []) {
+          const item = make("div", `overview-zone is-${zone.variant ?? "support"}`);
+          item.title = zone.summary;
+          item.style.left = `${zone.x}%`;
+          item.style.top = `${zone.y}%`;
+          item.style.width = `${zone.width}%`;
+          item.style.height = `${zone.height}%`;
+          item.append(make("strong", "", zone.label));
+          item.append(make("span", "", zone.summary));
+          zones.append(item);
+        }
 
         const edgeKeys = new Set();
         for (const flow of state.data.flows) {
@@ -1256,6 +1378,8 @@
           button.style.left = `${component.x}%`;
           button.style.top = `${component.y}%`;
           button.title = `${component.label}\n${component.file}\n${component.description}`;
+          const layerVariant = componentLayers.get(component.id);
+          if (layerVariant) button.classList.add(`is-${layerVariant}`);
           button.classList.toggle("is-active", activeIds.has(component.id));
           button.classList.toggle("is-selected", component.id === state.selectedComponentId);
           button.append(make("strong", "", component.label));
@@ -1264,10 +1388,12 @@
           map.append(button);
         }
 
-        const groups = [...new Set(state.data.components.map((component) => component.group || "その他"))];
-        for (const group of groups) {
-          legend.append(make("span", "legend-item", group));
+        for (const zone of state.data.mapZones ?? []) {
+          const item = make("span", `legend-item is-${zone.variant ?? "support"}`, zone.label);
+          item.title = zone.summary;
+          legend.append(item);
         }
+        legend.append(make("span", "legend-item", "金色の線/ノード = 選択中フロー"));
       };
 
       const renderSteps = () => {

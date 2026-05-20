@@ -37,6 +37,58 @@
       "componentIds": ["devManager", "songServer", "launchManagerSpec", "agents", "contextDocs", "threadStart", "songAuthoringDocs", "visualIndependence", "neutralTemplate"]
     }
   ],
+  "mapZones": [
+    {
+      "id": "launch-support",
+      "label": "起動・配信支援",
+      "summary": "Launch Serverや曲パック配信は、曲を束縛せず起動と配信を助ける領域です。",
+      "x": 3,
+      "y": 4,
+      "width": 33,
+      "height": 22,
+      "variant": "support"
+    },
+    {
+      "id": "song-owned",
+      "label": "曲ごとの自由領域",
+      "summary": "manifest、素材、adapter、cue文法は曲側が持ち、曲ごとに変えてよい領域です。",
+      "x": 37,
+      "y": 4,
+      "width": 60,
+      "height": 27,
+      "variant": "song"
+    },
+    {
+      "id": "fixture-runtime",
+      "label": "検証・実行画面",
+      "summary": "ブラウザとfixture playerは検証用の実行面です。新曲の標準テンプレートではありません。",
+      "x": 3,
+      "y": 29,
+      "width": 38,
+      "height": 45,
+      "variant": "fixture"
+    },
+    {
+      "id": "system-kit-zone",
+      "label": "汎用補助 system kit",
+      "summary": "assets、transport、frame、timingなど、曲が必要なhelperだけ選んで使う領域です。",
+      "x": 41,
+      "y": 31,
+      "width": 56,
+      "height": 43,
+      "variant": "kit"
+    },
+    {
+      "id": "context-guardrails",
+      "label": "文脈・ガードレール",
+      "summary": "AGENTS、docs、neutral templateは、新規作業が既存曲に引っ張られないための入口です。",
+      "x": 3,
+      "y": 77,
+      "width": 94,
+      "height": 19,
+      "variant": "context"
+    }
+  ],
   "components": [
     {
       "id": "browser",
