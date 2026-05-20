@@ -1,5 +1,6 @@
 node_modules/
 dist/
+_worktrees/
 
 # Local audio files are for browser playback only.
 # Do not commit licensed music assets into the repository.
