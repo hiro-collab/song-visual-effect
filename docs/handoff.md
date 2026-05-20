@@ -19,6 +19,8 @@
 - 全体/途中からのタイミング補正と、シーケンスバー上のストーン可視化がある。
 - シーケンスバーをクリック/ドラッグして再生位置を移動できる。
 - `docs/workflows.html` / `docs/workflows.json` にワークフロー地図がある。
+- `song-packs/traffic-jam/` に、煮ル果実「トラフィック・ジャム」の実装前設計パックがある。音源と歌詞全文は含めず、Songle公開JSON、最小manifest、演出方針ドキュメントだけを置いている。
+- 曲adapter向けに `SongAdapterContext` を追加し、raw manifest、base URL、`readJson()`、`readText()`、`readDesignCues()` を渡せるようにした。system hostは `design.cues` の中身を固定解釈しない。
 
 重要:
 
@@ -91,9 +93,31 @@ http://127.0.0.1:5173/docs/workflows.html
 優先度が高い順:
 
 1. 曲固有のfixture rendererを、system標準ではなく曲側adapter候補として切り出す。
-2. `docs/workflows.json` に「新しい曲作成時は既存曲を読まない」フローを反映し続ける。
-3. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
-4. 色味プリセットやライブ用雰囲気切り替えUIを追加する。
+2. `traffic-jam` 用の曲adapterを作り、`readDesignCues()` で `analysis/visual-cues.json` を読む。
+3. `docs/workflows.json` に「新しい曲作成時は既存曲を読まない」フローを反映し続ける。
+4. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
+5. 色味プリセットやライブ用雰囲気切り替えUIを追加する。
+
+## 新規曲パック: traffic-jam
+
+作業前提:
+
+- 既存の `song-packs/*` は読まず、`docs/system-overview.md` と `docs/song-authoring.md` を入口にした。
+- 音源波形解析はしていない。
+- 音源ファイルと歌詞全文は追加していない。
+
+現在の中身:
+
+- `song-packs/traffic-jam/manifest.json`: 最小manifest。Songle JSON、palette、markers、設計文書へのパスを持つ。
+- `song-packs/traffic-jam/design/effect-direction.md`: 暗い世界、鋭い視線、選択的な衝突ブロー、バッシング、間奏freezeを中心にした演出方針。
+- `song-packs/traffic-jam/analysis/`: Songle Widget APIから取得した `song.json`、`beat.json`、`chord.json`、`melody.json`、`chorus.json` と、曲側で作った `visual-cues.json`、`markers.json`、`palette.json`。
+- `song-packs/traffic-jam/CREDITS.md`: 外部リンクとクレジットメモ。
+
+次にやるなら:
+
+- 低ポリ車、信号機、標識、矢印、シルエット程度の簡単な素材方針を決める。
+- `SongAdapterContext.assets.readDesignCues()` を使って `analysis/visual-cues.json` を読む曲専用adapterを作る。
+- 強いキック/ブロー、責任転嫁が強い歌詞箇所、間奏の入り/戻りを手動マーカーとして追加する。
 
 ## 文脈管理の意図
 

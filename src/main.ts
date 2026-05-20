@@ -5,6 +5,7 @@ import { clamp } from "./effects/damping";
 import { getAppElements } from "./runtime/dom";
 import { Transport } from "./runtime/transport";
 import { startFrameLoop } from "./runtime/frameLoop";
+import { createSongAdapterContext, type SongAdapterContext } from "./runtime/songAdapterContext";
 import { lyricAt } from "./music/timing";
 import { SoftLightRenderer } from "./renderers/softLightRenderer";
 import { LyricTimingTool } from "./tools/lyricTimingTool";
@@ -31,6 +32,7 @@ let musicMap: MusicMap;
 let transport: Transport;
 let renderer: SoftLightRenderer;
 let timingTool: LyricTimingTool;
+let songContext: SongAdapterContext;
 
 const setPlayingIcon = () => {
   const playing = transport?.isPlaying() ?? false;
@@ -107,6 +109,12 @@ const boot = async () => {
   try {
     transport = new Transport(audio, setPlayingIcon);
     musicMap = await loadMusicMap();
+    songContext = createSongAdapterContext(musicMap);
+    const designCuesStatus = songContext.assets.designCuesUrl
+      ? (await songContext.assets.readDesignCues()) === null
+        ? " / cues unreadable"
+        : " / cues ready"
+      : "";
     document.title = `${musicMap.title} - Music Effect`;
     songTitle.textContent = musicMap.title;
     songArtist.textContent = musicMap.artist;
@@ -125,8 +133,8 @@ const boot = async () => {
     const audioPath = await findBundledAudio(musicMap);
     if (audioPath) transport.setAudioPath(audioPath);
     dataStatus.textContent = musicMap.warnings.length
-      ? `${musicMap.title}: ${musicMap.warnings.join(" / ")}`
-      : `${musicMap.title}: song pack ready`;
+      ? `${musicMap.title}: ${musicMap.warnings.join(" / ")}${designCuesStatus}`
+      : `${musicMap.title}: song pack ready${designCuesStatus}`;
     startFrameLoop(tick);
   } catch (error) {
     reportBootError(error);

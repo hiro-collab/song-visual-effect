@@ -1,107 +1,100 @@
 # Shared Note
 
-## Project Intent
+## Current Project Shape
 
-Build a web-based interactive music effect for MaouDamashii "Shining Star" using local music assets, lyrics, and Songle/TextAlive-style analysis data.
+This repository is now a system host for song-specific interactive music effects.
 
-## Current Material Status
+The system host should provide helpers only:
 
-- Workspace: `C:\Users\kawai\works\music-effect`
-- Existing source folder: `music_src`
-- New portable song package folder: `song-packs/shining-star`
-- Existing lyrics file: `music_src/Lyrics.txt`
-- The lyrics text is UTF-8. Be careful not to corrupt Japanese text when reading or editing.
-- Songle JSON has been downloaded into `music_src/analysis` and copied into `song-packs/shining-star/analysis`.
-- Current adjusted lyric timing data is committed at `music_src/analysis/lyrics_timing.json`.
+- dev manager
+- song-pack static server
+- manifest loading
+- transport
+- frame loop
+- input/surface helpers
+- optional lyric timing tools
 
-## Songle Source
+The system host must not define the creative structure of a new song.
 
-Songle page:
+## New Song Authoring Rule
 
-https://songle.jp/songs/www.youtube.com%2Fwatch%3Fv=Qd01-6xVSHk
+When creating a new song package or song-specific effect system, do not inspect
+existing `song-packs/*` unless the user explicitly asks to use a specific song as
+a reference.
 
-Likely REST JSON endpoints via Songle Widget API:
+Start from:
 
-- `https://widget.songle.jp/api/v1/song.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
-- `https://widget.songle.jp/api/v1/song/beat.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
-- `https://widget.songle.jp/api/v1/song/chord.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
-- `https://widget.songle.jp/api/v1/song/melody.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
-- `https://widget.songle.jp/api/v1/song/chorus.json?url=www.youtube.com%2Fwatch%3Fv%3DQd01-6xVSHk`
+- `AGENTS.md`
+- `docs/system-overview.md`
+- `docs/song-authoring.md`
+- `docs/decisions.md`
 
-Use downloaded JSON as timing input. Do not analyze the audio file itself.
+Do not start from:
 
-Important license safety note from user:
+- existing song manifests
+- existing `analysis/`
+- existing `design/`
+- existing fixture renderer behavior
+- old Shining Star notes
 
-- MaouDamashii music must not be used for AI training.
-- Do not ask Codex or code to analyze the audio waveform.
-- The app may play the audio in the browser, but timing should be driven by downloaded Songle/TextAlive JSON, lyrics text, and manual markers.
+Existing song packs are fixtures or specific song workspaces, not templates.
 
-## Visual Direction
+## Current Song Packs
 
-- Soft, warm, bright light.
-- Avoid hard, high-contrast binary cyber visuals.
-- Use grayscale/midtones, gradients, blur, damping, and ramped color filters.
-- Use moving points connected by timed lines as soft light rays.
-- Let color and light follow music events with damping instead of exact hard jumps.
+- `song-packs/shining-star/`: existing fixture package for MaouDamashii
+  "Shining Star". Use it for regression checks or that song's own fixes only.
+- `song-packs/traffic-jam/`: planning package for 煮ル果実「トラフィック・ジャム」.
+  It contains a minimal manifest, Songle public JSON references, palette/markers,
+  and effect direction notes. It does not include audio or full lyrics.
 
-## Cyber Basic Techniques In This Example
+## License And Safety
 
-- Control: continuous values, damping, brightness/particle/line/blur control.
-- Parallel: layered rendering for background glow, ramp color filter, points/lines, particles, lyrics.
-- Wiring: connect dynamic points with lines at musical or timed triggers.
+- Do not analyze audio waveforms.
+- Do not use music files for AI training.
+- Audio may be played in the browser only.
+- Timing should come from existing JSON, text, manual markers, or user input.
+- Keep lyrics UTF-8 and avoid corrupting Japanese text.
+- Do not commit licensed audio files.
 
-## Live Performance Direction
+## Startup
 
-The user wants this to become usable in live/event contexts:
+Use:
 
-- Sequence bar and song position overview.
-- BPM display/control.
-- Fine timing adjustment for live performance drift.
-- Keyboard operation to switch effect mood during the event.
-- Color options/presets to match the venue mood.
+```powershell
+npm run dev
+```
 
-Current priority: build the base system first, then add those live controls iteratively.
+This starts:
 
-## Runtime / Song Package Separation
+- dev manager: `http://127.0.0.1:5172/`
+- system app: `http://127.0.0.1:5173/`
+- song-pack server: `http://127.0.0.1:5174/`
 
-Design principle from user:
+The system app requires an explicit song manifest URL:
 
-- The system server must not constrain each song's application or performance design.
-- It should provide helpers only: transport, frame loop, input, asset loading, storage, fullscreen, and optional timing tools.
-- Song-specific meaning, materials, timing, credits, and effect intent belong to the song package.
-- If another runtime is better for a song, the package should allow that. Web, TouchDesigner, Unity, OBS, or another system should be possible through adapters.
+```text
+http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
+```
 
-Current implementation direction:
+No implicit default song should be loaded.
 
-- `manifest.json` is the song package entrypoint.
-- The system can load a song with `?song=<manifest-url>`.
-- `song-packs` can be served separately with CORS by `npm run dev:songs`.
-- Existing `music_src` remains as a compatibility public directory for the current Vite app.
-- Next architectural step after manifest loading: move Shining Star specific effect wiring into a web adapter, leaving the system host thinner.
+## Song Adapter Context
 
-## Agent Context Files
+`src/runtime/songAdapterContext.ts` now provides a first-pass adapter context:
 
-The repo now uses file-based context for future Codex/agent work:
+- raw manifest
+- base URL
+- safe package-local asset resolver
+- `readJson()`
+- `readText()`
+- `readDesignCues()`
 
-- `AGENTS.md`: short always-read agent guide.
-- `docs/architecture.md`: system architecture and main flows.
-- `docs/module-map.md`: directory/file roles.
-- `docs/decisions.md`: design decisions and rationale.
-- `docs/plans.md`: next implementation candidates.
-- `docs/known-issues.md`: known risks and unresolved issues.
-- `docs/handoff.md`: first file for a new Codex thread to read after `AGENTS.md`.
-- `docs/workflows.json`: JSON flow map useful for both humans and LLMs.
+The system host may confirm that `design.cues` is readable, but it must not
+interpret the cue schema as a system-level standard. Song adapters own cue
+semantics.
 
-Keep `AGENTS.md` small. Put details in `docs/`. Update `docs/handoff.md` after meaningful architecture or workflow changes.
+## Notes For Future Agents
 
-## Manual Lyric Timing
-
-- Manual lyric timing is captured from keyboard input only. It must not analyze the audio waveform.
-- The `Lyric Timing` panel toggles capture mode on/off.
-- In capture mode, `A` stamps the current lyric line boundary; `D` stamps the next lyric line boundary.
-- Manual keyframes autosave to `localStorage`, apply immediately, support undo/clear, and export as `lyrics_timing.manual.json`.
-- Lyric timing adjustments now have a visual sequence bar. Pale ghost dots show raw timing; bright stones show adjusted timing. Lyrics switch from the adjusted stone positions immediately, without reloading JSON.
-- Shift controls are button-based: `All` moves every lyric stone, and `From #n` moves the current lyric line and later stones.
-- The sequence bar is also a playback scrubber: click or drag it to seek the current playback/internal clock without reloading.
-- Space toggles playback except while a text/input control is focused.
-- For bundled reuse, place the exported JSON at `music_src/analysis/lyrics_timing.json`.
+If the user asks for a new song effect, keep the first pass independent and
+song-specific. Only use existing song packs if the user explicitly asks for a
+reference or if you are doing a regression check.

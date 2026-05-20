@@ -33,7 +33,7 @@ const absoluteUrl = (path: string) => new URL(path, window.location.href).toStri
 
 const sourceBaseUrl = (manifestUrl: string) => new URL(".", manifestUrl).toString();
 
-const resolveSourcePath = (baseUrl: string, path: string | null | undefined) => {
+export const resolveSourcePath = (baseUrl: string, path: string | null | undefined) => {
   if (!path) return null;
   return new URL(path, baseUrl).toString();
 };
@@ -252,8 +252,11 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
     source: {
       manifestUrl: resolvedManifestUrl,
       baseUrl,
+      manifest,
       audioUrl: resolveSourcePath(baseUrl, manifest?.audio) ?? undefined,
       creditsUrl: resolveSourcePath(baseUrl, manifest?.credits) ?? undefined,
+      effectDesignUrl: resolveSourcePath(baseUrl, manifest?.design?.effect) ?? undefined,
+      designCuesUrl: resolveSourcePath(baseUrl, manifest?.design?.cues) ?? undefined,
       webAdapterUrl: resolveSourcePath(baseUrl, manifest?.webAdapter) ?? undefined
     }
   };

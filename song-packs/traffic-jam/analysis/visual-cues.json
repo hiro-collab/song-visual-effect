@@ -1,0 +1,70 @@
+{
+  "schema": "music-effect.visual-cues.v1",
+  "title": "トラフィック・ジャム",
+  "artist": "煮ル果実 feat. flower",
+  "source": {
+    "songleUrl": "https://songle.jp/songs/www.nicovideo.jp%2Fwatch%2Fsm35586514",
+    "songleRecognizedAt": "2019-09-12T16:36:25+09:00",
+    "note": "Songle data is a timing reference. Strong kick/blow and lyric-emphasis anchors should be added manually."
+  },
+  "tempo": {
+    "bpm": 130,
+    "beatSeconds": 0.4615,
+    "feel": "hard four-beat grid with sharp impact accents"
+  },
+  "chorusCandidates": [
+    { "start": 57.73, "end": 72.96 },
+    { "start": 116.81, "end": 132.04 },
+    { "start": 179.58, "end": 194.81 },
+    { "start": 194.81, "end": 210.04 }
+  ],
+  "primaryDirections": [
+    {
+      "id": "dark-gaze",
+      "role": "base atmosphere",
+      "summary": "Keep the world mostly dark, with hard attention beams, camera flashes, and eye-like highlights cutting into the scene.",
+      "visualMotifs": ["dark road", "thin sight lines", "white flash", "red signal", "isolated silhouettes"]
+    },
+    {
+      "id": "impact-blow",
+      "role": "rhythmic punctuation",
+      "summary": "Use selected kick/stab moments as collision blows. Avoid shaking every beat; reserve big force for section turns and strong accents.",
+      "visualMotifs": ["short camera hit", "shock ring", "headlight burst", "road-sign snap"]
+    },
+    {
+      "id": "bashing-barrage",
+      "role": "theme expression",
+      "summary": "Represent public bashing through arrows, pointing shapes, warning marks, notification bursts, and flash lines aimed at a central subject.",
+      "visualMotifs": ["arrows", "pointer hands", "speech-noise blocks", "notification stacks", "red attention lines"]
+    },
+    {
+      "id": "interlude-freeze",
+      "role": "special contrast",
+      "summary": "Treat the interlude as a frozen evidence room: objects float, time drags, and user input responds late.",
+      "candidateRange": { "start": 146.3, "end": 159.3 },
+      "visualMotifs": ["floating traffic lights", "detached tires", "camera parts", "evidence tags", "slow rotation"]
+    }
+  ],
+  "sceneModel": [
+    {
+      "id": "jam-collision",
+      "type": "base-scene",
+      "summary": "A dark intersection where cars, signals, and road marks keep stopping and re-starting without resolution."
+    },
+    {
+      "id": "culdesac-end",
+      "type": "base-scene",
+      "summary": "Roads fold into a dead end while warning lights, shadows, and repeated chorus pulses stack up."
+    },
+    {
+      "id": "bashing-barrage",
+      "type": "override-scene",
+      "summary": "The subject is locked under concentrated attention. Use this as a temporary overlay or full scene when blame becomes central."
+    },
+    {
+      "id": "interlude-freeze",
+      "type": "override-scene",
+      "summary": "A separate, uncanny temporal layer for the instrumental interlude."
+    }
+  ]
+}

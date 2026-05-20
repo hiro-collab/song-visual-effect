@@ -40,6 +40,21 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 - fixture rendererを曲側adapter候補として切り出す。
 - system hostは補助contextだけを渡す形に近づける。
 
+## 曲専用cue JSONは読めるが、まだ共通rendererには反映しない
+
+`manifest.json` の `design.cues` は、曲adapter contextから `readDesignCues()` で読めるようになりました。
+
+影響:
+
+- 曲ごとの自由なcue文法はsystem側で固定解釈しない。
+- 現行のfixture rendererは `design.cues` を演出に反映しない。
+- 間奏、バッシング、視線、衝突ブローのような曲専用cueは、曲adapterが解釈する必要があります。
+
+次の改善:
+
+- 曲adapter実装を導入し、`readDesignCues()` で取得したJSONを曲側の文法として解釈する。
+- `markers` は共通/簡易表示用、`design.cues` は曲専用文法として分け続ける。
+
 ## `src/main.ts` の責務分離は進行中
 
 起動、入力登録、transport、renderer、tool接続の中心は `src/main.ts` です。以前より小さくなっていますが、入力やsurfaceはさらに分けられます。

@@ -86,6 +86,26 @@ export function createSongApp(context) {
 
 - 安全な外部adapter読み込み方式を設計する。
 - `song-packs/<song-id>/adapters/web/` への移動を検討する。
+- manifestの `design.cues` のような曲専用cue JSONを、system hostが固定スキーマへ潰さずadapterへ渡せるようにする。初期helperは実装済み。
+- adapterには `MusicMap` だけでなく、raw manifest、base URL、任意の曲所有JSONを安全に読むためのhelperを渡す。初期helperは実装済み。
+
+## P3a: 曲専用cueとfixture向けmarkersを分離する
+
+目的:
+曲ごとに自由な演出cueを持てるようにしつつ、現在のfixture renderer向け `markers` と混同しない。
+
+現状:
+
+- `MusicMap.markers` は `warmSections` / `lineEmphasis` など、現在のrenderer寄りの形になっている。
+- 新しい曲では、間奏、バッシング、視線、衝突ブローなど、曲専用のcue文法が必要になる。
+- `manifest.design.cues` は `SongAdapterContext.assets.readDesignCues()` で読み込める。
+
+候補:
+
+- 曲adapter実装を導入し、`SongManifest.design.cues` を曲側の文法として解釈する。
+- system共通の `markers` は後方互換/簡易renderer用に残す。
+- 曲専用cueはschema名だけ確認し、中身は曲adapterが解釈する。
+- Songle由来の拍/サビと、手動で打つキック/ブロー/歌詞アクセントを別レイヤーとして扱う。
 
 ## P4: 起動管理を追加する
 
@@ -144,3 +164,20 @@ system server、song-pack server、将来の保存APIを手作業で1つずつ�
 - OBS/browser source向け軽量モード。
 
 この段階では、Webシステムを唯一の実行環境として固定しないことが重要。
+
+## P8: Songle取得ツールを改善する
+
+目的:
+新しい曲パッケージ作成時に、必要なSongle JSONだけを安全に取得しやすくする。
+
+現状:
+
+- `scripts/download-songle-json.ps1` は `-Targets` と `-SkipMelody` で取得対象を選べる。
+- `SongId`、`SongUrl`、target名は検証される。
+- 取得したJSONはUTF-8で構文検証してから保存する。
+
+候補:
+
+- 取得後に、拍数、推定BPM、サビ候補、認識日時を短く表示する。
+- `manifest.json` のanalysis欄を生成する補助オプションを検討する。
+- セキュリティ専用レビューで、許可URL、最大サイズ、保存先、ログ出力を再確認する。

@@ -76,3 +76,14 @@
   - `docs/known-issues.md`
   - `docs/handoff.md`
 - Updated `README.md` with Workflow Map and Agent Context sections.
+
+## 2026-05-20 Later
+
+- The repository was shifted from a Shining Star-centered PoC toward a
+  system-neutral host.
+- New song authoring must start from `docs/system-overview.md` and
+  `docs/song-authoring.md`, not from existing `song-packs/*`.
+- `music_src` is obsolete; song package data lives under `song-packs/`.
+- The dev manager starts/stops the system app and song-pack server together.
+- `song-packs/traffic-jam/` was added as a planning package for 煮ル果実
+  「トラフィック・ジャム」. It should not become a template for later songs.

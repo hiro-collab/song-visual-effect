@@ -88,8 +88,11 @@ export type SongManifest = {
 export type MusicSource = {
   manifestUrl: string;
   baseUrl: string;
+  manifest: SongManifest;
   audioUrl?: string;
   creditsUrl?: string;
+  effectDesignUrl?: string;
+  designCuesUrl?: string;
   webAdapterUrl?: string;
 };
 

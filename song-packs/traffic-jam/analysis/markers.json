@@ -1,0 +1,37 @@
+{
+  "estimatedDuration": 240.4,
+  "warmSections": [
+    {
+      "start": 57.73,
+      "end": 72.96,
+      "intensity": 0.95
+    },
+    {
+      "start": 116.81,
+      "end": 132.04,
+      "intensity": 0.95
+    },
+    {
+      "start": 179.58,
+      "end": 194.81,
+      "intensity": 1
+    },
+    {
+      "start": 194.81,
+      "end": 210.04,
+      "intensity": 1
+    }
+  ],
+  "lineEmphasis": [
+    {
+      "time": 146.3,
+      "duration": 13.0,
+      "intensity": 0.85
+    },
+    {
+      "time": 179.58,
+      "duration": 30.46,
+      "intensity": 1
+    }
+  ]
+}
