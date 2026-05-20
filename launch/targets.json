@@ -1,0 +1,51 @@
+{
+  "targets": [
+    {
+      "id": "fixture-player",
+      "label": "Fixture player",
+      "kind": "web-app",
+      "cwd": ".",
+      "command": "npm",
+      "args": ["run", "dev:player", "--", "--port", "${PLAYER_PORT:-5173}"],
+      "ports": ["${PLAYER_PORT:-5173}"],
+      "urls": {
+        "open": "http://127.0.0.1:${PLAYER_PORT:-5173}/",
+        "workflowMap": "http://127.0.0.1:${PLAYER_PORT:-5173}/docs/workflows.html",
+        "fixture": "http://127.0.0.1:${PLAYER_PORT:-5173}/?song=http://127.0.0.1:${SONG_PACK_PORT:-5174}/shining-star/manifest.json"
+      },
+      "health": {
+        "url": "http://127.0.0.1:${PLAYER_PORT:-5173}/",
+        "intervalMs": 5000
+      }
+    },
+    {
+      "id": "song-pack-server",
+      "label": "Song pack server",
+      "kind": "asset-server",
+      "cwd": ".",
+      "command": "npm",
+      "args": ["run", "dev:songs"],
+      "env": {
+        "SONG_PACK_HOST": "127.0.0.1",
+        "SONG_PACK_PORT": "${SONG_PACK_PORT:-5174}",
+        "SONG_PACK_CORS_ORIGINS": "http://127.0.0.1:${PLAYER_PORT:-5173},http://localhost:${PLAYER_PORT:-5173}"
+      },
+      "ports": ["${SONG_PACK_PORT:-5174}"],
+      "urls": {
+        "open": "http://127.0.0.1:${SONG_PACK_PORT:-5174}/"
+      },
+      "health": {
+        "url": "http://127.0.0.1:${SONG_PACK_PORT:-5174}/",
+        "intervalMs": 5000
+      }
+    }
+  ],
+  "sets": [
+    {
+      "id": "basic-fixture",
+      "label": "Basic fixture",
+      "description": "Fixture player と song-pack server を起動する検証用セット。",
+      "targets": ["song-pack-server", "fixture-player"]
+    }
+  ]
+}

@@ -118,6 +118,9 @@ export function createSongApp(context) {
 目的:
 fixture player、song-pack server、曲ごとの映像サーバー、将来の保存APIを手作業で1つずつ起動しなくてよいようにする。
 
+状態:
+MVP実装済み。`scripts/dev-manager.mjs` は互換入口として残し、実体は `scripts/launch-manager/` に分割した。`launch/targets.json` のTarget/SetをLaunch Manager GUI/APIから起動、停止、監視できる。
+
 仕様:
 
 - 簡素版の正本は `docs/launch-manager-spec.md`。
@@ -128,9 +131,10 @@ fixture player、song-pack server、曲ごとの映像サーバー、将来の�
 
 - まずは `npm run dev` でローカル起動管理サーバーを立てる。完了。
 - `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` でworktreeごとにポートをずらせる。完了。
-- 既存 `scripts/dev-manager.mjs` を互換入口として残しつつ、`scripts/launch-manager/` へ分割する。
-- `launch/targets.json` を導入し、targetとsetを宣言的に管理する。
-- GUIでtarget/setの起動、停止、再起動、全停止、PID/port/log/resourceを確認できるようにする。
+- 既存 `scripts/dev-manager.mjs` を互換入口として残しつつ、`scripts/launch-manager/` へ分割する。完了。
+- `launch/targets.json` を導入し、targetとsetを宣言的に管理する。完了。
+- GUIでtarget/setの起動、停止、再起動、全停止、PID/port/log/resourceを確認できるようにする。完了。
+- 次段階では、曲ごとの映像サーバーや保存APIをTargetとして追加する。
 
 リスク:
 

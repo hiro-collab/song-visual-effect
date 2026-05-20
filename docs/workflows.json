@@ -215,10 +215,10 @@
       "label": "起動管理サーバー",
       "kind": "dev-server",
       "group": "サーバー",
-      "file": "scripts/dev-manager.mjs",
+      "file": "scripts/dev-manager.mjs / scripts/launch-manager/* / launch/targets.json",
       "x": 28,
       "y": 14,
-      "description": "npm run devで起動し、fixture playerとsong-pack serverをまとめて起動・停止します。"
+      "description": "npm run devでLaunch Serverを起動します。GUI/APIからlaunch/targets.jsonのTarget/Setだけを起動、停止、監視します。"
     },
     {
       "id": "launchManagerSpec",
@@ -523,8 +523,8 @@
     },
     {
       "id": "launch-manager-mvp",
-      "label": "簡素版Launch Managerを実装する",
-      "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/SetをGUIから起動・停止・監視できるようにします。",
+      "label": "簡素版Launch Managerを使う",
+      "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/SetをGUIから起動・停止・監視します。",
       "trigger": "複数の曲用映像や補助サーバーを同時に管理したい",
       "steps": [
         {
@@ -537,16 +537,16 @@
         {
           "from": "launchManagerSpec",
           "to": "devManager",
-          "action": "互換入口を残して分割する",
+          "action": "実装構成を確認する",
           "payload": "scripts/dev-manager.mjs -> scripts/launch-manager/*",
-          "note": "既存npm run devの入口は壊さず、内部をLaunch Server Coreへ寄せます。"
+          "note": "scripts/dev-manager.mjsは互換入口で、実体は分割したLaunch Serverモジュールです。"
         },
         {
           "from": "launchManagerSpec",
           "to": "songServer",
           "action": "Targetとして扱う",
           "payload": "launch/targets.json",
-          "note": "曲用映像、fixture player、song-pack server、保存APIをすべてLaunch Targetとして扱います。"
+          "note": "fixture playerとsong-pack serverをまずTarget化しました。曲用映像や保存APIもTargetとして追加できます。"
         },
         {
           "from": "devManager",
@@ -558,17 +558,17 @@
         {
           "from": "devManager",
           "to": "contextDocs",
-          "action": "実装後に更新する",
+          "action": "運用前提を共有する",
           "payload": "docs/launch-manager-spec.md、docs/plans.md、docs/handoff.md、docs/workflows.json",
-          "note": "起動仕様を変えたら、次スレッドが同じ前提で読めるようにdocsへ反映します。"
+          "note": "Launch Managerは曲の構成を束縛しない補助ツールとして扱います。"
         }
       ]
     },
     {
       "id": "split-server",
       "label": "起動管理で分離サーバーをまとめて起動",
-      "summary": "起動管理サーバーがfixture playerと曲パックサーバーを立ち上げ、検証用プレイヤーは外部manifestを読むだけにします。",
-      "trigger": "npm run dev を実行する",
+      "summary": "Launch Manager GUIからBasic fixture setを起動し、検証用プレイヤーは外部manifestを読むだけにします。",
+      "trigger": "npm run dev 後にBasic fixtureを起動する",
       "steps": [
         {
           "from": "browser",
@@ -581,14 +581,14 @@
           "from": "devManager",
           "to": "main",
           "action": "fixture playerを起動",
-          "payload": "npm run dev:player -- --port <PLAYER_PORT>",
-          "note": "Viteのfixture playerを起動します。"
+          "payload": "launch/targets.json -> npm run dev:player -- --port <PLAYER_PORT>",
+          "note": "起動前にport衝突を確認し、衝突時は自動変更せずエラーにします。"
         },
         {
           "from": "devManager",
           "to": "songServer",
           "action": "曲パックサーバーを起動",
-          "payload": "npm run dev:songs",
+          "payload": "launch/targets.json -> npm run dev:songs",
           "note": "song-packsをfixture player origin向けCORSつきで配信します。"
         },
         {
