@@ -136,3 +136,14 @@ A/Dキーによる歌詞打刻や補正UIは、Lyric TimingモードがOnのと�
 
 影響:
 新しい曲作成の入口は `docs/system-overview.md` と `docs/song-authoring.md` にする。既存曲を見るのは、その曲自体の修正、回帰確認、またはユーザーが明示的に許可した場合だけにする。
+
+## D011: 既存fixture rendererも新曲の視覚テンプレートにしない
+
+決定:
+新しい曲の映像実装では、既存の `examples/fixture-player/renderers/*` や `examples/fixture-player/effects/*` を視覚テンプレートとして読まない。曲アプリを作る場合は、`templates/neutral-song-app/visual-brief.md` で主役構造を決め、必要なら空の `templates/neutral-song-app/adapter.ts` から始める。
+
+理由:
+既存の曲パッケージを読まなくても、fixture rendererの中央発光、放射線、光ネットワーク、粒子、グロー中心の構図に引っ張られることがあるため。曲ごとの自由な見た目を守るには、既存曲だけでなく既存fixtureの視覚文法からも距離を置く必要がある。
+
+影響:
+新曲作成時の入口に `docs/song-visual-independence.md` を加える。最初のプレビュー後は、構図、色、主役オブジェクト、線/光の使い方、カメラ視点が前作に似すぎていないか確認する。

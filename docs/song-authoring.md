@@ -27,7 +27,8 @@
 1. `AGENTS.md`
 2. `docs/system-overview.md`
 3. `docs/song-authoring.md`
-4. 必要に応じて `docs/decisions.md`
+4. `docs/song-visual-independence.md`
+5. 必要に応じて `docs/decisions.md`
 
 既存曲のフォルダは読まないでください。
 
@@ -47,11 +48,13 @@
 ## 設計の進め方
 
 1. 曲の演出意図を文章で書く。
-2. 入力、出力、きっかけ、ライブ操作を洗い出す。
-3. 曲専用のデータ構造を決める。
-4. 必要な場合だけ、`system/kit` の補助機能を選ぶ。
-5. 最小manifestを作る。
-6. 曲側の実装を作る。
+2. `templates/neutral-song-app/visual-brief.md` の項目に沿って、主役構造と避ける表現を決める。
+3. 入力、出力、きっかけ、ライブ操作を洗い出す。
+4. 曲専用のデータ構造を決める。
+5. 必要な場合だけ、`system/kit` の補助機能を選ぶ。
+6. 最小manifestを作る。
+7. 曲側の実装を作る。
+8. 最初のプレビュー後に `docs/song-visual-independence.md` で前作似チェックをする。
 
 この順番を守ると、既存曲のフォルダ形状に寄りにくくなります。
 
@@ -74,9 +77,20 @@
 - 既存曲のmanifestをコピーしてから作り始める。
 - 既存曲の `analysis/` 構造を標準スキーマだと思い込む。
 - 既存曲のエフェクトを名前だけ変えて流用する。
+- `examples/fixture-player/renderers/` や `examples/fixture-player/effects/` を新曲の視覚テンプレートにする。
+- soft light rendererの中央発光、放射線、光ネットワーク、粒子、グロー中心の構図を無意識に再利用する。
 - 曲側の自由なJSON構成を、システム側の都合で固定する。
 - Canvas2D前提で設計を始める。
 - 歌詞タイミング編集が必須だと決めつける。
+
+## ニュートラルな出発点
+
+曲アプリやadapterを作る場合は、まず `templates/neutral-song-app/` を見てください。
+
+- `visual-brief.md`: 曲の主役構造を先に固定するための記入シート。
+- `adapter.ts`: Canvas2D adapterとして始める場合の、空の描画ループだけを持つ出発点。
+
+このテンプレートは見た目を提供しません。既存fixtureの構図や部品を継承しないための、空白に近い開始地点です。
 
 ## どうしても例が必要な場合
 

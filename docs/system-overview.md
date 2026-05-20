@@ -4,6 +4,8 @@
 
 既存の曲パッケージは実例であって、次の曲の設計テンプレートではありません。新しい曲を作るときは、まずこの文書と `docs/song-authoring.md` を読み、既存の `song-packs/*` の構成を参照しないでください。
 
+同じ理由で、`examples/fixture-player` のsoft light rendererやeffect群も新曲の視覚テンプレートではありません。新しい曲の見た目を作る場合は、`docs/song-visual-independence.md` と `templates/neutral-song-app/` から始めてください。
+
 ## 目的
 
 このリポジトリのシステム側は、曲ごとの演出を決める親ではなく、曲アプリを支える補助kitです。

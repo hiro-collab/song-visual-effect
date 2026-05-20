@@ -24,16 +24,20 @@
 
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。
+- `docs/song-visual-independence.md`: 既存fixtureの見た目に引っ張られないためのチェックリスト。
 - `docs/decisions.md`: 重要な設計判断。
 
 読まないもの:
 
 - `song-packs/*`
 - 既存曲のmanifest、analysis、design、adapter、演出コード
+- `examples/fixture-player/renderers/*`
+- `examples/fixture-player/effects/*`
+- `examples/fixture-player/adapters/fixtureSoftLight.ts`
 - `README.md` のfixture節
 - `docs/handoff.md` のfixture確認URL
 
-必要になった場合でも、ユーザーの明示許可なしに既存曲を参考にしない。
+必要になった場合でも、ユーザーの明示許可なしに既存曲や既存fixture rendererを参考にしない。
 
 ### システム改修や既存機能修正の場合
 
@@ -65,6 +69,9 @@
 - 既存曲を参考にする必要がある場合は、ユーザーの明示許可を得てから読む。
 - 既存曲を読むことが許されるのは、その曲自体の修正、回帰確認、またはユーザーが明示した比較作業だけ。
 - 曲ごとのJSON文法、UI、描画方式、ライブ操作、adapter構成は曲側が自由に決める。
+- 既存fixture rendererの中央発光、放射線、光ネットワーク、粒子、グローを新曲のテンプレートにしない。
+- 曲アプリを作る場合は、まず `templates/neutral-song-app/visual-brief.md` で主役構造を決め、必要なら空の `templates/neutral-song-app/adapter.ts` から始める。
+- 最初のプレビュー後に `docs/song-visual-independence.md` の観点で、前作と似すぎていないか確認する。
 
 ## 変更時の注意
 

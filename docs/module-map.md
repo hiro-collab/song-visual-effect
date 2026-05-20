@@ -60,10 +60,17 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/dev-manager.mjs`: fixture player server と song-pack server をまとめて起動・停止する起動管理サーバー。
 - `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知を扱うローカル同期補助。
 
+## templates
+
+- `templates/neutral-song-app/`: 新曲が既存fixture rendererに引っ張られないための空に近い出発点。
+- `templates/neutral-song-app/visual-brief.md`: 実装前に曲の主役構造、避ける表現、入力/出力を固定するシート。
+- `templates/neutral-song-app/adapter.ts`: Canvas2D adapterとして始める場合だけ使う空の描画ループ。視覚デザインのテンプレートではない。
+
 ## docs
 
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。
+- `docs/song-visual-independence.md`: 既存fixtureの見た目に引っ張られないためのチェックリスト。
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: このファイル。ディレクトリとファイルの役割。
 - `docs/decisions.md`: 設計判断と理由。

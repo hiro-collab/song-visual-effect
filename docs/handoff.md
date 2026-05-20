@@ -29,6 +29,7 @@
 - 既存の曲パッケージはテンプレートではない。
 - 新しい曲を作るときは、既存の `song-packs/*` を読まない。
 - 新しい曲作成の入口は `docs/system-overview.md` と `docs/song-authoring.md`。
+- 新しい曲の視覚実装は `docs/song-visual-independence.md` と `templates/neutral-song-app/` から始め、`examples/fixture-player/renderers/*` や `examples/fixture-player/effects/*` をテンプレートにしない。
 - 既存曲を見るのは、その曲自体の修正、回帰確認、またはユーザーの明示許可がある場合だけ。
 
 ## 重要な制約
@@ -95,6 +96,7 @@ http://127.0.0.1:5173/docs/workflows.html
 - `README.md`: 利用方法。
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲作成時のアンカー回避ルール。
+- `docs/song-visual-independence.md`: 既存fixtureの見た目に引っ張られないためのチェックリスト。
 - `system/kit/`: 曲に依存しない補助ライブラリ。
 - `system/kit/index.ts`: system kitの公開API入口。
 - `system/kit/safeFetch.ts`: URL検証、曲パッケージ境界チェック、サイズ上限つきfetch。
@@ -103,6 +105,7 @@ http://127.0.0.1:5173/docs/workflows.html
 - `examples/fixture-player/main.ts`: 動作確認用fixture playerの入口。
 - `examples/fixture-player/adapters/`: fixture player内adapter registry。曲固有adapterはここへ増やさない。
 - `examples/fixture-player/tools/lyricTimingTool.ts`: fixture playerに載せたoptional lyric timing UI。
+- `templates/neutral-song-app/`: 新曲向けの空scaffoldとvisual brief。
 - `docs/security.md`: 信頼境界と運用ルール。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 
@@ -111,9 +114,9 @@ http://127.0.0.1:5173/docs/workflows.html
 優先度が高い順:
 
 1. fixture playerが新しい曲のテンプレートに見えないよう、docsとUI文言を維持する。
-2. `launch-manager` 側でworktreeごとのポート割り当てと一括停止を整える。
-3. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
-4. 曲アプリscaffoldを作る場合は、既存曲を読まない空の雛形から作る。
+2. 新曲実装担当が `templates/neutral-song-app/visual-brief.md` を先に埋める運用を定着させる。
+3. `launch-manager` 側でworktreeごとのポート割り当てと一括停止を整える。
+4. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
 
 ## 新規曲パック: traffic-jam
 
