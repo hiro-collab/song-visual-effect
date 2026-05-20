@@ -16,7 +16,7 @@ src/main.ts
 src/data/assets.ts
   manifestと曲データをMusicMapへ変換
     ↓
-music_src/ または song-packs/<song-id>/
+song-packs/<song-id>/
   manifest、歌詞、Songle JSON、手動タイミング、palette、markers
 ```
 
@@ -30,7 +30,7 @@ http://127.0.0.1:5174
   song pack server
 ```
 
-今後はこの分離構成を標準にします。`music_src` は廃止し、曲データ本体は `song-packs/<song-id>/` に一本化します。複数サーバーを手作業で起動するとトラブルが増えるため、起動管理スクリプトまたはGUI付き起動管理サーバーを追加する方針です。
+この分離構成を標準にします。`music_src` は廃止し、曲データ本体は `song-packs/<song-id>/` に一本化します。複数サーバーを手作業で起動するとトラブルが増えるため、`npm run dev` は起動管理サーバーを立ち上げ、system app と song-pack server をまとめて管理します。
 
 システム側は次のように曲を指定します。
 
@@ -74,8 +74,8 @@ manifestがある場合:
 
 manifestが読めない場合:
 
-- 従来互換として `music_src/analysis` などを読む。
-- warningに `manifest fallback` を追加する。
+- 起動失敗として扱う。
+- `npm run dev` の起動管理サーバーで song-pack server が起動しているか確認する。
 
 ### 歌詞タイミング編集
 

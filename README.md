@@ -10,47 +10,30 @@ npm run download:songle
 npm run dev
 ```
 
-`music_src` は従来互換の公開素材ディレクトリとして使っています。既存の `music_src/Lyrics.txt` はUTF-8のまま読み込みます。
+`npm run dev` は起動管理サーバーを立ち上げ、system app と song-pack server をまとめて起動します。
 
-分離構成を試す場合は、2つのターミナルで起動します。
+```text
+http://127.0.0.1:5172/
+```
+
+アプリ本体は次のURLで開きます。
+
+```text
+http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
+```
+
+個別に起動する場合は、次のコマンドも使えます。
 
 ```powershell
 npm run dev:system
 npm run dev:songs
 ```
 
-その後、システム側を次のURLで開きます。
-
-```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
-```
-
 この構成では、Webシステムは曲の中身を決めません。`song` クエリで指定された `manifest.json` を読み、歌詞、Songle JSON、palette、markers、手動タイミング、音源パスを曲パッケージ側から取得します。
-
-## Material Layout
-
-```text
-music_src/
-  manifest.json
-  CREDITS.md
-  Lyrics.txt
-  analysis/
-    song.json
-    beat.json
-    chord.json
-    melody.json
-    chorus.json
-    palette.json
-    markers.json
-  audio/
-    shining_star.mp3
-```
-
-音源を置ける場合は `music_src/audio/shining_star.mp3` に配置してください。未配置でも内部クロックで映像だけ動きます。画面下の `Audio` からローカル音源を選ぶこともできます。
 
 ## Song Package Layout
 
-曲ごとの素材は `song-packs/<song-id>/` にも置けます。別サーバーで配信できるよう、曲の入口は `manifest.json` にします。
+曲ごとの素材は `song-packs/<song-id>/` に置きます。別サーバーで配信できるよう、曲の入口は `manifest.json` にします。
 
 ```text
 song-packs/
@@ -74,7 +57,7 @@ song-packs/
       cues.json
 ```
 
-音源ファイルはライセンス上コミットしません。分離サーバーで音源も配信したい場合は、ローカル環境で `song-packs/shining-star/audio/maou_14_shining_star.mp3` のように配置してください。
+音源ファイルはライセンス上コミットしません。音源を配信したい場合は、ローカル環境で `song-packs/shining-star/audio/maou_14_shining_star.mp3` のように配置してください。未配置でも内部クロックで映像だけ動きます。画面下の `Audio` からローカル音源を選ぶこともできます。
 
 `manifest.json` は曲パッケージの入口です。相対パスは manifest の場所を基準に解決されます。別の曲や別システムへ持ち出す場合も、この manifest と `design/` の演出意図を中心に扱います。
 
@@ -88,7 +71,7 @@ song-packs/
 
 ## Songle JSON
 
-`npm run download:songle` は以下のSongle Widget API JSONを `music_src/analysis/` に保存します。
+`npm run download:songle` は以下のSongle Widget API JSONを `song-packs/shining-star/analysis/` に保存します。
 
 - song
 - beat
@@ -119,7 +102,7 @@ song-packs/
 - `Sequence`: 薄い点が補正前、明るいストーンが補正後の歌詞切り替え位置です。
 - `Sequence` バーをクリック/ドラッグすると、その位置へ再生時刻を移動できます。
 
-打刻データと補正値はブラウザの `localStorage` に自動保存されます。調整中の歌詞表示は、画面上のストーン位置に即時追従します。確定版として同梱したい場合は、書き出したJSONを `music_src/analysis/lyrics_timing.json` として配置してください。次回起動時にそのタイミングが読み込まれます。
+打刻データと補正値はブラウザの `localStorage` に自動保存されます。調整中の歌詞表示は、画面上のストーン位置に即時追従します。確定版として同梱したい場合は、書き出したJSONを `song-packs/shining-star/analysis/lyrics_timing.json` として配置してください。次回起動時にそのタイミングが読み込まれます。
 
 ## License Safety
 
@@ -135,11 +118,11 @@ song-packs/
 
 このWebシステムは曲アプリを束縛する親ではなく、補助ランタイムとして扱います。
 
-- System: 再生、入力、フレームループ、全画面、保存、歌詞タイミング編集などを提供する。
-- Song Package: 曲ごとの素材、解析JSON、演出意図、クレジット、手動タイミングを持つ。
+- System: 再生、入力、フレームループ、全画面、保存、歌詞タイミング編集などを補助機能として提供する。
+- Song Package: 曲ごとの素材、解析JSON、演出意図、クレジット、手動タイミング、演出コードを持つ。
 - Adapter: Web、TouchDesigner、Unityなど、実行環境ごとの接続コードを後付けできるようにする。
 
-今の実装では、まず `manifest.json` と `?song=` により曲データの外部化を始めています。次の段階で、Shining Star固有の演出を曲側の Web adapter へ移す予定です。
+`music_src` は廃止し、曲データ本体は `song-packs/` に一本化します。描画方式はCanvas2Dに固定せず、歌詞タイミング編集もoptional toolとして扱います。外部Web adapterは将来許容しますが、まずは同一ビルド内でadapter分離します。
 
 ## Workflow Map
 

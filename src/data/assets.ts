@@ -2,7 +2,7 @@ import type { Beat, LyricCue, Markers, MusicMap, Palette, Range, SongManifest } 
 import { DEFAULT_PALETTE } from "../effects/palette";
 
 const JSON_HEADERS = { Accept: "application/json" };
-const DEFAULT_MANIFEST_PATH = "/manifest.json";
+const DEFAULT_MANIFEST_URL = "http://127.0.0.1:5174/shining-star/manifest.json";
 
 const compactPaths = (paths: Array<string | null | undefined>) => paths.filter((path): path is string => Boolean(path));
 
@@ -47,20 +47,13 @@ const isSongManifest = (value: unknown): value is SongManifest => {
 
 export const getSongManifestUrl = () => {
   const queryValue = new URLSearchParams(window.location.search).get("song");
-  return absoluteUrl(queryValue || DEFAULT_MANIFEST_PATH);
+  return absoluteUrl(queryValue || DEFAULT_MANIFEST_URL);
 };
 
 const loadManifest = async (manifestUrl: string) => {
   const manifest = await fetchJson<unknown>([manifestUrl]);
   return isSongManifest(manifest) ? manifest : null;
 };
-
-const sourcePaths = (
-  manifest: SongManifest | null,
-  baseUrl: string,
-  sourcePath: string | null | undefined,
-  legacyPaths: string[]
-) => (manifest ? [resolveSourcePath(baseUrl, sourcePath)] : legacyPaths);
 
 const asSeconds = (value: unknown): number | null => {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
@@ -213,18 +206,20 @@ export const loadMusicMap = async (manifestUrl = getSongManifestUrl()): Promise<
   const warnings: string[] = [];
   const resolvedManifestUrl = absoluteUrl(manifestUrl);
   const manifest = await loadManifest(resolvedManifestUrl);
-  const baseUrl = manifest ? sourceBaseUrl(resolvedManifestUrl) : absoluteUrl("/");
+  if (!manifest) {
+    throw new Error(`Song manifest could not be loaded: ${resolvedManifestUrl}`);
+  }
+  const baseUrl = sourceBaseUrl(resolvedManifestUrl);
   const analysis = manifest?.analysis ?? {};
-  if (!manifest) warnings.push("manifest fallback");
 
   const [markers, palette, songJson, beatJson, chorusJson, lyricJson, lyricText] = await Promise.all([
-    fetchJson<Markers>(sourcePaths(manifest, baseUrl, analysis.markers, ["/analysis/markers.json"])),
-    fetchJson<Palette>(sourcePaths(manifest, baseUrl, analysis.palette, ["/analysis/palette.json"])),
-    fetchJson<Record<string, unknown>>(sourcePaths(manifest, baseUrl, analysis.song, ["/analysis/song.json"])),
-    fetchJson<unknown>(sourcePaths(manifest, baseUrl, analysis.beat, ["/analysis/beat.json", "/analysis/songle_beat.json"])),
-    fetchJson<unknown>(sourcePaths(manifest, baseUrl, analysis.chorus, ["/analysis/chorus.json", "/analysis/songle_chorus.json"])),
-    fetchJson<unknown>(sourcePaths(manifest, baseUrl, analysis.timing, ["/analysis/lyrics_timing.json"])),
-    fetchText(sourcePaths(manifest, baseUrl, manifest?.lyrics, ["/Lyrics.txt", "/lyrics/Lyrics.txt"]))
+    fetchJson<Markers>([resolveSourcePath(baseUrl, analysis.markers)]),
+    fetchJson<Palette>([resolveSourcePath(baseUrl, analysis.palette)]),
+    fetchJson<Record<string, unknown>>([resolveSourcePath(baseUrl, analysis.song)]),
+    fetchJson<unknown>([resolveSourcePath(baseUrl, analysis.beat)]),
+    fetchJson<unknown>([resolveSourcePath(baseUrl, analysis.chorus)]),
+    fetchJson<unknown>([resolveSourcePath(baseUrl, analysis.timing)]),
+    fetchText([resolveSourcePath(baseUrl, manifest.lyrics)])
   ]);
 
   const usableMarkers = markers ?? {};
@@ -265,11 +260,6 @@ export const loadMusicMap = async (manifestUrl = getSongManifestUrl()): Promise<
 export const findBundledAudio = async (musicMap?: MusicMap) => {
   const paths = [
     musicMap?.source.audioUrl,
-    "/audio/maou_14_shining_star.mp3",
-    "/audio/shining_star.mp3",
-    "/audio/ShiningStar.mp3",
-    "/shining_star.mp3",
-    "/ShiningStar.mp3"
   ];
   for (const path of compactPaths(paths)) {
     try {

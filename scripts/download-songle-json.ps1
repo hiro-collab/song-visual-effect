@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $songUrl = "www.youtube.com/watch?v=Qd01-6xVSHk"
 $encoded = [System.Uri]::EscapeDataString($songUrl)
-$outDir = Join-Path $PSScriptRoot "..\music_src\analysis"
+$outDir = Join-Path $PSScriptRoot "..\song-packs\shining-star\analysis"
 
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
@@ -21,4 +21,3 @@ foreach ($target in $targets) {
 }
 
 Write-Host "Saved Songle JSON files to $outDir"
-

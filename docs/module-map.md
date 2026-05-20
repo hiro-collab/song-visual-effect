@@ -8,7 +8,7 @@
 - `README.md`: 人間向けの起動方法、素材配置、利用方法。
 - `index.html`: アプリのDOM骨格。Canvas、Audio、歌詞表示、操作UIを置く。
 - `package.json`: npm scriptsと依存関係。
-- `vite.config.mjs`: Vite設定。`music_src` をpublicDirとして扱う。
+- `vite.config.mjs`: Vite設定。曲データは別サーバーで配信するため、ViteのpublicDirは無効化している。
 
 ## src
 
@@ -31,18 +31,9 @@
 
 - `src/lyrics/manualTiming.ts`: 手動歌詞キーフレーム、全体/範囲補正、Export用JSON生成。
 
-## music_src
-
-廃止予定の素材ディレクトリです。現在は従来互換のために残っていますが、曲データ本体は `song-packs/` に一本化します。
-
-- `music_src/manifest.json`: 単体サーバー用の曲manifest。
-- `music_src/Lyrics.txt`: UTF-8の歌詞テキスト。
-- `music_src/analysis/*.json`: Songle解析JSON、palette、markers、lyrics_timing。
-- `music_src/audio/`: ローカル音源配置用。音源ファイルはコミットしない。
-
 ## song-packs
 
-分離構成用の曲パッケージ置き場です。今後はここを曲データの唯一の本体にします。
+分離構成用の曲パッケージ置き場です。ここを曲データの唯一の本体にします。
 
 - `song-packs/shining-star/manifest.json`: 分離サーバーで読む曲manifest。
 - `song-packs/shining-star/CREDITS.md`: 曲のクレジットとライセンス注意。
@@ -55,7 +46,7 @@
 
 - `scripts/download-songle-json.ps1`: Songle Widget APIからJSONを取得するPowerShellスクリプト。
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
-- 今後、system server、song-pack server、保存APIなどをまとめて起動する起動管理スクリプトまたは起動管理サーバーを追加する予定。
+- `scripts/dev-manager.mjs`: system server と song-pack server をまとめて起動・停止する起動管理サーバー。
 
 ## docs
 

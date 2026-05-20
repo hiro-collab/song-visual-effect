@@ -115,6 +115,16 @@
       "description": "song-packsを別ポートで配信します。CORSを許可し、システムサーバーからmanifestやJSONを読めるようにします。"
     },
     {
+      "id": "devManager",
+      "label": "起動管理サーバー",
+      "kind": "dev-server",
+      "group": "サーバー",
+      "file": "scripts/dev-manager.mjs",
+      "x": 28,
+      "y": 14,
+      "description": "npm run devで起動し、system appとsong-pack serverをまとめて起動・停止します。"
+    },
+    {
       "id": "agents",
       "label": "AGENTS.md",
       "kind": "agent-guide",
@@ -267,16 +277,30 @@
     },
     {
       "id": "split-server",
-      "label": "システムと曲サーバーを分けて起動",
-      "summary": "Webシステムは5173、曲パックは5174で起動し、システムは外部manifestを読むだけにします。",
-      "trigger": "npm run dev:system と npm run dev:songs を別々に起動する",
+      "label": "起動管理で分離サーバーをまとめて起動",
+      "summary": "起動管理サーバーがsystem appと曲パックサーバーを立ち上げ、システムは外部manifestを読むだけにします。",
+      "trigger": "npm run dev を実行する",
       "steps": [
         {
           "from": "browser",
+          "to": "devManager",
+          "action": "起動管理画面を開く",
+          "payload": "http://127.0.0.1:5172/",
+          "note": "複数サーバーを手作業で起動する運用を避けます。"
+        },
+        {
+          "from": "devManager",
           "to": "main",
-          "action": "システムURLを開く",
-          "payload": "http://127.0.0.1:5173/?song=...",
-          "note": "システム本体は曲の中身を固定しません。"
+          "action": "system appを起動",
+          "payload": "npm run dev:system -- --port 5173",
+          "note": "Viteのsystem appを起動します。"
+        },
+        {
+          "from": "devManager",
+          "to": "songServer",
+          "action": "曲パックサーバーを起動",
+          "payload": "npm run dev:songs",
+          "note": "song-packsをCORSつきで配信します。"
         },
         {
           "from": "main",

@@ -3,8 +3,6 @@ dist/
 
 # Local audio files are for browser playback only.
 # Do not commit licensed music assets into the repository.
-music_src/audio/*
-!music_src/audio/.gitkeep
 song-packs/*/audio/*
 !song-packs/*/audio/.gitkeep
 

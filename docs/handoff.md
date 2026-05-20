@@ -16,7 +16,7 @@
 - シーケンスバーをクリック/ドラッグして再生位置を移動できる。
 - `manifest.json` と `?song=` により、曲パッケージを別サーバーから読める。
 - `docs/workflows.html` / `docs/workflows.json` にワークフロー地図がある。
-- 仕様方針として、今後は `music_src` を廃止し、`song-packs` を曲データ本体にする。
+- `music_src` は廃止済み。曲データ本体は `song-packs`。
 
 ## 重要な制約
 
@@ -32,14 +32,20 @@
 
 ## 起動方法
 
-現在の通常起動:
+通常起動:
 
 ```powershell
 npm install
 npm run dev
 ```
 
-今後標準にする分離構成:
+`npm run dev` は起動管理サーバーを立て、system app と song-pack server をまとめて起動します。
+
+```text
+http://127.0.0.1:5172/
+```
+
+個別起動:
 
 ```powershell
 npm run dev:system
@@ -73,14 +79,11 @@ http://127.0.0.1:5173/docs/workflows.html
 
 優先度が高い順:
 
-1. 未コミットのドキュメント追加分をコミットする。
-2. `music_src` を廃止し、`song-packs` を曲データ本体にする。
-3. 分離サーバー群をまとめて起動できる起動管理を追加する。
-4. `src/main.ts` を小さく分割する。
-5. `transport`、`frameLoop`、`input`、`lyricTimingEditor`、`sequenceBar` をシステム側モジュールとして整理する。
-6. Shining Star固有の演出配線を、まず同一ビルド内の曲Web adapterへ移す。
-7. 保存APIを検討し、ライブ中に `lyrics_timing.json` を直接更新できるようにする。
-8. 色味プリセットやライブ用雰囲気切り替えUIを追加する。
+1. `src/main.ts` を小さく分割する。
+2. `transport`、`frameLoop`、`input`、`lyricTimingEditor`、`sequenceBar` をシステム側モジュールとして整理する。
+3. Shining Star固有の演出配線を、まず同一ビルド内の曲Web adapterへ移す。
+4. 保存APIを検討し、ライブ中に `lyrics_timing.json` を直接更新できるようにする。
+5. 色味プリセットやライブ用雰囲気切り替えUIを追加する。
 
 ## 今回のドキュメント整備の意図
 

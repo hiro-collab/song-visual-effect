@@ -1,9 +1,8 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  publicDir: "music_src",
+  publicDir: false,
   server: {
     host: "127.0.0.1"
   }
 });
-

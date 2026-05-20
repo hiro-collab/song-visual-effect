@@ -7,7 +7,7 @@
 - `docs/workflows.html` / `docs/workflows.json` を必要に応じて更新する。
 - `AGENTS.md` と `docs/handoff.md` を作業後に更新する運用を定着させる。
 - 歌詞タイミングJSONの更新手順を明確にする。
-- 仕様変更前のドキュメント追加分をコミットする。
+- 仕様変更前のドキュメント追加分をコミット済み。
 
 確認方法:
 
@@ -41,9 +41,9 @@
 
 作業候補:
 
-- `vite.config.mjs` の `publicDir: "music_src"` 前提を外す。
-- `loadMusicMap()` を分離サーバーmanifest前提へ寄せる。
-- `music_src` の互換フォールバックを削除する。
+- `vite.config.mjs` の `publicDir: "music_src"` 前提を外す。完了。
+- `loadMusicMap()` を分離サーバーmanifest前提へ寄せる。完了。
+- `music_src` の互換フォールバックを削除する。完了。
 - 音源ファイルをコミットしない方針は維持する。
 
 非目的:
@@ -90,8 +90,7 @@ system server、song-pack server、将来の保存APIを手作業で1つずつ�
 
 候補:
 
-- まずは `npm run dev:all` のような起動スクリプト。
-- 次にローカル起動管理サーバー。
+- まずは `npm run dev` でローカル起動管理サーバーを立てる。完了。
 - さらに必要ならGUI付きランチャー。
 
 リスク:

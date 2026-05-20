@@ -34,6 +34,6 @@
 ## 変更時の注意
 
 - 音源ファイルはコミットしない。`.gitignore` の除外を維持する。
-- `music_src/` は廃止予定、`song-packs/` を曲データ本体として扱う。
+- `music_src/` は廃止済み。`song-packs/` を曲データ本体として扱う。
 - `docs/handoff.md` と必要に応じて `docs/plans.md` / `docs/known-issues.md` を更新する。
 - UIやフローを変えた場合は `docs/workflows.json` も更新する。
