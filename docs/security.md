@@ -6,7 +6,7 @@
 ## 前提
 
 - このリポジトリは公開Webサービスではなく、ローカル開発用のsystem kitとfixture playerです。
-- 既定のサーバーは `127.0.0.1` にbindします。外部ネットワークへ公開しないでください。
+- サーバーはloopback hostだけにbindします。外部ネットワークへ公開しないでください。
 - 音源ファイルはコミットせず、AI学習や波形解析に使いません。
 - APIキー、秘密鍵、トークンを曲パッケージやdocsへ置かないでください。
 
@@ -25,6 +25,7 @@
 - manifest URL と曲素材URLは `http:` / `https:` のみ許可します。
 - manifest内の相対パスは、既定でmanifestが置かれた曲パッケージ配下に閉じます。
 - JSONとテキスト取得はサイズ上限を持ち、巨大レスポンスをそのまま処理しません。
+- 同梱音源の自動検出はHEADまたはRange probeだけを使い、確認目的で音源全体を読みません。
 - song-pack server のCORSは既定で fixture player のoriginだけを許可します。
 - song-pack server は隠しファイルと未許可拡張子を配信しません。
 - dev manager の状態変更APIは、同一origin相当のブラウザリクエストだけを受け付けます。
@@ -33,7 +34,7 @@
 
 ## 運用ルール
 
-- `DEV_MANAGER_HOST` や `SONG_PACK_HOST` を `0.0.0.0` にしないでください。
+- `DEV_MANAGER_HOST` や `SONG_PACK_HOST` に `0.0.0.0` などloopback以外を指定すると起動を拒否します。
 - fixture player のポートやoriginを変える場合は、`SONG_PACK_CORS_ORIGINS` を明示してください。
 - 起動管理サーバー経由で `PLAYER_PORT` を変える場合は、song-pack serverへ対応するCORS許可originを渡します。個別起動では手動で合わせてください。
 - localStorage は作業用キャッシュです。秘密情報や未公開の権利素材情報を保存しないでください。

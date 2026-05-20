@@ -120,7 +120,7 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 
 ## Security Safety
 
-- 既定の開発サーバーは `127.0.0.1` で使い、外部ネットワークへ公開しないでください。
+- 開発サーバーはloopback hostだけで使い、外部ネットワークへ公開しないでください。
 - APIキー、秘密鍵、トークンを曲パッケージ、docs、プロンプト、ログに置かないでください。
 - manifest内の曲素材パスは、既定でその曲パッケージ配下だけを読みます。
 - fixture playerのoriginを変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。

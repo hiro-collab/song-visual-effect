@@ -272,9 +272,18 @@ export const findBundledAudio = async (musicMap?: MusicMap) => {
   ];
   for (const path of compactPaths(paths)) {
     try {
-      const response = await fetch(path, { cache: "no-store" });
-      const contentType = response.headers.get("content-type") ?? "";
-      if (response.ok && contentType.startsWith("audio/")) return path;
+      const headResponse = await fetch(path, { method: "HEAD", cache: "no-store" });
+      const headType = headResponse.headers.get("content-type") ?? "";
+      if (headResponse.ok && headType.startsWith("audio/")) return path;
+      if (headResponse.ok) continue;
+
+      const rangeResponse = await fetch(path, {
+        headers: { Range: "bytes=0-0" },
+        cache: "no-store"
+      });
+      const rangeType = rangeResponse.headers.get("content-type") ?? "";
+      await rangeResponse.body?.cancel();
+      if ((rangeResponse.ok || rangeResponse.status === 206) && rangeType.startsWith("audio/")) return path;
     } catch {
       // Keep looking.
     }
