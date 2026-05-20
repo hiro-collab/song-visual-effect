@@ -34,7 +34,7 @@
       "summary": "複数サーバーの起動停止、曲パック配信、worktree同期、Codex作業引き継ぎを助ける領域です。",
       "role": "作業環境を整え、複数スレッドが同じ前提で作業できるようにする。",
       "boundary": "曲の演出判断や曲パッケージ構成をここで決めない。",
-      "componentIds": ["devManager", "songServer", "agents", "contextDocs", "threadStart", "songAuthoringDocs", "visualIndependence", "neutralTemplate"]
+      "componentIds": ["devManager", "songServer", "launchManagerSpec", "agents", "contextDocs", "threadStart", "songAuthoringDocs", "visualIndependence", "neutralTemplate"]
     }
   ],
   "components": [
@@ -167,6 +167,16 @@
       "x": 28,
       "y": 14,
       "description": "npm run devで起動し、fixture playerとsong-pack serverをまとめて起動・停止します。"
+    },
+    {
+      "id": "launchManagerSpec",
+      "label": "Launch仕様",
+      "kind": "spec",
+      "group": "文脈",
+      "file": "docs/launch-manager-spec.md",
+      "x": 10,
+      "y": 14,
+      "description": "複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様です。"
     },
     {
       "id": "agents",
@@ -456,6 +466,49 @@
           "action": "Export JSONを曲パッケージへ反映可能",
           "payload": "lyrics_timing.manual.json -> analysis/lyrics_timing.json",
           "note": "確定版として同梱すれば、次回起動時にそのタイミングを読みます。"
+        }
+      ]
+    },
+    {
+      "id": "launch-manager-mvp",
+      "label": "簡素版Launch Managerを実装する",
+      "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/SetをGUIから起動・停止・監視できるようにします。",
+      "trigger": "複数の曲用映像や補助サーバーを同時に管理したい",
+      "steps": [
+        {
+          "from": "threadStart",
+          "to": "launchManagerSpec",
+          "action": "仕様を読む",
+          "payload": "docs/launch-manager-spec.md",
+          "note": "MVPではmanaged targetだけ。複数Launch Server、attached/delegated、LAN公開は含めません。"
+        },
+        {
+          "from": "launchManagerSpec",
+          "to": "devManager",
+          "action": "互換入口を残して分割する",
+          "payload": "scripts/dev-manager.mjs -> scripts/launch-manager/*",
+          "note": "既存npm run devの入口は壊さず、内部をLaunch Server Coreへ寄せます。"
+        },
+        {
+          "from": "launchManagerSpec",
+          "to": "songServer",
+          "action": "Targetとして扱う",
+          "payload": "launch/targets.json",
+          "note": "曲用映像、fixture player、song-pack server、保存APIをすべてLaunch Targetとして扱います。"
+        },
+        {
+          "from": "devManager",
+          "to": "browser",
+          "action": "GUIから操作する",
+          "payload": "Target card、Set selector、start/stop/restart/all stop",
+          "note": "UIは正本を持たず、PC上のLaunch Serverへ操作要求を送ります。"
+        },
+        {
+          "from": "devManager",
+          "to": "contextDocs",
+          "action": "実装後に更新する",
+          "payload": "docs/launch-manager-spec.md、docs/plans.md、docs/handoff.md、docs/workflows.json",
+          "note": "起動仕様を変えたら、次スレッドが同じ前提で読めるようにdocsへ反映します。"
         }
       ]
     },

@@ -29,6 +29,7 @@
 - 曲アプリ向けに `system/kit/songAdapterContext.ts` を追加し、raw manifest、base URL、`readJson()`、`readText()`、`readDesignCues()` を渡せるようにした。system kitは `design.cues` の中身を固定解釈しない。
 - fixture player内に中立的な `builtin:fixture-soft-light` adapter registryを置いている。外部adapter読み込みはまだ無効。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
+- 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager仕様を `docs/launch-manager-spec.md` にまとめた。次の実装では「PC上に1つのLaunch Server + launch/targets.json + 起動カード一覧」から始める。
 
 ## 新しいスレッドの開始手順
 
@@ -127,6 +128,7 @@ http://127.0.0.1:5173/docs/workflows.html
 - `examples/fixture-player/tools/lyricTimingTool.ts`: fixture playerに載せたoptional lyric timing UI。
 - `templates/neutral-song-app/`: 新曲向けの空scaffoldとvisual brief。
 - `docs/security.md`: 信頼境界と運用ルール。
+- `docs/launch-manager-spec.md`: 次に実装する簡素版Launch Manager仕様。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 
 ## 次にやるとよいこと
@@ -137,6 +139,13 @@ http://127.0.0.1:5173/docs/workflows.html
 2. 新曲実装担当が `templates/neutral-song-app/visual-brief.md` を先に埋める運用を定着させる。
 3. `launch-manager` 側でworktreeごとのポート割り当てと一括停止を整える。
 4. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
+
+Launch Managerを実装する場合:
+
+- まず `docs/launch-manager-spec.md` を読む。
+- 最初はmanaged targetだけを扱う。
+- 複数Launch Server調停、attached/delegated、自動port再割当、LAN公開、スマホ専用UIはMVPに含めない。
+- 既存 `scripts/dev-manager.mjs` は互換入口として残しつつ、必要に応じて `scripts/launch-manager/` へ分割する。
 
 ## 新規曲パック: traffic-jam
 

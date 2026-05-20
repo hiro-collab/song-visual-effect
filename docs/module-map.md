@@ -75,6 +75,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: このファイル。ディレクトリとファイルの役割。
 - `docs/decisions.md`: 設計判断と理由。
+- `docs/launch-manager-spec.md`: 複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様。
 - `docs/security.md`: ローカル開発サーバー、manifest、曲素材、Songle取得ツールの信頼境界と対策。
 - `docs/plans.md`: 今後の作業候補。
 - `docs/known-issues.md`: 既知の問題と注意点。

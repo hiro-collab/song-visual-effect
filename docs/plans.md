@@ -116,13 +116,21 @@ export function createSongApp(context) {
 ## P4: 起動管理を追加する
 
 目的:
-fixture player、song-pack server、将来の保存APIを手作業で1つずつ起動しなくてよいようにする。
+fixture player、song-pack server、曲ごとの映像サーバー、将来の保存APIを手作業で1つずつ起動しなくてよいようにする。
+
+仕様:
+
+- 簡素版の正本は `docs/launch-manager-spec.md`。
+- 最初は「PC上に1つのLaunch Server + targets.json + 起動カード一覧」とする。
+- 複数Launch Server調停、attached/delegated、自動port再割当、LAN公開、スマホ専用UIはMVPに含めない。
 
 候補:
 
 - まずは `npm run dev` でローカル起動管理サーバーを立てる。完了。
 - `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` でworktreeごとにポートをずらせる。完了。
-- さらに必要ならGUI付きランチャー。
+- 既存 `scripts/dev-manager.mjs` を互換入口として残しつつ、`scripts/launch-manager/` へ分割する。
+- `launch/targets.json` を導入し、targetとsetを宣言的に管理する。
+- GUIでtarget/setの起動、停止、再起動、全停止、PID/port/log/resourceを確認できるようにする。
 
 リスク:
 
@@ -130,6 +138,7 @@ fixture player、song-pack server、将来の保存APIを手作業で1つずつ�
 - ポート競合。
 - ログ表示。
 - ライブ前の状態確認。
+- Launch Serverを太らせすぎて、曲側の自由な構成を束縛すること。
 
 ## P5: 保存APIを追加する
 
