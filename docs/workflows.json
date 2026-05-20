@@ -553,7 +553,7 @@
           "to": "browser",
           "action": "GUIから操作する",
           "payload": "Target card、Set selector、start/stop/restart/all stop",
-          "note": "UIは正本を持たず、PC上のLaunch Serverへ操作要求を送ります。"
+          "note": "UIは正本を持たず、PC上のLaunch Serverへ操作要求を送ります。停止対象は、そのLaunch Serverが起動したmanaged targetだけです。"
         },
         {
           "from": "devManager",

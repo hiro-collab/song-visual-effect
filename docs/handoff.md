@@ -30,6 +30,7 @@
 - fixture player内に中立的な `builtin:fixture-soft-light` adapter registryを置いている。外部adapter読み込みはまだ無効。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 - 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
+- Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。
 
 ## 新しいスレッドの開始手順
 
@@ -146,6 +147,7 @@ Launch Managerを変更する場合:
 - 最初はmanaged targetだけを扱う。
 - 複数Launch Server調停、attached/delegated、自動port再割当、LAN公開、スマホ専用UIはMVPに含めない。
 - GUIから任意コマンドを入力させない。起動可能なものはローカルの `launch/targets.json` に書かれたTargetだけ。
+- 停止対象はLaunch Serverが起動してPIDを持つtargetだけ。PC全体の同名プロセスや他worktreeのtargetを停止対象にしない。
 - `scripts/dev-manager.mjs` は互換入口。実装本体は `scripts/launch-manager/`。
 
 ## 新規曲パック: traffic-jam
