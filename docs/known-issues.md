@@ -69,7 +69,7 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 
 現在の対策:
 
-- 既定では `127.0.0.1` にbindする。
+- loopback host以外へのbindを起動時に拒否する。
 - 状態変更APIは同一origin相当のブラウザリクエストだけを受け付ける。
 - ログはHTMLとして解釈せず、テキストとして表示する。
 
@@ -108,5 +108,5 @@ song-pack serverは、ローカル曲パッケージをブラウザへ配信し�
 
 注意:
 
-- `SONG_PACK_HOST=0.0.0.0` のように外部公開しない。
+- `SONG_PACK_HOST=0.0.0.0` のような外部公開設定は起動時に拒否される。
 - fixture playerのoriginを変えたら `SONG_PACK_CORS_ORIGINS` を明示する。

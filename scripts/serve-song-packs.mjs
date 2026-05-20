@@ -35,6 +35,14 @@ const baseSecurityHeaders = {
   "Referrer-Policy": "no-referrer"
 };
 
+const assertLoopbackHost = (value, label) => {
+  if (!["127.0.0.1", "localhost", "::1"].includes(value)) {
+    throw new Error(`${label} must be a loopback host. Refusing to bind to ${value}.`);
+  }
+};
+
+assertLoopbackHost(host, "SONG_PACK_HOST");
+
 const corsHeadersFor = (request) => {
   const origin = request.headers.origin;
   if (!origin) return {};
