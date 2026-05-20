@@ -69,6 +69,8 @@ docs/song-authoring.md
 
 ## Included Fixture
 
+この節は動作確認用です。新しい曲を設計するときの入口ではありません。
+
 現在は動作確認用の曲パッケージとして、魔王魂「Shining Star」を同梱しています。
 
 ```text

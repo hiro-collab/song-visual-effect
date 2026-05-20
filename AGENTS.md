@@ -12,15 +12,35 @@
 - 歌詞ファイルはUTF-8として扱い、日本語を壊さない。
 - 実装後は `npm run build` など、可能な確認を行う。
 
-## 最初に読むファイル
+## 読むファイルの分岐
 
-- `README.md`: 起動方法と利用方法。
+作業の種類によって読むファイルを分ける。新しい曲を作る場合は、既存曲やfixtureの情報に触れないことを優先する。
+
+### 新しい曲を作る場合
+
+まず次だけを読む。
+
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。
+- `docs/decisions.md`: 重要な設計判断。
+
+読まないもの:
+
+- `song-packs/*`
+- 既存曲のmanifest、analysis、design、adapter、演出コード
+- `README.md` のfixture節
+- `docs/handoff.md` のfixture確認URL
+
+必要になった場合でも、ユーザーの明示許可なしに既存曲を参考にしない。
+
+### システム改修や既存機能修正の場合
+
+必要に応じて次を読む。
+
+- `README.md`: 起動方法と利用方法。
 - `docs/handoff.md`: 現在状態と次にやるべきこと。
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: ディレクトリと主要ファイルの役割。
-- `docs/decisions.md`: 重要な設計判断と理由。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 
 ## 設計上の重要原則

@@ -1,8 +1,21 @@
 $ErrorActionPreference = "Stop"
 
-$songUrl = "www.youtube.com/watch?v=Qd01-6xVSHk"
-$encoded = [System.Uri]::EscapeDataString($songUrl)
-$outDir = Join-Path $PSScriptRoot "..\song-packs\shining-star\analysis"
+param(
+  [string]$SongId,
+  [string]$SongUrl
+)
+
+if (-not $SongId -or -not $SongUrl) {
+  Write-Host "Usage:"
+  Write-Host "  npm run download:songle -- -SongId <song-id> -SongUrl <songle-target-url>"
+  Write-Host ""
+  Write-Host "Example target URL format:"
+  Write-Host "  www.youtube.com/watch?v=..."
+  exit 1
+}
+
+$encoded = [System.Uri]::EscapeDataString($SongUrl)
+$outDir = Join-Path $PSScriptRoot "..\song-packs\$SongId\analysis"
 
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 

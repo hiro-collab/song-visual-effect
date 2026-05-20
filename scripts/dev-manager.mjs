@@ -19,7 +19,7 @@ const services = {
     label: "Song pack server",
     command: npmCommand,
     args: npmArgs("run", "dev:songs"),
-    url: "http://127.0.0.1:5174/shining-star/manifest.json"
+    url: "http://127.0.0.1:5174/"
   }
 };
 
@@ -199,7 +199,8 @@ const html = () => `<!doctype html>
         <div class="actions">
           <button data-action="start-all">全て起動</button>
           <button data-action="stop-all">全て停止</button>
-          <a class="launch" href="http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json" target="_blank" rel="noreferrer">fixtureを開く</a>
+          <a class="launch" href="http://127.0.0.1:5173/" target="_blank" rel="noreferrer">空のsystemを開く</a>
+          <a class="launch" href="http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json" target="_blank" rel="noreferrer">動作確認fixture</a>
           <a class="launch" href="http://127.0.0.1:5173/docs/workflows.html" target="_blank" rel="noreferrer">ワークフロー地図</a>
         </div>
       </header>

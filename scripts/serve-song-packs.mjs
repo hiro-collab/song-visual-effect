@@ -112,6 +112,20 @@ const server = createServer((request, response) => {
   }
 
   const url = new URL(request.url, `http://${host}:${port}`);
+  if (url.pathname === "/") {
+    send(
+      response,
+      200,
+      [
+        "Song pack server",
+        "",
+        "Use /<song-id>/manifest.json as a song manifest URL.",
+        "Existing song packs are fixtures, not templates for new songs."
+      ].join("\n"),
+      { "Content-Type": "text/plain; charset=utf-8" }
+    );
+    return;
+  }
   const filePath = filePathFor(url.pathname);
   if (!filePath || !existsSync(filePath)) {
     send(response, 404, "Not found");
@@ -123,5 +137,4 @@ const server = createServer((request, response) => {
 
 server.listen(port, host, () => {
   console.log(`Song pack server: http://${host}:${port}/`);
-  console.log(`Fixture manifest: http://${host}:${port}/shining-star/manifest.json`);
 });
