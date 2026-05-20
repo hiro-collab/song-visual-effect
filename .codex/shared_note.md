@@ -105,6 +105,9 @@ Keep `AGENTS.md` small. Put details in `docs/`. Update `docs/handoff.md` after m
   - `_worktrees/traffic-jam-effect`: `codex/traffic-jam-effect`
   - `_worktrees/launch-manager`: `codex/launch-manager`
 - See `docs/worktree-guide.md` before starting parallel Codex threads.
+- Use `npm run sync:check` at the start of work and at safe stopping points.
+- Use `npm run sync:ready -- -m "short message"` after a clean commit that other worktrees may merge.
+- See `docs/worktree-sync.md` for the ready/check/merge flow.
 
 ## Manual Lyric Timing
 

@@ -9,7 +9,12 @@
     "dev:system": "vite --host 127.0.0.1",
     "dev:songs": "node scripts/serve-song-packs.mjs",
     "build": "tsc --noEmit && vite build",
-    "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1"
+    "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1",
+    "sync:ready": "node scripts/worktree-sync.mjs ready",
+    "sync:check": "node scripts/worktree-sync.mjs check",
+    "sync:merge": "node scripts/worktree-sync.mjs merge",
+    "sync:list": "node scripts/worktree-sync.mjs list",
+    "sync:watch": "node scripts/worktree-sync.mjs watch"
   },
   "devDependencies": {
     "typescript": "^5.8.3",
