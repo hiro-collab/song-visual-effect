@@ -22,7 +22,7 @@
       "file": "src/main.ts",
       "x": 28,
       "y": 38,
-      "description": "現在の司令塔です。起動、入力登録、再生状態、フレーム更新、歌詞表示、エフェクト描画をまとめます。"
+      "description": "現在の司令塔です。起動、入力登録、再生状態、フレーム更新、歌詞表示、曲adapter接続をまとめます。"
     },
     {
       "id": "manifest",
@@ -75,12 +75,22 @@
       "description": "requestAnimationFrame(tick)で毎フレーム更新します。現在時刻を見て、歌詞と映像を更新します。"
     },
     {
+      "id": "songAdapter",
+      "label": "曲adapter",
+      "kind": "adapter",
+      "group": "演出",
+      "file": "src/adapters",
+      "x": 38,
+      "y": 66,
+      "description": "同一ビルド内のbuiltin adapterです。system hostからcontextを受け取り、曲固有のcue文法を曲側で解釈します。外部adapter読み込みはまだ無効です。"
+    },
+    {
       "id": "effects",
       "label": "エフェクト群",
       "kind": "visual",
       "group": "演出",
       "file": "src/effects",
-      "x": 50,
+      "x": 55,
       "y": 66,
       "description": "粒子、光線ネットワーク、色ramp、ダンピング制御を担当します。現在はfixture用の柔らかい光表現で、新しい曲のテンプレートではありません。"
     },
@@ -196,6 +206,13 @@
           "action": "MusicMapを返す",
           "payload": "beats、chorus、lyrics、lyricLines、markers、palette、source",
           "note": "以後の表示と演出はこのMusicMapを読みます。"
+        },
+        {
+          "from": "main",
+          "to": "songAdapter",
+          "action": "曲adapterを作る",
+          "payload": "SongAdapterContext、canvas、ctx",
+          "note": "manifest.webAdapterがbuiltinの場合だけ同一ビルド内adapterを選びます。外部コードはまだ読み込みません。"
         }
       ]
     },
@@ -257,10 +274,17 @@
         },
         {
           "from": "frameLoop",
+          "to": "songAdapter",
+          "action": "曲adapterへ時刻を渡す",
+          "payload": "time、dt、userGlow",
+          "note": "曲ごとの演出判断はadapter側が持ちます。"
+        },
+        {
+          "from": "songAdapter",
           "to": "effects",
-          "action": "発光、粒子、光線を更新",
-          "payload": "time、dt、beat、chorus、markers、pointer",
-          "note": "値は即時ジャンプさせず、ダンピングで柔らかく追従します。"
+          "action": "必要なエフェクトを更新",
+          "payload": "MusicMap、design.cues、beat、chorus、markers、pointer",
+          "note": "Traffic Jam adapterはvisual-cuesのchorus候補と間奏強調を曲側で解釈します。"
         },
         {
           "from": "effects",
@@ -373,29 +397,29 @@
     },
     {
       "id": "future-adapter",
-      "label": "将来の曲別Web Adapter化",
-      "summary": "曲固有の演出配線を曲側のadapterへ移し、システムは補助contextだけを渡します。",
-      "trigger": "次段階のリファクタリングでcreateSongApp(context)形式を導入する",
+      "label": "曲別Web Adapter化",
+      "summary": "曲固有の演出配線をadapterへ移し、システムは補助contextだけを渡します。",
+      "trigger": "manifest.webAdapterでbuiltin adapterを指定する",
       "steps": [
         {
           "from": "manifest",
-          "to": "songPack",
+          "to": "songAdapter",
           "action": "webAdapterを指定",
-          "payload": "adapters/web/app.js",
-          "note": "manifestは曲側の実装入口を持てますが、別システム用adapterも併存できます。"
+          "payload": "builtin:traffic-jam など",
+          "note": "現段階では同一ビルド内のbuiltin adapterのみ許可します。外部adapterはセキュリティ設計後に扱います。"
         },
         {
           "from": "main",
-          "to": "transport",
+          "to": "songAdapter",
           "action": "contextを用意",
-          "payload": "transport、frame、input、assets、surface、tools、storage",
+          "payload": "MusicMap、raw manifest、base URL、asset reader",
           "note": "曲アプリは必要な補助だけを使います。"
         },
         {
-          "from": "main",
+          "from": "songAdapter",
           "to": "effects",
-          "action": "曲adapterへ制御を渡す",
-          "payload": "createSongApp(context)",
+          "action": "曲専用cueを解釈",
+          "payload": "design.cues、曲固有JSON、markers",
           "note": "曲の意味、演出判断、どのツールを使うかは曲側が決めます。"
         },
         {

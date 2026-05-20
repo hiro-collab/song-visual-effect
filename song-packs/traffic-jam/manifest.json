@@ -20,5 +20,5 @@
     "effect": "design/effect-direction.md",
     "cues": "analysis/visual-cues.json"
   },
-  "webAdapter": null
+  "webAdapter": "builtin:traffic-jam"
 }

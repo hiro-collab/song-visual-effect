@@ -31,28 +31,29 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 - `AGENTS.md` に、新しい曲作成時は既存の `song-packs/*` を読まないと明記する。
 - 既存曲はテンプレートではなくfixtureとして扱う。
 
-## fixture rendererがまだsystem側にある
+## fixture rendererはまだ同一ビルド内adapterに包んだ段階
 
 現在同梱している柔らかい光表現は、`src/renderers/softLightRenderer.ts` と `src/effects/` にあります。
 
 次の改善:
 
-- fixture rendererを曲側adapter候補として切り出す。
+- fixture rendererを本当の曲パッケージ側adapterへ移すか、system fixtureとして明確に隔離する。
 - system hostは補助contextだけを渡す形に近づける。
 
-## 曲専用cue JSONは読めるが、まだ共通rendererには反映しない
+## 曲専用cue JSONの利用はTraffic Jam adapterで最初の実装段階
 
 `manifest.json` の `design.cues` は、曲adapter contextから `readDesignCues()` で読めるようになりました。
 
 影響:
 
 - 曲ごとの自由なcue文法はsystem側で固定解釈しない。
-- 現行のfixture rendererは `design.cues` を演出に反映しない。
-- 間奏、バッシング、視線、衝突ブローのような曲専用cueは、曲adapterが解釈する必要があります。
+- `builtin:traffic-jam` は `analysis/visual-cues.json` のchorus候補と間奏freezeを曲adapter側で解釈する。
+- 現行のfixture adapterは `design.cues` を演出に反映しない。
+- バッシング、視線、衝突ブローのような曲専用cueは、今後も曲adapterが解釈する必要があります。
 
 次の改善:
 
-- 曲adapter実装を導入し、`readDesignCues()` で取得したJSONを曲側の文法として解釈する。
+- Traffic Jam adapterの表現を、現在のsoft light流用から曲専用の見た目へ発展させる。
 - `markers` は共通/簡易表示用、`design.cues` は曲専用文法として分け続ける。
 
 ## `src/main.ts` の責務分離は進行中

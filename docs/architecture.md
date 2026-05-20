@@ -88,10 +88,13 @@ system hostの非責務:
 
 ```text
 src/main.ts
-  起動、入力登録、renderer/toolの接続
+  起動、入力登録、song adapter/toolの接続
 
 src/runtime/
-  DOM取得、再生制御、フレームループ
+  DOM取得、再生制御、フレームループ、song adapter context
+
+src/adapters/
+  system hostと曲固有adapterの接続
 
 src/data/assets.ts
   manifest読み込みと最小MusicMap変換
@@ -109,7 +112,9 @@ src/lyrics/
   歌詞タイミング調整のデータ処理
 ```
 
-現在はfixture用の描画実装がまだsystem側に残っています。次段階では、曲固有のrendererやadapterを曲側へ移し、system hostは補助contextを渡すだけに近づけます。
+現在は同一ビルド内の `builtin:` adapterだけを許可しています。外部サーバーから任意コードを読み込むadapterは、セキュリティ設計が固まるまで無効です。
+
+`builtin:fixture-soft-light` は既存fixture rendererをadapterとして包みます。`builtin:traffic-jam` は曲専用の `design.cues` を読み、system側でcue文法を固定せずに曲adapter側で解釈する最初の例です。
 
 ## フレーム更新
 
@@ -118,7 +123,7 @@ src/lyrics/
 ```text
 requestAnimationFrame
   -> current time
-  -> song renderer / adapter
+  -> song adapter
   -> optional tools
   -> next frame
 ```
@@ -149,7 +154,7 @@ baseLyrics
 
 ## 今後の方向
 
-次段階では、曲固有の演出を曲パッケージ側のWeb adapterへ移します。
+次段階では、曲固有の演出をより曲パッケージ側のWeb adapterへ移します。
 
 ```text
 system host
@@ -159,4 +164,4 @@ song web adapter
   createSongApp(context)
 ```
 
-外部サーバーからWeb adapterを直接読み込む設計は、任意コード実行や信頼境界の問題があります。最初は同一ビルド内でadapterを分離し、外部adapter化はセキュリティ設計を固めてから行います。
+外部サーバーからWeb adapterを直接読み込む設計は、任意コード実行や信頼境界の問題があります。現在は同一ビルド内でadapterを分離し、外部adapter化はセキュリティ設計を固めてから行います。

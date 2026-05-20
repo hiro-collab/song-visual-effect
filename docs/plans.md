@@ -88,6 +88,8 @@ export function createSongApp(context) {
 - `song-packs/<song-id>/adapters/web/` への移動を検討する。
 - manifestの `design.cues` のような曲専用cue JSONを、system hostが固定スキーマへ潰さずadapterへ渡せるようにする。初期helperは実装済み。
 - adapterには `MusicMap` だけでなく、raw manifest、base URL、任意の曲所有JSONを安全に読むためのhelperを渡す。初期helperは実装済み。
+- 同一ビルド内の `builtin:` adapter registryは実装済み。外部adapter読み込みはまだ無効。
+- `builtin:traffic-jam` は `readDesignCues()` で `analysis/visual-cues.json` を読み、chorus候補と間奏強調を曲adapter側で解釈する。
 
 ## P3a: 曲専用cueとfixture向けmarkersを分離する
 
@@ -99,10 +101,11 @@ export function createSongApp(context) {
 - `MusicMap.markers` は `warmSections` / `lineEmphasis` など、現在のrenderer寄りの形になっている。
 - 新しい曲では、間奏、バッシング、視線、衝突ブローなど、曲専用のcue文法が必要になる。
 - `manifest.design.cues` は `SongAdapterContext.assets.readDesignCues()` で読み込める。
+- `manifest.webAdapter` に `builtin:traffic-jam` を指定すると、同一ビルド内のTraffic Jam adapterがcueを読む。
 
 候補:
 
-- 曲adapter実装を導入し、`SongManifest.design.cues` を曲側の文法として解釈する。
+- 曲adapter実装をさらに育て、`SongManifest.design.cues` を曲側の文法として解釈する。
 - system共通の `markers` は後方互換/簡易renderer用に残す。
 - 曲専用cueはschema名だけ確認し、中身は曲adapterが解釈する。
 - Songle由来の拍/サビと、手動で打つキック/ブロー/歌詞アクセントを別レイヤーとして扱う。
@@ -179,5 +182,6 @@ system server、song-pack server、将来の保存APIを手作業で1つずつ�
 候補:
 
 - 取得後に、拍数、推定BPM、サビ候補、認識日時を短く表示する。
+- 取得後の拍数、推定BPM、サビ候補、認識日時の表示は実装済み。
 - `manifest.json` のanalysis欄を生成する補助オプションを検討する。
 - セキュリティ専用レビューで、許可URL、最大サイズ、保存先、ログ出力を再確認する。

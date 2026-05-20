@@ -107,3 +107,12 @@
   - `npm run sync:list`
   - `npm run sync:watch`
 - The sync notice board is stored under Git's common directory, so all local worktrees can see it without committing the notice log.
+
+## 2026-05-20 Adapter Cues Resume
+
+- Added same-build song adapter interfaces and registry under `src/adapters/`.
+- Kept external adapter loading disabled; only `builtin:` adapters are selected.
+- Wrapped the existing soft light renderer as `builtin:fixture-soft-light`.
+- Added `builtin:traffic-jam`, which reads `design.cues` through `SongAdapterContext.assets.readDesignCues()` and interprets chorus candidates plus interlude emphasis inside the song adapter.
+- Updated `song-packs/traffic-jam/manifest.json` to use `webAdapter: "builtin:traffic-jam"`.
+- Improved `scripts/download-songle-json.ps1` with a post-download summary: title, duration, Songle recognized/updated times, beat count, BPM median/average, and chorus repeat ranges.

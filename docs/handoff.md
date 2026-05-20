@@ -21,6 +21,8 @@
 - `docs/workflows.html` / `docs/workflows.json` にワークフロー地図がある。
 - `song-packs/traffic-jam/` に、煮ル果実「トラフィック・ジャム」の実装前設計パックがある。音源と歌詞全文は含めず、Songle公開JSON、最小manifest、演出方針ドキュメントだけを置いている。
 - 曲adapter向けに `SongAdapterContext` を追加し、raw manifest、base URL、`readJson()`、`readText()`、`readDesignCues()` を渡せるようにした。system hostは `design.cues` の中身を固定解釈しない。
+- 同一ビルド内の `builtin:` adapter registryを追加した。外部adapter読み込みはまだ無効。
+- `song-packs/traffic-jam/manifest.json` は `webAdapter: "builtin:traffic-jam"` を指定し、adapterが `analysis/visual-cues.json` を読む。
 
 重要:
 
@@ -83,6 +85,7 @@ http://127.0.0.1:5173/docs/workflows.html
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲作成時のアンカー回避ルール。
 - `src/main.ts`: system hostの入口。
+- `src/adapters/`: 同一ビルド内adapter registryとbuiltin adapters。
 - `src/runtime/`: DOM、transport、frame loop。
 - `src/data/assets.ts`: manifestと曲データの読み込み。
 - `src/tools/lyricTimingTool.ts`: optional lyric timing tool。
@@ -92,8 +95,8 @@ http://127.0.0.1:5173/docs/workflows.html
 
 優先度が高い順:
 
-1. 曲固有のfixture rendererを、system標準ではなく曲側adapter候補として切り出す。
-2. `traffic-jam` 用の曲adapterを作り、`readDesignCues()` で `analysis/visual-cues.json` を読む。
+1. Traffic Jam adapterを、現在のsoft light流用から曲専用の見た目へ発展させる。
+2. 曲固有のfixture rendererを、system標準ではなく曲側adapter候補としてさらに切り出す。
 3. `docs/workflows.json` に「新しい曲作成時は既存曲を読まない」フローを反映し続ける。
 4. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
 5. 色味プリセットやライブ用雰囲気切り替えUIを追加する。
@@ -108,7 +111,7 @@ http://127.0.0.1:5173/docs/workflows.html
 
 現在の中身:
 
-- `song-packs/traffic-jam/manifest.json`: 最小manifest。Songle JSON、palette、markers、設計文書へのパスを持つ。
+- `song-packs/traffic-jam/manifest.json`: 最小manifest。Songle JSON、palette、markers、設計文書へのパスと `builtin:traffic-jam` adapter指定を持つ。
 - `song-packs/traffic-jam/design/effect-direction.md`: 暗い世界、鋭い視線、選択的な衝突ブロー、バッシング、間奏freezeを中心にした演出方針。
 - `song-packs/traffic-jam/analysis/`: Songle Widget APIから取得した `song.json`、`beat.json`、`chord.json`、`melody.json`、`chorus.json` と、曲側で作った `visual-cues.json`、`markers.json`、`palette.json`。
 - `song-packs/traffic-jam/CREDITS.md`: 外部リンクとクレジットメモ。
@@ -116,7 +119,7 @@ http://127.0.0.1:5173/docs/workflows.html
 次にやるなら:
 
 - 低ポリ車、信号機、標識、矢印、シルエット程度の簡単な素材方針を決める。
-- `SongAdapterContext.assets.readDesignCues()` を使って `analysis/visual-cues.json` を読む曲専用adapterを作る。
+- `SongAdapterContext.assets.readDesignCues()` を使って `analysis/visual-cues.json` を読む曲専用adapterの表現を強化する。
 - 強いキック/ブロー、責任転嫁が強い歌詞箇所、間奏の入り/戻りを手動マーカーとして追加する。
 
 ## 文脈管理の意図

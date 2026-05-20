@@ -14,6 +14,141 @@ function Fail($Message) {
   exit 1
 }
 
+function ReadJsonFile($Path) {
+  if (-not (Test-Path -LiteralPath $Path)) {
+    return $null
+  }
+  return Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json
+}
+
+function ConvertToSeconds($Value) {
+  if ($null -eq $Value) {
+    return $null
+  }
+
+  try {
+    $number = [double]$Value
+  } catch {
+    return $null
+  }
+
+  if ([double]::IsNaN($number) -or [double]::IsInfinity($number)) {
+    return $null
+  }
+
+  if ($number -gt 1000) {
+    return $number / 1000
+  }
+  return $number
+}
+
+function FormatSeconds($Value) {
+  $seconds = ConvertToSeconds $Value
+  if ($null -eq $seconds) {
+    return ""
+  }
+  return "{0:N2}s" -f $seconds
+}
+
+function FormatBpmSummary($BeatJson) {
+  if ($null -eq $BeatJson -or $null -eq $BeatJson.beats) {
+    return ""
+  }
+
+  $bpmValues = @()
+  foreach ($beat in @($BeatJson.beats)) {
+    if ($null -ne $beat.bpm) {
+      try {
+        $bpm = [double]$beat.bpm
+        if (-not [double]::IsNaN($bpm) -and -not [double]::IsInfinity($bpm) -and $bpm -gt 0) {
+          $bpmValues += $bpm
+        }
+      } catch {
+        # Ignore non-numeric BPM values.
+      }
+    }
+  }
+
+  if (-not $bpmValues.Count) {
+    return ""
+  }
+
+  $sorted = @($bpmValues | Sort-Object)
+  $middle = [int][Math]::Floor($sorted.Count / 2)
+  if ($sorted.Count % 2 -eq 0) {
+    $median = ($sorted[$middle - 1] + $sorted[$middle]) / 2
+  } else {
+    $median = $sorted[$middle]
+  }
+
+  $average = ($bpmValues | Measure-Object -Average).Average
+  return ("BPM median {0:N1}, average {1:N1}" -f $median, $average)
+}
+
+function WriteDownloadedSummary($DownloadedFiles) {
+  Write-Host ""
+  Write-Host "Summary:"
+
+  if ($DownloadedFiles.ContainsKey("song")) {
+    $songJson = ReadJsonFile $DownloadedFiles["song"]
+    if ($null -ne $songJson) {
+      $duration = FormatSeconds $songJson.duration
+      if ($songJson.title) {
+        Write-Host "  Title: $($songJson.title)"
+      }
+      if ($duration) {
+        Write-Host "  Duration: $duration"
+      }
+      if ($songJson.recognizedAt) {
+        Write-Host "  Songle recognizedAt: $($songJson.recognizedAt)"
+      }
+      if ($songJson.updatedAt) {
+        Write-Host "  Songle updatedAt: $($songJson.updatedAt)"
+      }
+    }
+  }
+
+  if ($DownloadedFiles.ContainsKey("beat")) {
+    $beatJson = ReadJsonFile $DownloadedFiles["beat"]
+    if ($null -ne $beatJson -and $null -ne $beatJson.beats) {
+      $beatCount = @($beatJson.beats).Count
+      Write-Host "  Beats: $beatCount"
+      $bpmSummary = FormatBpmSummary $beatJson
+      if ($bpmSummary) {
+        Write-Host "  $bpmSummary"
+      }
+    }
+  }
+
+  if ($DownloadedFiles.ContainsKey("chorus")) {
+    $chorusJson = ReadJsonFile $DownloadedFiles["chorus"]
+    if ($null -ne $chorusJson -and $null -ne $chorusJson.chorusSegments) {
+      $chorusRepeats = @()
+      foreach ($segment in @($chorusJson.chorusSegments)) {
+        if ($segment.isChorus -eq $false) {
+          continue
+        }
+        foreach ($repeat in @($segment.repeats)) {
+          if ($null -ne $repeat.start -and $null -ne $repeat.duration) {
+            $chorusRepeats += $repeat
+          }
+        }
+      }
+      Write-Host "  Chorus repeats: $($chorusRepeats.Count)"
+      foreach ($repeat in @($chorusRepeats | Select-Object -First 6)) {
+        $start = FormatSeconds $repeat.start
+        $duration = FormatSeconds $repeat.duration
+        if ($start -and $duration) {
+          Write-Host "    - start $start, duration $duration"
+        }
+      }
+      if ($chorusRepeats.Count -gt 6) {
+        Write-Host "    - ..."
+      }
+    }
+  }
+}
+
 if (-not $SongId -or -not $SongUrl) {
   Write-Host "Usage:"
   Write-Host "  npm run download:songle -- -SongId <song-id> -SongUrl <songle-target-url> [-Targets beat,chorus,chord] [-SkipMelody]"
@@ -89,6 +224,7 @@ Write-Host "SongUrl: $normalizedSongUrl"
 Write-Host "Targets: $($targetNames -join ', ')"
 Write-Host "Output: $fullOutDir"
 
+$downloadedFiles = @{}
 foreach ($targetName in $targetNames) {
   $fileName = "$targetName.json"
   $path = Join-Path $fullOutDir $fileName
@@ -108,6 +244,7 @@ foreach ($targetName in $targetNames) {
 
     Get-Content -LiteralPath $tempPath -Raw -Encoding UTF8 | ConvertFrom-Json | Out-Null
     Move-Item -LiteralPath $tempPath -Destination $path -Force
+    $downloadedFiles[$targetName] = $path
   } finally {
     if (Test-Path -LiteralPath $tempPath) {
       Remove-Item -LiteralPath $tempPath -Force
@@ -116,3 +253,4 @@ foreach ($targetName in $targetNames) {
 }
 
 Write-Host "Saved Songle JSON files to $fullOutDir"
+WriteDownloadedSummary $downloadedFiles

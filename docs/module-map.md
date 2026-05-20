@@ -12,7 +12,7 @@
 
 ## src
 
-- `src/main.ts`: system hostの入口。DOM取得、起動、入力登録、transport、renderer、optional toolを接続する。
+- `src/main.ts`: system hostの入口。DOM取得、起動、入力登録、transport、song adapter、optional toolを接続する。
 - `src/styles.css`: アプリ本体の見た目。Canvas上の歌詞、操作バー、Lyric Timingパネル、シーケンスバーなど。
 - `src/types.ts`: MusicMap、SongManifest、歌詞、beat、markersなどの型定義。
 
@@ -21,6 +21,14 @@
 - `src/runtime/dom.ts`: system appのDOM要素を取得する。
 - `src/runtime/transport.ts`: 再生、停止、シーク、現在時刻を扱う。
 - `src/runtime/frameLoop.ts`: `requestAnimationFrame` によるフレーム更新。
+- `src/runtime/songAdapterContext.ts`: 曲adapterへ渡す補助context。manifest、base URL、曲パッケージ内asset readerを持つ。
+
+## src/adapters
+
+- `src/adapters/types.ts`: system hostと曲adapterの最小インターフェース。
+- `src/adapters/registry.ts`: 同一ビルド内の `builtin:` adapterだけを選択する。外部adapterはまだ読み込まない。
+- `src/adapters/builtin/fixtureSoftLight.ts`: 既存fixture rendererをadapterとして包む。
+- `src/adapters/builtin/trafficJam.ts`: `design.cues` を曲専用文法として読み、Traffic Jam向けにchorus候補と間奏強調を解釈する。
 
 ## src/data
 
@@ -63,7 +71,7 @@
 
 ## scripts
 
-- `scripts/download-songle-json.ps1`: Songle Widget APIからJSONを取得するPowerShellスクリプト。
+- `scripts/download-songle-json.ps1`: Songle Widget APIからJSONを取得するPowerShellスクリプト。許可URL、保存先、取得対象、最大サイズを検証し、取得後に曲長、拍数、BPM、サビ候補を要約する。
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
 - `scripts/dev-manager.mjs`: system server と song-pack server をまとめて起動・停止する起動管理サーバー。
 

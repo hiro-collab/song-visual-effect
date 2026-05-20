@@ -89,9 +89,13 @@ No implicit default song should be loaded.
 - `readText()`
 - `readDesignCues()`
 
-The system host may confirm that `design.cues` is readable, but it must not
-interpret the cue schema as a system-level standard. Song adapters own cue
-semantics.
+The system host must not interpret the cue schema as a system-level standard.
+Song adapters own cue semantics.
+
+`src/adapters/registry.ts` now selects same-build `builtin:` adapters only.
+External adapter loading is intentionally disabled for now. `builtin:traffic-jam`
+uses `readDesignCues()` to read `analysis/visual-cues.json` and interpret chorus
+candidates plus interlude emphasis inside the song adapter.
 
 ## Notes For Future Agents
 

@@ -6,8 +6,9 @@ import { getAppElements } from "./runtime/dom";
 import { Transport } from "./runtime/transport";
 import { startFrameLoop } from "./runtime/frameLoop";
 import { createSongAdapterContext, type SongAdapterContext } from "./runtime/songAdapterContext";
+import { createSongApp } from "./adapters/registry";
+import type { SongApp } from "./adapters/types";
 import { lyricAt } from "./music/timing";
-import { SoftLightRenderer } from "./renderers/softLightRenderer";
 import { LyricTimingTool } from "./tools/lyricTimingTool";
 
 const elements = getAppElements();
@@ -30,9 +31,9 @@ const {
 
 let musicMap: MusicMap;
 let transport: Transport;
-let renderer: SoftLightRenderer;
 let timingTool: LyricTimingTool;
 let songContext: SongAdapterContext;
+let songApp: SongApp;
 
 const setPlayingIcon = () => {
   const playing = transport?.isPlaying() ?? false;
@@ -52,7 +53,7 @@ const updateLyrics = (time: number) => {
 const tick = (_now: number, dt: number) => {
   const time = currentTime() % musicMap.duration;
   const userGlow = Number.parseFloat(glowRange.value);
-  renderer.render(musicMap, time, dt, userGlow);
+  songApp.render({ time, dt, userGlow });
   updateLyrics(time);
 
   const duration = transport.duration(musicMap.duration);
@@ -60,11 +61,11 @@ const tick = (_now: number, dt: number) => {
 };
 
 const setupInput = () => {
-  window.addEventListener("resize", () => renderer.resize());
-  window.addEventListener("pointermove", (event) => renderer.pointerMove(event));
-  window.addEventListener("pointerleave", () => renderer.pointerLeave());
-  window.addEventListener("pointerdown", (event) => renderer.pointerDown(event));
-  window.addEventListener("pointerup", () => renderer.pointerUp());
+  window.addEventListener("resize", () => songApp.resize());
+  window.addEventListener("pointermove", (event) => songApp.pointerMove?.(event));
+  window.addEventListener("pointerleave", () => songApp.pointerLeave?.());
+  window.addEventListener("pointerdown", (event) => songApp.pointerDown?.(event));
+  window.addEventListener("pointerup", () => songApp.pointerUp?.());
 
   playToggle.addEventListener("click", () => {
     transport.toggle();
@@ -110,31 +111,27 @@ const boot = async () => {
     transport = new Transport(audio, setPlayingIcon);
     musicMap = await loadMusicMap();
     songContext = createSongAdapterContext(musicMap);
-    const designCuesStatus = songContext.assets.designCuesUrl
-      ? (await songContext.assets.readDesignCues()) === null
-        ? " / cues unreadable"
-        : " / cues ready"
-      : "";
+    songApp = await createSongApp(songContext, { canvas, ctx });
     document.title = `${musicMap.title} - Music Effect`;
     songTitle.textContent = musicMap.title;
     songArtist.textContent = musicMap.artist;
-    renderer = new SoftLightRenderer(canvas, ctx, musicMap);
     timingTool = new LyricTimingTool({
       elements,
       musicMap,
       transport,
       onSeek: updateLyrics,
-      resetVisualTiming: () => renderer.resetBeat()
+      resetVisualTiming: () => songApp.resetVisualTiming?.()
     });
-    renderer.resize();
+    songApp.resize();
     setupInput();
     timingTool.bindControls();
     timingTool.initialize();
     const audioPath = await findBundledAudio(musicMap);
     if (audioPath) transport.setAudioPath(audioPath);
+    const adapterStatus = songApp.status ? ` / ${songApp.status}` : "";
     dataStatus.textContent = musicMap.warnings.length
-      ? `${musicMap.title}: ${musicMap.warnings.join(" / ")}${designCuesStatus}`
-      : `${musicMap.title}: song pack ready${designCuesStatus}`;
+      ? `${musicMap.title}: ${musicMap.warnings.join(" / ")}${adapterStatus}`
+      : `${musicMap.title}: song pack ready${adapterStatus}`;
     startFrameLoop(tick);
   } catch (error) {
     reportBootError(error);
