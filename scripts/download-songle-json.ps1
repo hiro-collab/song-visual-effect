@@ -14,6 +14,45 @@ function Fail($Message) {
   exit 1
 }
 
+function GetValidatedSongUrl($Value) {
+  $trimmed = $Value.Trim()
+  if ($trimmed -match "[\x00-\x1f]") {
+    Fail "SongUrl contains control characters."
+  }
+
+  $candidate = $trimmed
+  if ($candidate -notmatch "^[a-z][a-z0-9+.-]*://") {
+    $candidate = "https://$candidate"
+  }
+
+  [System.Uri]$uri = $null
+  if (-not [System.Uri]::TryCreate($candidate, [System.UriKind]::Absolute, [ref]$uri)) {
+    Fail "SongUrl must be an absolute or scheme-less HTTP(S) URL."
+  }
+  if ($uri.Scheme -ne "http" -and $uri.Scheme -ne "https") {
+    Fail "SongUrl must use http or https."
+  }
+
+  $hostName = $uri.Host.ToLowerInvariant()
+  $path = $uri.AbsolutePath
+  $query = $uri.Query
+  $isYouTubeWatch =
+    ($hostName -eq "youtube.com" -or $hostName -eq "www.youtube.com" -or $hostName -eq "m.youtube.com") -and
+    $path -eq "/watch" -and
+    $query -match "(\?|&)v=[^&]+"
+  $isYouTubeShort = $hostName -eq "youtu.be" -and $path.Length -gt 1
+  $isNicoWatch =
+    ($hostName -eq "nicovideo.jp" -or $hostName -eq "www.nicovideo.jp") -and
+    $path.StartsWith("/watch/")
+  $isNicoShort = $hostName -eq "nico.ms" -and $path.Length -gt 1
+
+  if (-not ($isYouTubeWatch -or $isYouTubeShort -or $isNicoWatch -or $isNicoShort)) {
+    Fail "SongUrl must point to an allowed YouTube or NicoNico watch URL."
+  }
+
+  return $trimmed
+}
+
 function ReadJsonFile($Path) {
   if (-not (Test-Path -LiteralPath $Path)) {
     return $null
@@ -163,15 +202,7 @@ if ($SongId -notmatch "^[a-z0-9][a-z0-9._-]{0,63}$") {
   Fail "SongId must be lowercase ASCII and may contain only a-z, 0-9, dot, underscore, and hyphen."
 }
 
-$normalizedSongUrl = $SongUrl.Trim()
-if ($normalizedSongUrl -match "[\x00-\x1f]") {
-  Fail "SongUrl contains control characters."
-}
-
-$songUrlWithoutScheme = $normalizedSongUrl -replace "^https?://", ""
-if ($songUrlWithoutScheme -notmatch "^(www\.)?youtube\.com/watch\?v=|youtu\.be/|www\.nicovideo\.jp/watch/|nico\.ms/") {
-  Fail "SongUrl must point to an allowed YouTube or NicoNico watch URL."
-}
+$normalizedSongUrl = GetValidatedSongUrl $SongUrl
 
 $targetNames = @()
 foreach ($target in $Targets) {

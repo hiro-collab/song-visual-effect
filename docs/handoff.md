@@ -23,6 +23,7 @@
 - 曲adapter向けに `SongAdapterContext` を追加し、raw manifest、base URL、`readJson()`、`readText()`、`readDesignCues()` を渡せるようにした。system hostは `design.cues` の中身を固定解釈しない。
 - 同一ビルド内の `builtin:` adapter registryを追加した。外部adapter読み込みはまだ無効。
 - `song-packs/traffic-jam/manifest.json` は `webAdapter: "builtin:traffic-jam"` を指定し、adapterが `analysis/visual-cues.json` を読む。
+- セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 
 重要:
 
@@ -42,6 +43,8 @@
 - 描画方式をCanvas2Dに固定しない。
 - 歌詞タイミング編集はoptional toolとして扱う。
 - 外部Web adapterは将来許容するが、まずは同一ビルド内でadapter分離する。
+- ローカル開発サーバーは外部ネットワークへ公開しない。
+- 秘密情報を曲パッケージ、docs、ログ、プロンプトへ置かない。
 
 ## 起動方法
 
@@ -87,8 +90,10 @@ http://127.0.0.1:5173/docs/workflows.html
 - `src/main.ts`: system hostの入口。
 - `src/adapters/`: 同一ビルド内adapter registryとbuiltin adapters。
 - `src/runtime/`: DOM、transport、frame loop。
+- `src/runtime/safeFetch.ts`: URL検証、曲パッケージ境界チェック、サイズ上限つきfetch。
 - `src/data/assets.ts`: manifestと曲データの読み込み。
 - `src/tools/lyricTimingTool.ts`: optional lyric timing tool。
+- `docs/security.md`: 信頼境界と運用ルール。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 
 ## 次にやるとよいこと

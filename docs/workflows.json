@@ -122,7 +122,7 @@
       "file": "scripts/serve-song-packs.mjs",
       "x": 91,
       "y": 14,
-      "description": "song-packsを別ポートで配信します。CORSを許可し、システムサーバーからmanifestやJSONを読めるようにします。"
+      "description": "song-packsを別ポートで配信します。CORSはsystem appのoriginに限定し、manifestやJSONを読めるようにします。"
     },
     {
       "id": "devManager",
@@ -370,14 +370,14 @@
           "to": "songServer",
           "action": "曲パックサーバーを起動",
           "payload": "npm run dev:songs",
-          "note": "song-packsをCORSつきで配信します。"
+          "note": "song-packsをsystem app origin向けCORSつきで配信します。"
         },
         {
           "from": "main",
           "to": "songServer",
           "action": "外部manifestを取得",
           "payload": "http://127.0.0.1:5174/<song-id>/manifest.json",
-          "note": "曲パックサーバーはCORSを許可してJSONを返します。"
+          "note": "曲パックサーバーは許可originだけにCORSヘッダーを返します。"
         },
         {
           "from": "songServer",

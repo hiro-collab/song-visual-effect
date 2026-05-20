@@ -1,6 +1,5 @@
 import type { MusicMap, SongManifest } from "../types";
-
-const JSON_HEADERS = { Accept: "application/json" };
+import { fetchBoundedJson, fetchBoundedText, resolveWithinBaseUrl } from "./safeFetch";
 
 type SongAssetReadOptions = {
   allowOutsidePackage?: boolean;
@@ -24,19 +23,8 @@ export type SongAdapterContext = {
   assets: SongAssetReader;
 };
 
-const isWithinPackage = (baseUrl: string, candidateUrl: string) => {
-  const base = new URL(baseUrl);
-  const candidate = new URL(candidateUrl);
-  return candidate.origin === base.origin && candidate.href.startsWith(base.href);
-};
-
 const resolveSongAsset = (baseUrl: string, path: string | null | undefined, options: SongAssetReadOptions = {}) => {
-  if (!path) return null;
-  const url = new URL(path, baseUrl).toString();
-  if (!options.allowOutsidePackage && !isWithinPackage(baseUrl, url)) {
-    throw new Error(`Song asset path escapes its package: ${path}`);
-  }
-  return url;
+  return resolveWithinBaseUrl(baseUrl, path, { allowOutsideBase: options.allowOutsidePackage });
 };
 
 export const createSongAdapterContext = (musicMap: MusicMap): SongAdapterContext => {
@@ -50,17 +38,13 @@ export const createSongAdapterContext = (musicMap: MusicMap): SongAdapterContext
   ): Promise<T | null> => {
     const url = resolve(path, options);
     if (!url) return null;
-    const response = await fetch(url, { headers: JSON_HEADERS, cache: "no-store" });
-    if (!response.ok) return null;
-    return (await response.json()) as T;
+    return fetchBoundedJson<T>(url);
   };
 
   const readText: SongAssetReader["readText"] = async (path, options) => {
     const url = resolve(path, options);
     if (!url) return "";
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) return "";
-    return response.text();
+    return (await fetchBoundedText(url)) ?? "";
   };
 
   const readDesignCues = async <T = unknown>(): Promise<T | null> => {

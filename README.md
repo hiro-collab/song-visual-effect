@@ -105,6 +105,14 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 - 演出タイミングは解析済みJSON、歌詞テキスト、手動マーカー、手動入力などから作る。
 - 公開やイベント利用時は、素材とAPIの利用条件を確認する。
 
+## Security Safety
+
+- 既定の開発サーバーは `127.0.0.1` で使い、外部ネットワークへ公開しないでください。
+- APIキー、秘密鍵、トークンを曲パッケージ、docs、プロンプト、ログに置かないでください。
+- manifest内の曲素材パスは、既定でその曲パッケージ配下だけを読みます。
+- system appのoriginを変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
+- 詳細は `docs/security.md` を参照してください。
+
 ## Workflow Map
 
 主要な流れは `docs/workflows.html` で確認できます。

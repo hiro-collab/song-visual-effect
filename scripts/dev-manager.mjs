@@ -7,6 +7,16 @@ const port = Number(process.env.DEV_MANAGER_PORT ?? 5172);
 const isWindows = platform() === "win32";
 const npmCommand = isWindows ? "cmd.exe" : "npm";
 const npmArgs = (...args) => (isWindows ? ["/c", "npm", ...args] : args);
+const allowedManagerOrigins = new Set([
+  `http://${host}:${port}`,
+  `http://127.0.0.1:${port}`,
+  `http://localhost:${port}`
+]);
+const baseSecurityHeaders = {
+  "Cache-Control": "no-store",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer"
+};
 
 const services = {
   system: {
@@ -117,10 +127,17 @@ const stopAll = () => Object.keys(services).map(stopService);
 
 const json = (response, status, body) => {
   response.writeHead(status, {
+    ...baseSecurityHeaders,
     "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "no-store"
   });
   response.end(JSON.stringify(body, null, 2));
+};
+
+const isTrustedBrowserOrigin = (request) => {
+  const origin = request.headers.origin;
+  if (origin && !allowedManagerOrigins.has(origin)) return false;
+  const fetchSite = request.headers["sec-fetch-site"];
+  return !fetchSite || fetchSite === "same-origin" || fetchSite === "none";
 };
 
 const html = () => `<!doctype html>
@@ -215,24 +232,46 @@ const html = () => `<!doctype html>
         await call("/api/" + verb + "/" + name, "POST");
         await refresh();
       };
+      const element = (tag, className, text) => {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      };
+      const serviceButton = (label, key, value) => {
+        const button = element("button", "", label);
+        button.dataset[key] = value;
+        return button;
+      };
       const render = (items) => {
         const root = document.getElementById("services");
-        root.innerHTML = "";
+        root.replaceChildren();
         for (const item of items) {
           const card = document.createElement("article");
           card.className = "card" + (item.running ? " running" : "");
-          card.innerHTML = \`
-            <h2>\${item.label}</h2>
-            <div class="status"><span class="dot"></span><span>\${item.running ? "起動中" : "停止中"} \${item.pid ? "(PID " + item.pid + ")" : ""}</span></div>
-            <p><code>\${item.url}</code></p>
-            <div class="row">
-              <button data-start="\${item.name}">起動</button>
-              <button data-stop="\${item.name}">停止</button>
-              <button data-restart="\${item.name}">再起動</button>
-              <a class="launch" href="\${item.url}" target="_blank" rel="noreferrer">開く</a>
-            </div>
-            <pre>\${item.logs.length ? item.logs.join("\\n") : "ログはまだありません。"}</pre>
-          \`;
+          card.append(element("h2", "", item.label));
+
+          const status = element("div", "status");
+          status.append(element("span", "dot"));
+          status.append(element("span", "", (item.running ? "起動中" : "停止中") + (item.pid ? " (PID " + item.pid + ")" : "")));
+          card.append(status);
+
+          const urlLine = document.createElement("p");
+          urlLine.append(element("code", "", item.url));
+          card.append(urlLine);
+
+          const row = element("div", "row");
+          row.append(serviceButton("起動", "start", item.name));
+          row.append(serviceButton("停止", "stop", item.name));
+          row.append(serviceButton("再起動", "restart", item.name));
+          const link = element("a", "launch", "開く");
+          link.href = item.url;
+          link.target = "_blank";
+          link.rel = "noreferrer";
+          row.append(link);
+          card.append(row);
+
+          card.append(element("pre", "", item.logs.length ? item.logs.join("\\n") : "ログはまだありません。"));
           root.append(card);
         }
       };
@@ -262,6 +301,10 @@ const handleApi = async (request, response, pathname) => {
     return true;
   }
   if (request.method !== "POST") return false;
+  if (!isTrustedBrowserOrigin(request)) {
+    json(response, 403, { ok: false, error: "Forbidden origin" });
+    return true;
+  }
   if (pathname === "/api/start-all") {
     startAll();
     json(response, 200, { ok: true });
@@ -289,9 +332,16 @@ const handleApi = async (request, response, pathname) => {
 };
 
 const server = createServer(async (request, response) => {
-  const url = new URL(request.url ?? "/", `http://${host}:${port}`);
+  let url;
+  try {
+    url = new URL(request.url ?? "/", `http://${host}:${port}`);
+  } catch {
+    response.writeHead(400, { ...baseSecurityHeaders, "Content-Type": "text/plain; charset=utf-8" });
+    response.end("Bad request");
+    return;
+  }
   if (url.pathname.startsWith("/api/") && (await handleApi(request, response, url.pathname))) return;
-  response.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+  response.writeHead(200, { ...baseSecurityHeaders, "Content-Type": "text/html; charset=utf-8" });
   response.end(html());
 });
 

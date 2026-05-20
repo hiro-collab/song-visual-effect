@@ -9,6 +9,7 @@
 - `docs/system-overview.md` と `docs/song-authoring.md` を、新しい曲作成時の中立入口として維持する。
 - 新しい曲作成では既存の `song-packs/*` を読まない運用を守る。
 - 歌詞タイミングJSONの更新手順を明確にする。
+- `docs/security.md` の信頼境界とローカルサーバー運用ルールを維持する。
 - 仕様変更前のドキュメント追加分をコミット済み。
 
 確認方法:
@@ -178,10 +179,11 @@ system server、song-pack server、将来の保存APIを手作業で1つずつ�
 - `scripts/download-songle-json.ps1` は `-Targets` と `-SkipMelody` で取得対象を選べる。
 - `SongId`、`SongUrl`、target名は検証される。
 - 取得したJSONはUTF-8で構文検証してから保存する。
+- 最大サイズと保存先境界を確認してから `song-packs/<song-id>/analysis/` へ保存する。
 
 候補:
 
 - 取得後に、拍数、推定BPM、サビ候補、認識日時を短く表示する。
 - 取得後の拍数、推定BPM、サビ候補、認識日時の表示は実装済み。
 - `manifest.json` のanalysis欄を生成する補助オプションを検討する。
-- セキュリティ専用レビューで、許可URL、最大サイズ、保存先、ログ出力を再確認する。
+- 許可URL、最大サイズ、保存先、ログ出力の条件を変更した場合は `docs/security.md` も更新する。

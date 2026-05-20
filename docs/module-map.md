@@ -21,6 +21,7 @@
 - `src/runtime/dom.ts`: system appのDOM要素を取得する。
 - `src/runtime/transport.ts`: 再生、停止、シーク、現在時刻を扱う。
 - `src/runtime/frameLoop.ts`: `requestAnimationFrame` によるフレーム更新。
+- `src/runtime/safeFetch.ts`: manifestや曲素材を安全に読むためのURL検証、パッケージ境界チェック、サイズ上限つきfetch。
 - `src/runtime/songAdapterContext.ts`: 曲adapterへ渡す補助context。manifest、base URL、曲パッケージ内asset readerを持つ。
 
 ## src/adapters
@@ -82,6 +83,7 @@
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: このファイル。ディレクトリとファイルの役割。
 - `docs/decisions.md`: 設計判断と理由。
+- `docs/security.md`: ローカル開発サーバー、manifest、曲素材、Songle取得ツールの信頼境界と対策。
 - `docs/plans.md`: 今後の作業候補。
 - `docs/known-issues.md`: 既知の問題と注意点。
 - `docs/handoff.md`: 次のCodexスレッドへ渡す要約。

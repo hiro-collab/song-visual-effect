@@ -1,15 +1,20 @@
 import type { Beat, LyricCue, Markers, MusicMap, Palette, Range, SongManifest } from "../types";
 import { DEFAULT_PALETTE } from "../effects/palette";
-
-const JSON_HEADERS = { Accept: "application/json" };
+import {
+  DEFAULT_MAX_TEXT_BYTES,
+  fetchBoundedJson,
+  fetchBoundedText,
+  resolveHttpUrl,
+  resolveWithinBaseUrl
+} from "../runtime/safeFetch";
 
 const compactPaths = (paths: Array<string | null | undefined>) => paths.filter((path): path is string => Boolean(path));
 
 const fetchText = async (paths: Array<string | null | undefined>) => {
   for (const path of compactPaths(paths)) {
     try {
-      const response = await fetch(path, { cache: "no-store" });
-      if (response.ok) return await response.text();
+      const text = await fetchBoundedText(path, { maxBytes: DEFAULT_MAX_TEXT_BYTES });
+      if (text !== null) return text;
     } catch {
       // Try the next path.
     }
@@ -20,8 +25,8 @@ const fetchText = async (paths: Array<string | null | undefined>) => {
 const fetchJson = async <T>(paths: Array<string | null | undefined>): Promise<T | null> => {
   for (const path of compactPaths(paths)) {
     try {
-      const response = await fetch(path, { headers: JSON_HEADERS, cache: "no-store" });
-      if (response.ok) return (await response.json()) as T;
+      const json = await fetchBoundedJson<T>(path);
+      if (json !== null) return json;
     } catch {
       // Try the next path.
     }
@@ -29,13 +34,12 @@ const fetchJson = async <T>(paths: Array<string | null | undefined>): Promise<T 
   return null;
 };
 
-const absoluteUrl = (path: string) => new URL(path, window.location.href).toString();
+const absoluteUrl = (path: string) => resolveHttpUrl(path, window.location.href);
 
 const sourceBaseUrl = (manifestUrl: string) => new URL(".", manifestUrl).toString();
 
 export const resolveSourcePath = (baseUrl: string, path: string | null | undefined) => {
-  if (!path) return null;
-  return new URL(path, baseUrl).toString();
+  return resolveWithinBaseUrl(baseUrl, path);
 };
 
 const isSongManifest = (value: unknown): value is SongManifest => {

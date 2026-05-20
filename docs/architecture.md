@@ -136,8 +136,23 @@ requestAnimationFrame
 - 指定された曲パッケージ内の素材だけを読む。
 - 別曲のデータへ勝手にフォールバックしない。
 - manifest URLがない、またはmanifestが読めない場合は起動失敗として扱う。
+- manifest URLと素材URLは `http:` / `https:` に限定する。
+- JSONとテキストはサイズ上限つきで読み、巨大レスポンスをそのまま処理しない。
 
 この方針により、既存曲が暗黙のデフォルトになることを避けます。
+
+## セキュリティ境界
+
+このシステムはローカル開発向けです。既定では各サーバーを `127.0.0.1` にbindし、
+外部ネットワークへ公開しません。詳しい運用ルールは `docs/security.md` を参照してください。
+
+重要な境界:
+
+- song-pack serverは、既定でsystem appのoriginからのCORSだけを許可する。
+- song-pack serverは隠しファイルと未許可拡張子を配信しない。
+- dev managerの起動・停止APIは、同一origin相当のリクエストだけを受け付ける。
+- dev managerのログはHTMLとして挿入せず、テキストとして表示する。
+- 外部Web adapterを直接読み込む設計は任意コード実行につながるため、まだ採用しない。
 
 ## Optional Tool
 

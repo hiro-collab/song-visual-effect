@@ -7,6 +7,13 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const root = resolve(__dirname, "..", "song-packs");
 const port = Number(process.env.SONG_PACK_PORT ?? 5174);
 const host = process.env.SONG_PACK_HOST ?? "127.0.0.1";
+const defaultCorsOrigins = "http://127.0.0.1:5173,http://localhost:5173";
+const allowedCorsOrigins = new Set(
+  (process.env.SONG_PACK_CORS_ORIGINS ?? defaultCorsOrigins)
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
 
 const mimeTypes = new Map([
   [".json", "application/json; charset=utf-8"],
@@ -15,25 +22,66 @@ const mimeTypes = new Map([
   [".mp3", "audio/mpeg"],
   [".wav", "audio/wav"],
   [".ogg", "audio/ogg"],
+  [".png", "image/png"],
+  [".jpg", "image/jpeg"],
+  [".jpeg", "image/jpeg"],
+  [".webp", "image/webp"],
   [".js", "text/javascript; charset=utf-8"],
   [".css", "text/css; charset=utf-8"]
 ]);
 
-const send = (response, status, body, headers = {}) => {
-  response.writeHead(status, {
-    "Access-Control-Allow-Origin": "*",
+const baseSecurityHeaders = {
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer"
+};
+
+const corsHeadersFor = (request) => {
+  const origin = request.headers.origin;
+  if (!origin) return {};
+  if (!allowedCorsOrigins.has(origin)) return null;
+  return {
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET,HEAD,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type,Range",
     "Cross-Origin-Resource-Policy": "cross-origin",
+    Vary: "Origin"
+  };
+};
+
+const writeHead = (request, response, status, headers = {}) => {
+  const corsHeaders = corsHeadersFor(request);
+  if (corsHeaders === null) {
+    response.writeHead(403, {
+      ...baseSecurityHeaders,
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store"
+    });
+    response.end("Forbidden origin");
+    return false;
+  }
+  response.writeHead(status, {
+    ...baseSecurityHeaders,
+    ...corsHeaders,
     ...headers
   });
+  return true;
+};
+
+const send = (request, response, status, body, headers = {}) => {
+  if (!writeHead(request, response, status, headers)) return;
   response.end(body);
 };
 
 const filePathFor = (pathname) => {
-  const decoded = decodeURIComponent(pathname);
+  let decoded = "";
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
   const normalized = normalize(decoded).replace(/^(\.\.[/\\])+/, "");
   const relative = normalized.replace(/^[/\\]+/, "");
+  if (relative.split(/[\\/]+/).some((segment) => segment.startsWith("."))) return null;
   const resolved = resolve(join(root, relative));
   return resolved === root || resolved.startsWith(`${root}${sep}`) ? resolved : null;
 };
@@ -41,11 +89,16 @@ const filePathFor = (pathname) => {
 const serveFile = (request, response, filePath) => {
   const stats = statSync(filePath);
   if (!stats.isFile()) {
-    send(response, 404, "Not found");
+    send(request, response, 404, "Not found");
     return;
   }
 
-  const contentType = mimeTypes.get(extname(filePath).toLowerCase()) ?? "application/octet-stream";
+  const extension = extname(filePath).toLowerCase();
+  const contentType = mimeTypes.get(extension);
+  if (!contentType) {
+    send(request, response, 404, "Not found");
+    return;
+  }
   const baseHeaders = {
     "Content-Type": contentType,
     "Accept-Ranges": "bytes",
@@ -56,24 +109,20 @@ const serveFile = (request, response, filePath) => {
   if (range) {
     const match = /^bytes=(\d*)-(\d*)$/.exec(range);
     if (!match) {
-      send(response, 416, "Invalid range", { ...baseHeaders, "Content-Range": `bytes */${stats.size}` });
+      send(request, response, 416, "Invalid range", { ...baseHeaders, "Content-Range": `bytes */${stats.size}` });
       return;
     }
     const start = match[1] ? Number(match[1]) : 0;
     const end = match[2] ? Number(match[2]) : stats.size - 1;
     if (!Number.isFinite(start) || !Number.isFinite(end) || start > end || end >= stats.size) {
-      send(response, 416, "Invalid range", { ...baseHeaders, "Content-Range": `bytes */${stats.size}` });
+      send(request, response, 416, "Invalid range", { ...baseHeaders, "Content-Range": `bytes */${stats.size}` });
       return;
     }
-    response.writeHead(206, {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,HEAD,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type,Range",
-      "Cross-Origin-Resource-Policy": "cross-origin",
+    if (!writeHead(request, response, 206, {
       ...baseHeaders,
       "Content-Length": end - start + 1,
       "Content-Range": `bytes ${start}-${end}/${stats.size}`
-    });
+    })) return;
     if (request.method === "HEAD") {
       response.end();
       return;
@@ -82,14 +131,10 @@ const serveFile = (request, response, filePath) => {
     return;
   }
 
-  response.writeHead(200, {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET,HEAD,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,Range",
-    "Cross-Origin-Resource-Policy": "cross-origin",
+  if (!writeHead(request, response, 200, {
     ...baseHeaders,
     "Content-Length": stats.size
-  });
+  })) return;
   if (request.method === "HEAD") {
     response.end();
     return;
@@ -99,21 +144,28 @@ const serveFile = (request, response, filePath) => {
 
 const server = createServer((request, response) => {
   if (!request.url) {
-    send(response, 400, "Bad request");
+    send(request, response, 400, "Bad request");
     return;
   }
   if (request.method === "OPTIONS") {
-    send(response, 204, "");
+    send(request, response, 204, "");
     return;
   }
   if (request.method !== "GET" && request.method !== "HEAD") {
-    send(response, 405, "Method not allowed");
+    send(request, response, 405, "Method not allowed");
     return;
   }
 
-  const url = new URL(request.url, `http://${host}:${port}`);
+  let url;
+  try {
+    url = new URL(request.url, `http://${host}:${port}`);
+  } catch {
+    send(request, response, 400, "Bad request");
+    return;
+  }
   if (url.pathname === "/") {
     send(
+      request,
       response,
       200,
       [
@@ -128,7 +180,7 @@ const server = createServer((request, response) => {
   }
   const filePath = filePathFor(url.pathname);
   if (!filePath || !existsSync(filePath)) {
-    send(response, 404, "Not found");
+    send(request, response, 404, "Not found");
     return;
   }
 
