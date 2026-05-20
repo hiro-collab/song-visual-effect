@@ -414,6 +414,111 @@
         align-items: start;
       }
 
+      .overview-panel {
+        grid-column: 1 / -1;
+      }
+
+      .overview-map-wrap {
+        overflow: auto;
+        padding: 16px;
+      }
+
+      .overview-map {
+        position: relative;
+        min-width: 1000px;
+        height: 560px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          #101218;
+        background-size: 64px 64px;
+      }
+
+      .overview-edges {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .overview-edge {
+        stroke: rgba(255, 255, 255, 0.13);
+        stroke-width: 0.32;
+        fill: none;
+      }
+
+      .overview-edge.is-active {
+        stroke: rgba(245, 201, 111, 0.92);
+        stroke-width: 0.58;
+      }
+
+      .overview-node {
+        position: absolute;
+        z-index: 2;
+        width: 96px;
+        min-height: 50px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 9px;
+        background: rgba(32, 35, 44, 0.94);
+        color: var(--text);
+        text-align: left;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+        cursor: pointer;
+      }
+
+      .overview-node.is-active {
+        border-color: rgba(245, 201, 111, 0.94);
+        background: rgba(54, 43, 26, 0.96);
+      }
+
+      .overview-node.is-selected {
+        outline: 2px solid rgba(128, 199, 232, 0.8);
+        outline-offset: 2px;
+      }
+
+      .overview-node strong,
+      .overview-node span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .overview-node strong {
+        font-size: 11px;
+        line-height: 1.35;
+        white-space: nowrap;
+      }
+
+      .overview-node span {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.35;
+        white-space: nowrap;
+      }
+
+      .overview-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0 16px 16px;
+      }
+
+      .legend-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 5px 8px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.4;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
       .panel {
         min-width: 0;
         border: 1px solid var(--line);
@@ -880,6 +985,19 @@
         </section>
 
         <div class="main-grid">
+          <section class="panel overview-panel" aria-label="二次元構成マップ">
+            <div class="panel-head">
+              <h3>二次元構成マップ</h3>
+              <p>全体構成を俯瞰するためのノードグラフです。長文は詳細欄へ分け、ここでは位置関係と接続だけを見ます。狭い画面では横スクロールできます。</p>
+            </div>
+            <div class="overview-map-wrap">
+              <div id="overview-map" class="overview-map">
+                <svg id="overview-edges" class="overview-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+              </div>
+            </div>
+            <div id="overview-legend" class="overview-legend" aria-label="マップ凡例"></div>
+          </section>
+
           <section class="panel" aria-label="選択中フローの概要">
             <div class="panel-head">
               <h3>選択中フロー</h3>
@@ -1095,6 +1213,63 @@
         });
       };
 
+      const edgeKey = (from, to) => `${from}->${to}`;
+
+      const renderOverviewMap = () => {
+        const map = byId("overview-map");
+        const svg = byId("overview-edges");
+        const legend = byId("overview-legend");
+        const activeIds = activeComponentIds();
+        const activeEdges = new Set((activeFlow()?.steps ?? []).map((step) => edgeKey(step.from, step.to)));
+
+        map.querySelectorAll(".overview-node").forEach((node) => node.remove());
+        svg.replaceChildren();
+        legend.replaceChildren();
+
+        const edgeKeys = new Set();
+        for (const flow of state.data.flows) {
+          for (const step of flow.steps) {
+            const key = edgeKey(step.from, step.to);
+            if (edgeKeys.has(key)) continue;
+            const from = componentById(step.from);
+            const to = componentById(step.to);
+            if (!from || !to) continue;
+            edgeKeys.add(key);
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const dx = Math.abs(to.x - from.x);
+            const curve = Math.max(5, dx * 0.35);
+            path.classList.add("overview-edge");
+            path.classList.toggle("is-active", activeEdges.has(key));
+            path.setAttribute(
+              "d",
+              `M ${from.x} ${from.y} C ${from.x + curve} ${from.y}, ${to.x - curve} ${to.y}, ${to.x} ${to.y}`
+            );
+            path.setAttribute("vector-effect", "non-scaling-stroke");
+            svg.append(path);
+          }
+        }
+
+        for (const component of state.data.components) {
+          const button = make("button", "overview-node");
+          button.type = "button";
+          button.style.left = `${component.x}%`;
+          button.style.top = `${component.y}%`;
+          button.title = `${component.label}\n${component.file}\n${component.description}`;
+          button.classList.toggle("is-active", activeIds.has(component.id));
+          button.classList.toggle("is-selected", component.id === state.selectedComponentId);
+          button.append(make("strong", "", component.label));
+          button.append(make("span", "", component.group));
+          button.addEventListener("click", () => setSelectedComponent(component.id));
+          map.append(button);
+        }
+
+        const groups = [...new Set(state.data.components.map((component) => component.group || "その他"))];
+        for (const group of groups) {
+          legend.append(make("span", "legend-item", group));
+        }
+      };
+
       const renderSteps = () => {
         const list = byId("steps");
         list.replaceChildren();
@@ -1210,6 +1385,7 @@
         renderTop();
         renderLayers();
         renderPath();
+        renderOverviewMap();
         renderSteps();
         renderComponents();
         renderComponentDetail();
