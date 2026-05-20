@@ -100,3 +100,10 @@
   - `_worktrees/traffic-jam-effect`
   - `_worktrees/launch-manager`
 - Added `docs/worktree-guide.md` to explain the worktree layout and parallel-work cautions.
+- Added a local worktree sync notice tool:
+  - `npm run sync:ready`
+  - `npm run sync:check`
+  - `npm run sync:merge`
+  - `npm run sync:list`
+  - `npm run sync:watch`
+- The sync notice board is stored under Git's common directory, so all local worktrees can see it without committing the notice log.

@@ -27,6 +27,7 @@
 ```powershell
 git worktree list
 git status --short --branch
+npm run sync:check
 ```
 
 各 worktree で作業するときは、そのディレクトリに移動してから状態を確認します。
@@ -35,6 +36,29 @@ git status --short --branch
 cd C:\Users\kawai\works\music-effect\_worktrees\download-security
 git status --short --branch
 ```
+
+## 並行作業の通知
+
+各 worktree は、他の担当に取り込ませてよいコミットができた時点で
+ready 通知を出せます。
+
+```powershell
+npm run sync:ready -- -m "short explanation"
+```
+
+他の worktree は次で未取り込みの ready 通知を確認します。
+
+```powershell
+npm run sync:check
+```
+
+取り込む場合は次を使います。
+
+```powershell
+npm run sync:merge -- --from codex/download-security
+```
+
+詳細は `docs/worktree-sync.md` を見てください。
 
 ## 開発サーバーの注意
 
