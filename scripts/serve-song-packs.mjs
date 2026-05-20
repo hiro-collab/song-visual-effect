@@ -123,5 +123,5 @@ const server = createServer((request, response) => {
 
 server.listen(port, host, () => {
   console.log(`Song pack server: http://${host}:${port}/`);
-  console.log(`Example manifest: http://${host}:${port}/shining-star/manifest.json`);
+  console.log(`Fixture manifest: http://${host}:${port}/shining-star/manifest.json`);
 });

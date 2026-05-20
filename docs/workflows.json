@@ -29,7 +29,7 @@
       "label": "manifest.json",
       "kind": "song-package",
       "group": "曲パッケージ",
-      "file": "song-packs/shining-star/manifest.json",
+      "file": "song-packs/<song-id>/manifest.json",
       "x": 49,
       "y": 14,
       "description": "曲パッケージの入口です。歌詞、解析JSON、音源、クレジット、設計資料への相対パスを持ちます。"
@@ -49,7 +49,7 @@
       "label": "曲素材",
       "kind": "data",
       "group": "曲パッケージ",
-      "file": "song-packs/shining-star",
+      "file": "song-packs/<song-id>",
       "x": 72,
       "y": 14,
       "description": "歌詞、Songle解析JSON、手動調整済みlyrics_timing.json、palette、markers、CREDITSを含む曲側の素材群です。"
@@ -82,7 +82,7 @@
       "file": "src/effects",
       "x": 50,
       "y": 66,
-      "description": "粒子、光線ネットワーク、色ramp、ダンピング制御を担当します。現在はShining Star向けの柔らかい光表現です。"
+      "description": "粒子、光線ネットワーク、色ramp、ダンピング制御を担当します。現在はfixture用の柔らかい光表現で、新しい曲のテンプレートではありません。"
     },
     {
       "id": "timingEditor",
@@ -143,6 +143,16 @@
       "x": 28,
       "y": 86,
       "description": "architecture、module-map、decisions、plans、known-issues、handoffで作業文脈を保持します。"
+    },
+    {
+      "id": "songAuthoringDocs",
+      "label": "曲作成ルール",
+      "kind": "knowledge-base",
+      "group": "文脈",
+      "file": "docs/song-authoring.md",
+      "x": 50,
+      "y": 86,
+      "description": "新しい曲を作るときに既存曲を読まないためのルールです。曲ごとの自由な構成を守ります。"
     }
   ],
   "flows": [
@@ -150,7 +160,7 @@
       "id": "boot-with-manifest",
       "label": "曲パッケージを読み込んで起動",
       "summary": "URLの?song=からmanifestを読み、曲素材をMusicMapへ変換して画面を起動します。",
-      "trigger": "http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json を開く",
+      "trigger": "http://127.0.0.1:5173/?song=<manifest-url> を開く",
       "steps": [
         {
           "from": "browser",
@@ -186,6 +196,42 @@
           "action": "MusicMapを返す",
           "payload": "beats、chorus、lyrics、lyricLines、markers、palette、source",
           "note": "以後の表示と演出はこのMusicMapを読みます。"
+        }
+      ]
+    },
+    {
+      "id": "new-song-authoring",
+      "label": "新しい曲を既存曲に引っ張られず作る",
+      "summary": "既存のsong-packsを見ず、system-neutral docsだけを入口にして新しい曲の構成を決めます。",
+      "trigger": "新しい曲パッケージや曲ごとの演出システムを作る",
+      "steps": [
+        {
+          "from": "browser",
+          "to": "agents",
+          "action": "新規曲作成の依頼を受ける",
+          "payload": "曲、演出意図、ライブ用途、必要な入力",
+          "note": "この時点では既存曲のフォルダを読みません。"
+        },
+        {
+          "from": "agents",
+          "to": "songAuthoringDocs",
+          "action": "アンカー回避ルールを読む",
+          "payload": "docs/system-overview.md と docs/song-authoring.md",
+          "note": "既存曲はテンプレートではなく、許可なしに参照しません。"
+        },
+        {
+          "from": "songAuthoringDocs",
+          "to": "manifest",
+          "action": "最小入口だけを決める",
+          "payload": "id、title、artist、duration、必要な素材URL",
+          "note": "manifestの先の構成やJSON文法は曲ごとに設計します。"
+        },
+        {
+          "from": "songAuthoringDocs",
+          "to": "songPack",
+          "action": "曲専用の構成を作る",
+          "payload": "演出意図、入力、出力、マーカー、adapter、UI",
+          "note": "既存曲のanalysisやdesignの形に合わせる必要はありません。"
         }
       ]
     },
@@ -306,7 +352,7 @@
           "from": "main",
           "to": "songServer",
           "action": "外部manifestを取得",
-          "payload": "http://127.0.0.1:5174/shining-star/manifest.json",
+          "payload": "http://127.0.0.1:5174/<song-id>/manifest.json",
           "note": "曲パックサーバーはCORSを許可してJSONを返します。"
         },
         {
@@ -328,7 +374,7 @@
     {
       "id": "future-adapter",
       "label": "将来の曲別Web Adapter化",
-      "summary": "Shining Star固有の演出配線を曲側のadapterへ移し、システムは補助contextだけを渡します。",
+      "summary": "曲固有の演出配線を曲側のadapterへ移し、システムは補助contextだけを渡します。",
       "trigger": "次段階のリファクタリングでcreateSongApp(context)形式を導入する",
       "steps": [
         {
@@ -385,8 +431,8 @@
           "from": "contextDocs",
           "to": "main",
           "action": "関連実装を読む",
-          "payload": "対象機能に関係するsrcファイルとsong-pack",
-          "note": "調査、計画、実装の順で進め、いきなり大きく書き換えません。"
+          "payload": "対象機能に関係するsrcファイル。新規曲作成では既存song-packを読まない",
+          "note": "調査、計画、実装の順で進めます。新しい曲では既存曲に引っ張られないことを優先します。"
         },
         {
           "from": "main",

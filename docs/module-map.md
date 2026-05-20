@@ -12,13 +12,27 @@
 
 ## src
 
-- `src/main.ts`: 現在の中心ファイル。DOM取得、起動、入力登録、再生制御、フレームループ、歌詞表示、Canvas描画、歌詞タイミングUIをまとめる。
+- `src/main.ts`: system hostの入口。DOM取得、起動、入力登録、transport、renderer、optional toolを接続する。
 - `src/styles.css`: アプリ本体の見た目。Canvas上の歌詞、操作バー、Lyric Timingパネル、シーケンスバーなど。
 - `src/types.ts`: MusicMap、SongManifest、歌詞、beat、markersなどの型定義。
 
+## src/runtime
+
+- `src/runtime/dom.ts`: system appのDOM要素を取得する。
+- `src/runtime/transport.ts`: 再生、停止、シーク、現在時刻を扱う。
+- `src/runtime/frameLoop.ts`: `requestAnimationFrame` によるフレーム更新。
+
 ## src/data
 
-- `src/data/assets.ts`: manifestと曲パッケージを読み、アプリ内部で使う `MusicMap` に変換する。Songle JSONの形のゆらぎもここで吸収する。
+- `src/data/assets.ts`: manifestと曲パッケージを読み、アプリ内部で使う `MusicMap` に変換する。既存曲へ暗黙フォールバックしない。
+
+## src/music
+
+- `src/music/timing.ts`: beat、chorus、lyricsなどの時刻検索。
+
+## src/renderers
+
+- `src/renderers/softLightRenderer.ts`: 現在同梱しているfixture用の柔らかい光表現。新しい曲のテンプレートではない。
 
 ## src/effects
 
@@ -31,16 +45,21 @@
 
 - `src/lyrics/manualTiming.ts`: 手動歌詞キーフレーム、全体/範囲補正、Export用JSON生成。
 
+## src/tools
+
+- `src/tools/lyricTimingTool.ts`: 歌詞タイミング編集UI。system hostのoptional tool。
+
 ## song-packs
 
-分離構成用の曲パッケージ置き場です。ここを曲データの唯一の本体にします。
+分離構成用の曲パッケージ置き場です。ここを曲データの本体にします。
 
-- `song-packs/shining-star/manifest.json`: 分離サーバーで読む曲manifest。
-- `song-packs/shining-star/CREDITS.md`: 曲のクレジットとライセンス注意。
-- `song-packs/shining-star/Lyrics.txt`: 曲ごとの歌詞。
-- `song-packs/shining-star/analysis/*.json`: 曲ごとの解析JSONと調整済み歌詞タイミング。
-- `song-packs/shining-star/design/`: 演出意図やcue定義。
-- `song-packs/shining-star/audio/`: ローカル音源配置用。音源ファイルはコミットしない。
+重要:
+
+- 既存の曲パッケージはテンプレートではない。
+- 新しい曲を作るときは、既存の `song-packs/*` を読まない。
+- 曲ごとの構成、JSON文法、UI、演出コード、描画方式は自由に変えてよい。
+- Web system hostで読む場合は、入口としてmanifest URLを渡す。
+- `song-packs/*/audio/`: ローカル音源配置用。音源ファイルはコミットしない。
 
 ## scripts
 
@@ -50,6 +69,8 @@
 
 ## docs
 
+- `docs/system-overview.md`: 特定曲に依存しないシステム概要。
+- `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: このファイル。ディレクトリとファイルの役割。
 - `docs/decisions.md`: 設計判断と理由。
@@ -58,7 +79,6 @@
 - `docs/handoff.md`: 次のCodexスレッドへ渡す要約。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 - `docs/workflows.html`: `workflows.json` を可視化する単一HTMLページ。
-- `docs/effect_design.md`: Shining Star向けの演出意図。
 
 ## .codex
 

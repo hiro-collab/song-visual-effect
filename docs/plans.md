@@ -6,6 +6,8 @@
 
 - `docs/workflows.html` / `docs/workflows.json` を必要に応じて更新する。
 - `AGENTS.md` と `docs/handoff.md` を作業後に更新する運用を定着させる。
+- `docs/system-overview.md` と `docs/song-authoring.md` を、新しい曲作成時の中立入口として維持する。
+- 新しい曲作成では既存の `song-packs/*` を読まない運用を守る。
 - 歌詞タイミングJSONの更新手順を明確にする。
 - 仕様変更前のドキュメント追加分をコミット済み。
 
@@ -13,21 +15,25 @@
 
 - `npm run build`
 - `http://127.0.0.1:5173/docs/workflows.html`
-- `http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json`
+- `http://127.0.0.1:5173/?song=<manifest-url>`
 
-## P1: `main.ts` をsystem hostへ分割する
+## P1: 曲に依存しないsystem hostを維持する
 
 目的:
-現在大きい `src/main.ts` を、曲に依存しない補助ランタイムへ近づける。
+`src/main.ts` と周辺runtimeを、曲に依存しない補助ランタイムへ近づける。
 
-候補分割:
+現状:
 
-- `src/core/transport.ts`: 再生、停止、現在時刻、シーク。
-- `src/core/frameLoop.ts`: `requestAnimationFrame` の登録とtick管理。
-- `src/core/input.ts`: キー、ポインタ、ボタン入力。
-- `src/core/surface.ts`: Canvas、DOM表示領域、fullscreen。
-- `src/tools/lyricTimingEditor.ts`: 歌詞タイミング編集UI。
-- `src/tools/sequenceBar.ts`: シーケンスバーとストーン表示。
+- `src/runtime/transport.ts`: 再生、停止、現在時刻、シーク。
+- `src/runtime/frameLoop.ts`: `requestAnimationFrame` の登録とtick管理。
+- `src/runtime/dom.ts`: DOM要素取得。
+- `src/tools/lyricTimingTool.ts`: optional lyric timing tool。
+
+次の候補:
+
+- `src/runtime/input.ts`: キー、ポインタ、ボタン入力。
+- `src/runtime/surface.ts`: 表示領域、fullscreen。
+- fixture rendererを曲adapter候補へ切り出す。
 
 非目的:
 
@@ -54,13 +60,11 @@
 ## P3: 曲別Web adapterを導入する
 
 目的:
-Shining Star固有の演出判断を曲パッケージ側へ移す。
+曲固有の演出判断を曲パッケージ側へ移す。
 
 案:
 
-```text
-src/song-apps/shiningStar.ts
-```
+新しい曲を作るときは既存曲のadapterを読まず、曲ごとに空の設計から始める。
 
 インターフェース案:
 
@@ -81,7 +85,7 @@ export function createSongApp(context) {
 次段階:
 
 - 安全な外部adapter読み込み方式を設計する。
-- `song-packs/shining-star/adapters/web/` への移動を検討する。
+- `song-packs/<song-id>/adapters/web/` への移動を検討する。
 
 ## P4: 起動管理を追加する
 

@@ -4,19 +4,26 @@
 
 ## 現在の状態
 
-このリポジトリは、魔王魂「Shining Star」を題材にしたWebベースのインタラクティブ音楽エフェクトPoCです。
+このリポジトリは、曲ごとに自由なインタラクティブ音楽エフェクトを作るためのWeb system hostです。
 
-主な機能:
+現在できること:
 
-- Vite + TypeScriptのCanvas2Dアプリ。
-- Songle解析JSON、歌詞txt、手動タイミングJSONを読み込む。
-- 柔らかい光、粒子、光線、歌詞表示を曲時間に合わせて描画する。
-- Lyric Timingモードで、A/Dキーによる歌詞切り替え時刻の手動打刻ができる。
+- Vite + TypeScriptでsystem appを起動する。
+- 起動管理サーバーで system app と song-pack server をまとめて起動、停止、再起動する。
+- `?song=<manifest-url>` で曲パッケージを指定して読み込む。
+- manifest、歌詞、解析JSON、手動タイミングなどを `MusicMap` に変換する。
+- 柔らかい光表現のfixture rendererを動かす。
+- Lyric Timing optional toolで、A/Dキーによる歌詞切り替え時刻の手動打刻ができる。
 - 全体/途中からのタイミング補正と、シーケンスバー上のストーン可視化がある。
 - シーケンスバーをクリック/ドラッグして再生位置を移動できる。
-- `manifest.json` と `?song=` により、曲パッケージを別サーバーから読める。
 - `docs/workflows.html` / `docs/workflows.json` にワークフロー地図がある。
-- `music_src` は廃止済み。曲データ本体は `song-packs`。
+
+重要:
+
+- 既存の曲パッケージはテンプレートではない。
+- 新しい曲を作るときは、既存の `song-packs/*` を読まない。
+- 新しい曲作成の入口は `docs/system-overview.md` と `docs/song-authoring.md`。
+- 既存曲を見るのは、その曲自体の修正、回帰確認、またはユーザーの明示許可がある場合だけ。
 
 ## 重要な制約
 
@@ -45,18 +52,19 @@ npm run dev
 http://127.0.0.1:5172/
 ```
 
-個別起動:
+system appは曲manifestを明示して開きます。
 
-```powershell
-npm run dev:system
-npm run dev:songs
+```text
+http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
 ```
 
-分離構成URL:
+動作確認用fixture:
 
 ```text
 http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 ```
+
+このfixtureは新しい曲のテンプレートではありません。
 
 ワークフロー地図:
 
@@ -68,33 +76,25 @@ http://127.0.0.1:5173/docs/workflows.html
 
 - `AGENTS.md`: エージェント向け入口。
 - `README.md`: 利用方法。
-- `src/main.ts`: 現在の中心実装。
+- `docs/system-overview.md`: 特定曲に依存しないシステム概要。
+- `docs/song-authoring.md`: 新しい曲作成時のアンカー回避ルール。
+- `src/main.ts`: system hostの入口。
+- `src/runtime/`: DOM、transport、frame loop。
 - `src/data/assets.ts`: manifestと曲データの読み込み。
-- `src/lyrics/manualTiming.ts`: 歌詞タイミング調整。
-- `src/effects/`: 粒子、光線、色、ダンピング。
-- `song-packs/shining-star/manifest.json`: 分離構成の曲manifest。
+- `src/tools/lyricTimingTool.ts`: optional lyric timing tool。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 
 ## 次にやるとよいこと
 
 優先度が高い順:
 
-1. `src/main.ts` を小さく分割する。
-2. `transport`、`frameLoop`、`input`、`lyricTimingEditor`、`sequenceBar` をシステム側モジュールとして整理する。
-3. Shining Star固有の演出配線を、まず同一ビルド内の曲Web adapterへ移す。
-4. 保存APIを検討し、ライブ中に `lyrics_timing.json` を直接更新できるようにする。
-5. 色味プリセットやライブ用雰囲気切り替えUIを追加する。
+1. 曲固有のfixture rendererを、system標準ではなく曲側adapter候補として切り出す。
+2. `docs/workflows.json` に「新しい曲作成時は既存曲を読まない」フローを反映し続ける。
+3. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
+4. 色味プリセットやライブ用雰囲気切り替えUIを追加する。
 
-## 今回のドキュメント整備の意図
+## 文脈管理の意図
 
-会話の中だけに設計意図を溜めるのではなく、リポジトリ内にCodex用の認識地図を置くために、次を追加しました。
+会話の中だけに設計意図を溜めるのではなく、リポジトリ内にCodex用の認識地図を置きます。
 
-- `AGENTS.md`
-- `docs/architecture.md`
-- `docs/module-map.md`
-- `docs/decisions.md`
-- `docs/plans.md`
-- `docs/known-issues.md`
-- `docs/handoff.md`
-
-今後の作業後は、このhandoffと関連docsを更新してください。
+新しい曲作成時は、認識地図が既存曲に汚染されないように、system-neutral docsだけを入口にしてください。既存曲の中身を見る必要が出た場合は、理由と許可を明確にします。

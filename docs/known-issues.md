@@ -20,17 +20,35 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 - `song-packs/*/audio/*` も `.gitignore` で除外されています。
 - 音源波形を解析しないでください。
 
-## `src/main.ts` が大きい
+## 既存曲がテンプレートに見える危険
 
-現状では、起動、入力、再生、描画、歌詞調整UIが `src/main.ts` に集まっています。
+`song-packs/*` に実例が置かれているため、新しい曲を作るときに既存曲の構成へ引っ張られる危険があります。
+
+現在の対策:
+
+- `docs/system-overview.md` を特定曲に依存しない入口にする。
+- `docs/song-authoring.md` に「既存曲を見ずに作る」ルールを書く。
+- `AGENTS.md` に、新しい曲作成時は既存の `song-packs/*` を読まないと明記する。
+- 既存曲はテンプレートではなくfixtureとして扱う。
+
+## fixture rendererがまだsystem側にある
+
+現在同梱している柔らかい光表現は、`src/renderers/softLightRenderer.ts` と `src/effects/` にあります。
 
 次の改善:
 
-- `core/transport`
-- `core/frameLoop`
-- `core/input`
-- `tools/lyricTimingEditor`
-- `tools/sequenceBar`
+- fixture rendererを曲側adapter候補として切り出す。
+- system hostは補助contextだけを渡す形に近づける。
+
+## `src/main.ts` の責務分離は進行中
+
+起動、入力登録、transport、renderer、tool接続の中心は `src/main.ts` です。以前より小さくなっていますが、入力やsurfaceはさらに分けられます。
+
+次の改善:
+
+- `src/runtime/input.ts`
+- `src/runtime/surface.ts`
+- 曲adapter接続層
 
 へ段階的に分離する。
 
@@ -43,15 +61,6 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 - system server、song-pack server、保存APIの状態を一覧できるようにする。
 - ポート競合や起動失敗を見つけやすくする。
 - サービス停止時に子プロセスをより確実に終了する。
-
-## 曲固有演出がまだシステム側にある
-
-Shining Star向けの柔らかい光表現は、現在 `src/main.ts` と `src/effects/` に寄っています。
-
-次の改善:
-
-- 曲側Web adapterを導入する。
-- システムは補助contextだけを提供する。
 
 ## `docs/workflows.html` は静的ドキュメント
 

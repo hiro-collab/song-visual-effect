@@ -194,12 +194,12 @@ const html = () => `<!doctype html>
       <header>
         <div>
           <h1>Music Effect Dev Manager</h1>
-          <p>system server と song-pack server をまとめて起動・停止します。ライブ用途へ進める前の、ローカル起動管理の土台です。</p>
+          <p>system server と song-pack server をまとめて起動・停止します。曲ごとの構成は固定せず、ここでは起動だけを管理します。</p>
         </div>
         <div class="actions">
           <button data-action="start-all">全て起動</button>
           <button data-action="stop-all">全て停止</button>
-          <a class="launch" href="http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json" target="_blank" rel="noreferrer">アプリを開く</a>
+          <a class="launch" href="http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json" target="_blank" rel="noreferrer">fixtureを開く</a>
           <a class="launch" href="http://127.0.0.1:5173/docs/workflows.html" target="_blank" rel="noreferrer">ワークフロー地図</a>
         </div>
       </header>

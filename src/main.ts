@@ -16,6 +16,8 @@ const {
   audio,
   lyricCurrent,
   lyricNext,
+  songTitle,
+  songArtist,
   playToggle,
   playIconPath,
   audioInput,
@@ -105,6 +107,9 @@ const boot = async () => {
   try {
     transport = new Transport(audio, setPlayingIcon);
     musicMap = await loadMusicMap();
+    document.title = `${musicMap.title} - Music Effect`;
+    songTitle.textContent = musicMap.title;
+    songArtist.textContent = musicMap.artist;
     renderer = new SoftLightRenderer(canvas, ctx, musicMap);
     timingTool = new LyricTimingTool({
       elements,

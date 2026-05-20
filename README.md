@@ -1,12 +1,13 @@
-# Shining Star Music Effect
+# Music Effect System Host
 
-魔王魂「シャイニングスター」の歌詞とSongle解析JSONを使う、Webベースのインタラクティブ音楽エフェクトです。
+音楽に同期したインタラクティブ映像エフェクトを、曲ごとに自由に作るためのWeb system hostです。
+
+このリポジトリの中心は、特定の曲の構成ではありません。system hostは、再生、入力、フレームループ、表示領域、起動管理、optional toolを提供します。曲ごとの演出、データ構造、JSON文法、UI、描画方式は曲パッケージ側で自由に決めます。
 
 ## Setup
 
 ```powershell
 npm install
-npm run download:songle
 npm run dev
 ```
 
@@ -16,113 +17,91 @@ npm run dev
 http://127.0.0.1:5172/
 ```
 
-アプリ本体は次のURLで開きます。
+system appは `?song=<manifest-url>` で曲パッケージを指定して開きます。
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
+http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
 ```
 
-個別に起動する場合は、次のコマンドも使えます。
+manifest URLを指定しない場合、特定の曲へ自動フォールバックしません。これは、システムが既存曲に引っ張られないようにするためです。
+
+個別に起動する場合は、次も使えます。
 
 ```powershell
 npm run dev:system
 npm run dev:songs
 ```
 
-この構成では、Webシステムは曲の中身を決めません。`song` クエリで指定された `manifest.json` を読み、歌詞、Songle JSON、palette、markers、手動タイミング、音源パスを曲パッケージ側から取得します。
+## System-Neutral Docs
 
-## Song Package Layout
-
-曲ごとの素材は `song-packs/<song-id>/` に置きます。別サーバーで配信できるよう、曲の入口は `manifest.json` にします。
+新しい曲を作るときは、既存の曲パッケージを読まず、まず次を読んでください。
 
 ```text
-song-packs/
-  shining-star/
-    manifest.json
-    CREDITS.md
-    Lyrics.txt
-    analysis/
-      song.json
-      beat.json
-      chord.json
-      melody.json
-      chorus.json
-      lyrics_timing.json
-      markers.json
-      palette.json
-    audio/
-      .gitkeep
-    design/
-      effect_design.md
-      cues.json
+docs/system-overview.md
+docs/song-authoring.md
 ```
 
-音源ファイルはライセンス上コミットしません。音源を配信したい場合は、ローカル環境で `song-packs/shining-star/audio/maou_14_shining_star.mp3` のように配置してください。未配置でも内部クロックで映像だけ動きます。画面下の `Audio` からローカル音源を選ぶこともできます。
+重要なルール:
 
-`manifest.json` は曲パッケージの入口です。相対パスは manifest の場所を基準に解決されます。別の曲や別システムへ持ち出す場合も、この manifest と `design/` の演出意図を中心に扱います。
+- 既存の `song-packs/*` はテンプレートではありません。
+- 新しい曲を作るときは、既存曲のmanifest、analysis、design、adapter、演出コードを見ないでください。
+- 既存曲を見るのは、その曲自体を直すとき、回帰確認をするとき、またはユーザーが明示的に許可したときだけです。
+- 曲ごとの構成は自由です。既存曲の構成に合わせる必要はありません。
 
-## Design
+## Song Package
 
-- 硬いネオンではなく、柔らかい星光、暖色、淡い青、淡い桃色、中間調を重ねます。
-- beatを発火条件にして背景発光と光線を動かします。
-- chorus区間では光量、線の密度、粒子の広がりを増やします。
-- 色や明るさは即時ジャンプではなく、ダンピング制御で少し遅れて追従します。
-- 動点をタイミングよく線で結び、柔らかい光線として描きます。
+曲パッケージは `song-packs/<song-id>/` に置けます。ただし、このディレクトリにある既存曲はテンプレートではなく、あくまで個別の実装例です。
 
-## Songle JSON
+このWeb system hostで曲を読む場合は、入口としてmanifest URLを渡します。manifestの先の構成は、曲ごとに自由に設計して構いません。
 
-`npm run download:songle` は以下のSongle Widget API JSONを `song-packs/shining-star/analysis/` に保存します。
+最小manifestの考え方:
 
-- song
-- beat
-- chord
-- melody
-- chorus
+```json
+{
+  "id": "song-id",
+  "title": "Song Title",
+  "artist": "Artist",
+  "duration": 180
+}
+```
 
-音源ファイル自体は解析しません。映像タイミングはJSONと手動マーカーを入力にします。
+必要に応じて、歌詞、解析JSON、音源、クレジット、Web adapterなどへのパスを追加します。
 
-## Manual Lyric Timing
+## Included Fixture
 
-歌詞の切り替わりがずれている場合は、ブラウザ上で手動キーフレームを打てます。
+現在は動作確認用の曲パッケージとして、魔王魂「Shining Star」を同梱しています。
 
-1. 画面右上の `Lyric Timing` パネルで `Off` ボタンを押して `On` にします。
-2. 曲を再生しながら、切り替えたい瞬間にキーを押します。
-3. `A` は「現在表示中の歌詞行の開始時刻」を現在時刻に登録します。
-4. `D` は「次の歌詞行の開始時刻」を現在時刻に登録します。
-5. `Undo` または `Ctrl+Z` / `Backspace` で直前の打刻を戻せます。
-6. `Clear` で手動キーフレームを全消去できます。
-7. `Export` で `lyrics_timing.manual.json` を書き出せます。
+```text
+http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
+```
 
-`Space` で再生/停止を切り替えられます。
+これはfixtureであり、次の曲の標準構成ではありません。新しい曲を作るときは、この中身を見ずに `docs/song-authoring.md` から始めてください。
 
-`Shift` では、打刻済みの歌詞切り替えタイミングをリロードなしで補正できます。
+音源ファイルはライセンス上コミットしません。ローカルで再生したい場合は、対象曲パッケージのaudioディレクトリに配置するか、画面下の `Audio` からローカル音源を選んでください。未配置でも内部クロックで映像だけ動きます。
 
-- `All`: 全ての歌詞切り替えストーンを前後に送ります。
-- `From #n`: 現在の歌詞行以降のストーンだけを前後に送ります。
-- `Sequence`: 薄い点が補正前、明るいストーンが補正後の歌詞切り替え位置です。
-- `Sequence` バーをクリック/ドラッグすると、その位置へ再生時刻を移動できます。
+## Optional Lyric Timing Tool
 
-打刻データと補正値はブラウザの `localStorage` に自動保存されます。調整中の歌詞表示は、画面上のストーン位置に即時追従します。確定版として同梱したい場合は、書き出したJSONを `song-packs/shining-star/analysis/lyrics_timing.json` として配置してください。次回起動時にそのタイミングが読み込まれます。
+歌詞の切り替わりがずれている場合は、ブラウザ上で手動キーフレームを打てます。この機能はsystem hostのoptional toolです。歌詞がない曲や、別のタイミング構造を使う曲では使わなくても構いません。
+
+基本操作:
+
+- `Lyric Timing` を `On` にする。
+- `A`: 現在表示中の歌詞行の開始時刻を現在時刻に登録。
+- `D`: 次の歌詞行の開始時刻を現在時刻に登録。
+- `Undo` または `Ctrl+Z` / `Backspace`: 直前の調整を戻す。
+- `Clear`: 手動キーフレームを消去。
+- `Export`: 調整済みJSONを書き出す。
+- `Space`: 再生/停止。
+
+`All` は全体補正、`From #n` は現在行以降の補正です。シーケンスバー上のストーンで補正前後の位置を見られます。
 
 ## License Safety
-
-魔王魂の音楽は、生成AIへの学習利用が禁じられています。このプロジェクトでは次を前提にします。
 
 - 音源ファイルをAI学習に使わない。
 - 音源波形をCodexやアプリ側で解析し直さない。
 - ブラウザ上では音源を再生するだけにする。
-- 演出タイミングはSongle/TextAlive由来のJSON、歌詞テキスト、手動マーカーから作る。
-- 公開やイベント利用時は、魔王魂とSongle/TextAlive側の利用条件を確認する。
-
-## Architecture Direction
-
-このWebシステムは曲アプリを束縛する親ではなく、補助ランタイムとして扱います。
-
-- System: 再生、入力、フレームループ、全画面、保存、歌詞タイミング編集などを補助機能として提供する。
-- Song Package: 曲ごとの素材、解析JSON、演出意図、クレジット、手動タイミング、演出コードを持つ。
-- Adapter: Web、TouchDesigner、Unityなど、実行環境ごとの接続コードを後付けできるようにする。
-
-`music_src` は廃止し、曲データ本体は `song-packs/` に一本化します。描画方式はCanvas2Dに固定せず、歌詞タイミング編集もoptional toolとして扱います。外部Web adapterは将来許容しますが、まずは同一ビルド内でadapter分離します。
+- 演出タイミングは解析済みJSON、歌詞テキスト、手動マーカー、手動入力などから作る。
+- 公開やイベント利用時は、素材とAPIの利用条件を確認する。
 
 ## Workflow Map
 
@@ -132,20 +111,30 @@ song-packs/
 http://127.0.0.1:5173/docs/workflows.html
 ```
 
-左の操作名を選ぶと、関係するコンポーネントと受け渡しが強調表示されます。表示内容は `docs/workflows.json` から読み込まれます。このJSONは、機能追加やバグ修正時にLLMへ「このアプリの流れ」を説明するための共有資料としても使えます。
+表示内容は `docs/workflows.json` から読み込まれます。このJSONは、機能追加やバグ修正時にLLMへシステムの流れを説明するための共有資料としても使えます。
 
 ## Agent Context
 
-Codexや別エージェントに作業を渡すときは、まず `AGENTS.md` と `docs/handoff.md` を読ませます。
+Codexや別エージェントに作業を渡すときは、まず `AGENTS.md` を読ませます。
+
+新しい曲を作る場合は、既存曲の中身を読ませず、次だけを入口にしてください。
 
 ```text
 AGENTS.md
+docs/system-overview.md
+docs/song-authoring.md
+docs/decisions.md
+```
+
+システム改修や既存機能の修正では、必要に応じて次も読みます。
+
+```text
 docs/architecture.md
 docs/module-map.md
-docs/decisions.md
 docs/plans.md
 docs/known-issues.md
 docs/handoff.md
+docs/workflows.json
 ```
 
-`AGENTS.md` は短い入口に留め、全体設計、判断、未解決事項、次の作業は `docs/` に分けています。作業後は `docs/handoff.md` と、必要に応じて `docs/plans.md` / `docs/known-issues.md` / `docs/workflows.json` を更新してください。
+作業後は `docs/handoff.md` と、必要に応じて `docs/plans.md` / `docs/known-issues.md` / `docs/workflows.json` を更新してください。

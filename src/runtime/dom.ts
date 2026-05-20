@@ -4,6 +4,8 @@ export type AppElements = {
   audio: HTMLAudioElement;
   lyricCurrent: HTMLParagraphElement;
   lyricNext: HTMLParagraphElement;
+  songTitle: HTMLHeadingElement;
+  songArtist: HTMLParagraphElement;
   playToggle: HTMLButtonElement;
   playIconPath: SVGPathElement;
   audioInput: HTMLInputElement;
@@ -55,6 +57,8 @@ export const getAppElements = (): AppElements => {
     audio: requireElement<HTMLAudioElement>("#audio"),
     lyricCurrent: requireElement<HTMLParagraphElement>("#lyric-current"),
     lyricNext: requireElement<HTMLParagraphElement>("#lyric-next"),
+    songTitle: requireElement<HTMLHeadingElement>("#song-title"),
+    songArtist: requireElement<HTMLParagraphElement>("#song-artist"),
     playToggle: requireElement<HTMLButtonElement>("#play-toggle"),
     playIconPath: requireElement<SVGPathElement>("#play-icon-path"),
     audioInput: requireElement<HTMLInputElement>("#audio-input"),

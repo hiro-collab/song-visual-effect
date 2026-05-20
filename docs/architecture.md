@@ -1,85 +1,142 @@
 # Architecture
 
-このプロジェクトは、Songle/TextAlive由来の解析JSON、歌詞テキスト、手動タイミングを使い、ブラウザ上で音楽に同期したインタラクティブ映像エフェクトを動かすPoCです。
+この文書は、特定の曲パッケージに依存しないシステム構成を説明します。新しい曲を作る場合は、この文書だけで全体像を把握できるようにし、既存の `song-packs/*` は参照しません。
 
-重要な前提として、音源波形は解析しません。魔王魂の音楽はAI学習に使わず、ブラウザで再生するだけにします。映像や歌詞のタイミングは、解析済みJSON、歌詞テキスト、手動入力から作ります。
+重要な前提として、音源波形は解析しません。音源はAI学習に使わず、ブラウザで再生するだけにします。映像や歌詞のタイミングは、解析済みJSON、歌詞テキスト、手動入力、曲ごとのマーカーなどから作ります。
 
 ## 全体像
 
 ```text
-ブラウザ
+dev manager
+  system app server
+  song package server
+
+browser
   index.html
-    ↓
-src/main.ts
-  起動、入力、再生、フレーム更新、歌詞表示、Canvas描画
-    ↓
-src/data/assets.ts
-  manifestと曲データをMusicMapへ変換
-    ↓
-song-packs/<song-id>/
-  manifest、歌詞、Songle JSON、手動タイミング、palette、markers
+  src/main.ts
+    runtime helpers
+    optional tools
+    renderer / song adapter
+
+song package
+  manifest entry
+  song-owned assets
+  song-owned grammar
+  optional adapter
 ```
 
-分離構成では、システム本体と曲パッケージを別サーバーで動かせます。
+システム側は曲の中身を決めません。system appは `?song=<manifest-url>` を入口として受け取り、そのmanifestを読むだけです。manifest URLがない場合、特定曲へ自動フォールバックせず、起動エラーとして扱います。
 
 ```text
+http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
+```
+
+## 起動管理
+
+分離構成では、複数のサーバーを手作業で起動するとトラブルが増えます。そのため `npm run dev` は起動管理サーバーを立ち上げ、system app と song-pack server をまとめて管理します。
+
+```text
+http://127.0.0.1:5172
+  dev manager
+
 http://127.0.0.1:5173
   system app
 
 http://127.0.0.1:5174
-  song pack server
+  song package server
 ```
 
-この分離構成を標準にします。`music_src` は廃止し、曲データ本体は `song-packs/<song-id>/` に一本化します。複数サーバーを手作業で起動するとトラブルが増えるため、`npm run dev` は起動管理サーバーを立ち上げ、system app と song-pack server をまとめて管理します。
+## System Host
 
-システム側は次のように曲を指定します。
+system hostの責務:
+
+- manifest URLを受け取る。
+- 曲パッケージの入口を読む。
+- ブラウザのDOM、Audio、入力、フレームループを準備する。
+- 再生、停止、シーク、現在時刻を扱う。
+- optional toolを提供する。
+- 曲アプリやrendererへ補助contextを渡す。
+
+system hostの非責務:
+
+- 曲固有の演出を決めること。
+- 曲固有のJSON文法を固定すること。
+- 既存曲の構成を標準化すること。
+- 描画方式をCanvas2Dに固定すること。
+- 歌詞タイミング編集を全曲必須にすること。
+
+## Song Package
+
+曲パッケージは、曲ごとの素材、演出意図、データ文法、adapter、クレジットを持つ場所です。
+
+曲パッケージ内の構成は自由です。現在のWeb system hostで読むにはmanifestが必要ですが、manifestの先の構造は曲ごとに設計できます。
+
+最小manifest:
+
+```json
+{
+  "id": "song-id",
+  "title": "Song Title",
+  "artist": "Artist",
+  "duration": 180
+}
+```
+
+歌詞、解析JSON、音源、クレジット、Web adapterなどは必要な場合だけ追加します。
+
+## 現在の実装モジュール
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
+src/main.ts
+  起動、入力登録、renderer/toolの接続
+
+src/runtime/
+  DOM取得、再生制御、フレームループ
+
+src/data/assets.ts
+  manifest読み込みと最小MusicMap変換
+
+src/music/timing.ts
+  beat、chorus、lyricの時刻検索
+
+src/renderers/
+  現在同梱しているfixture用の描画実装
+
+src/tools/
+  optional tool
+
+src/lyrics/
+  歌詞タイミング調整のデータ処理
 ```
 
-## 主要な処理
+現在はfixture用の描画実装がまだsystem側に残っています。次段階では、曲固有のrendererやadapterを曲側へ移し、system hostは補助contextを渡すだけに近づけます。
 
-### 起動
+## フレーム更新
 
-`src/main.ts` の `boot()` が起動処理です。
+`src/runtime/frameLoop.ts` が `requestAnimationFrame` を使って毎フレームの更新を予約します。各フレームでは現在時刻を読み、曲アプリまたはrendererが必要な表示を更新します。
 
-1. DOM要素とCanvasを準備する。
-2. `setupInput()` でボタン、キー、ポインタ操作を登録する。
-3. `loadMusicMap()` でmanifestと曲データを読む。
-4. 歌詞タイミングの手動補正を復元する。
-5. paletteと音源パスを設定する。
-6. `requestAnimationFrame(tick)` でフレームループを開始する。
+```text
+requestAnimationFrame
+  -> current time
+  -> song renderer / adapter
+  -> optional tools
+  -> next frame
+```
 
-### フレーム更新
+## 曲データ読み込み
 
-`tick()` は毎フレーム呼ばれます。
-
-1. 現在時刻を読む。
-2. beat、chorus、markersから演出強度を計算する。
-3. `DampValue` で光や色を滑らかに追従させる。
-4. 背景、光線、粒子、クリック波紋をCanvasへ描画する。
-5. 現在歌詞、次歌詞、シーケンスバーを更新する。
-6. 次の `requestAnimationFrame(tick)` を予約する。
-
-### 曲データ読み込み
-
-`src/data/assets.ts` は `manifest.json` を入口にします。
-
-manifestがある場合:
+`src/data/assets.ts` はmanifestを入口にします。
 
 - manifestの場所を基準に相対パスを解決する。
-- その曲パッケージ内のJSONだけを読む。
-- 別曲のデータに勝手にフォールバックしない。
+- 指定された曲パッケージ内の素材だけを読む。
+- 別曲のデータへ勝手にフォールバックしない。
+- manifest URLがない、またはmanifestが読めない場合は起動失敗として扱う。
 
-manifestが読めない場合:
+この方針により、既存曲が暗黙のデフォルトになることを避けます。
 
-- 起動失敗として扱う。
-- `npm run dev` の起動管理サーバーで song-pack server が起動しているか確認する。
+## Optional Tool
 
-### 歌詞タイミング編集
-
-`src/lyrics/manualTiming.ts` は、手動打刻と補正値から表示用歌詞タイミングを作ります。
+歌詞タイミング編集はsystem側のoptional toolです。
 
 ```text
 baseLyrics
@@ -88,15 +145,11 @@ baseLyrics
   = workingLyrics
 ```
 
-`workingLyrics` が実際の歌詞表示とシーケンスバーに使われます。
-
-### ワークフロー地図
-
-`docs/workflows.json` は、人間とLLMの両方に向けたフロー定義です。`docs/workflows.html` はそのJSONを読み、クリック可能な図として表示します。
+歌詞がない曲、別のタイミング構造を使う曲、別ランタイムで動く曲は、このtoolを使わなくて構いません。
 
 ## 今後の方向
 
-現在は `src/main.ts` がまだ大きく、Shining Star向けの演出配線も含んでいます。次段階では、曲固有の演出を曲パッケージ側のWeb adapterへ移し、システム側は補助contextを渡すだけにします。
+次段階では、曲固有の演出を曲パッケージ側のWeb adapterへ移します。
 
 ```text
 system host
@@ -106,8 +159,4 @@ song web adapter
   createSongApp(context)
 ```
 
-この分離により、Web以外のTouchDesigner、Unity、OBSなどへadapterを作る余地を残します。
-
-ただし外部サーバーからWeb adapterを直接読み込む設計は、任意コード実行や信頼境界の問題があります。最初は同一ビルド内で曲adapterを分離し、外部adapter化はセキュリティ設計を固めてから行います。
-
-描画方式もCanvas2Dに固定しません。システムは表示領域や入力、時間、保存などを提供し、曲adapterがCanvas2D、WebGL、DOM、SVGなどを選べるようにする方針です。歌詞タイミング編集は標準ツールとして残しますが、必須ではなくoptional toolとして扱います。
+外部サーバーからWeb adapterを直接読み込む設計は、任意コード実行や信頼境界の問題があります。最初は同一ビルド内でadapterを分離し、外部adapter化はセキュリティ設計を固めてから行います。

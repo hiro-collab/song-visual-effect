@@ -52,7 +52,7 @@ Webシステムは曲ごとの演出を決める親ではなく、補助ラン�
 曲ごとに求められる構成、演出、JSON構造、文脈の持ち方が大きく変わることが予想されるため。システム側が文法や設定構成を固定すると、曲ごとの自由度を奪う。
 
 影響:
-Shining Star固有の描画判断は、段階的に曲側Web adapterへ移す。システムは `transport`、`frame`、`input`、`assets`、`storage`、optional tools を渡すだけにする。
+現在system側に残っているfixture用の描画判断は、段階的に曲側Web adapterへ移す。システムは `transport`、`frame`、`input`、`assets`、`storage`、optional tools を渡すだけにする。
 
 ## D004b: 描画方式をCanvas2Dに固定しない
 
@@ -125,3 +125,14 @@ A/Dキーによる歌詞打刻や補正UIは、Lyric TimingモードがOnのと�
 
 根拠:
 ユーザーの方針として「システムは手助けに留め、曲ごとの演出を束縛しない」ことが明確になっているため。
+
+## D010: 新しい曲作成時は既存曲を読まない
+
+決定:
+新しい曲のシステムや演出を作るときは、既存の `song-packs/*` を読まない。既存曲のmanifest、analysis、design、adapter、演出コードはテンプレートとして扱わない。
+
+理由:
+過去に作った曲の構成を見ると、新しい曲のデータ文法、演出、UI、描画方式が暗黙に引っ張られるため。曲ごとの自由な設計を守るには、system-neutral docsだけで作り始める必要がある。
+
+影響:
+新しい曲作成の入口は `docs/system-overview.md` と `docs/song-authoring.md` にする。既存曲を見るのは、その曲自体の修正、回帰確認、またはユーザーが明示的に許可した場合だけにする。

@@ -15,6 +15,8 @@
 ## 最初に読むファイル
 
 - `README.md`: 起動方法と利用方法。
+- `docs/system-overview.md`: 特定曲に依存しないシステム概要。
+- `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。
 - `docs/handoff.md`: 現在状態と次にやるべきこと。
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: ディレクトリと主要ファイルの役割。
@@ -30,6 +32,16 @@
 - 曲固有の演出判断は、将来的に曲側のadapterへ移す。
 - 描画方式をCanvas2Dに固定しない。
 - 歌詞タイミング編集はoptional toolとして扱う。
+- 既存曲は実例であって、新しい曲のテンプレートではない。
+
+## 新しい曲を作るときのルール
+
+- 新しい曲の構成を考えるときは、既存の `song-packs/*` を読まない。
+- 既存曲のmanifest、analysis、design、adapter、演出コードをコピー元にしない。
+- まず `docs/system-overview.md` と `docs/song-authoring.md` だけで設計を始める。
+- 既存曲を参考にする必要がある場合は、ユーザーの明示許可を得てから読む。
+- 既存曲を読むことが許されるのは、その曲自体の修正、回帰確認、またはユーザーが明示した比較作業だけ。
+- 曲ごとのJSON文法、UI、描画方式、ライブ操作、adapter構成は曲側が自由に決める。
 
 ## 変更時の注意
 

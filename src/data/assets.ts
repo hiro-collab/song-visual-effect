@@ -2,7 +2,6 @@ import type { Beat, LyricCue, Markers, MusicMap, Palette, Range, SongManifest } 
 import { DEFAULT_PALETTE } from "../effects/palette";
 
 const JSON_HEADERS = { Accept: "application/json" };
-const DEFAULT_MANIFEST_URL = "http://127.0.0.1:5174/shining-star/manifest.json";
 
 const compactPaths = (paths: Array<string | null | undefined>) => paths.filter((path): path is string => Boolean(path));
 
@@ -47,7 +46,7 @@ const isSongManifest = (value: unknown): value is SongManifest => {
 
 export const getSongManifestUrl = () => {
   const queryValue = new URLSearchParams(window.location.search).get("song");
-  return absoluteUrl(queryValue || DEFAULT_MANIFEST_URL);
+  return queryValue ? absoluteUrl(queryValue) : null;
 };
 
 const loadManifest = async (manifestUrl: string) => {
@@ -165,7 +164,7 @@ const parseLyricLines = (text: string, title: string) => {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line && !line.includes("作詞作曲"));
-  return lines[0] === title || lines[0] === "シャイニングスター" ? lines.slice(1) : lines;
+  return lines[0] === title ? lines.slice(1) : lines;
 };
 
 const parseLyrics = (lyricLines: string[], duration: number): LyricCue[] => {
@@ -202,8 +201,11 @@ const generatedChorus = (markers: Markers, duration: number): Range[] => {
   ];
 };
 
-export const loadMusicMap = async (manifestUrl = getSongManifestUrl()): Promise<MusicMap> => {
+export const loadMusicMap = async (manifestUrl: string | null = getSongManifestUrl()): Promise<MusicMap> => {
   const warnings: string[] = [];
+  if (!manifestUrl) {
+    throw new Error("Song manifest URL is required. Open the app with ?song=<manifest-url>.");
+  }
   const resolvedManifestUrl = absoluteUrl(manifestUrl);
   const manifest = await loadManifest(resolvedManifestUrl);
   if (!manifest) {
@@ -228,8 +230,8 @@ export const loadMusicMap = async (manifestUrl = getSongManifestUrl()): Promise<
   const beats = beatJson ? collectBeats(beatJson) : [];
   const chorus = chorusJson ? collectRanges(chorusJson) : [];
   const timedLyrics = lyricJson ? collectTimedLyrics(lyricJson) : [];
-  const title = manifest?.title ?? "Shining Star";
-  const artist = manifest?.artist ?? "MaouDamashii / Koichi Morita";
+  const title = manifest.title;
+  const artist = manifest.artist;
   const lyricLines = parseLyricLines(lyricText, title);
 
   if (!beatJson || beats.length < 8) warnings.push("beat fallback");
