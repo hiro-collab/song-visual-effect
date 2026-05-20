@@ -4,6 +4,12 @@
 
 新しい曲を作る場合は、このファイルを入口にしないでください。既存fixtureの情報に触れて設計が引っ張られる可能性があります。新しい曲作成では、まず `docs/system-overview.md` と `docs/song-authoring.md` だけを読んでください。
 
+例外的な引き継ぎ:
+
+- 煮ル果実「トラフィック・ジャム」の映像エフェクトは、`codex/traffic-jam-effect` の `81876a7 Add traffic jam visual adapter` を採用しません。
+- 別スレッドで作り直す場合は `docs/traffic-jam-redo-brief.md` を読んでください。
+- `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても取り込まないでください。
+
 ## 現在の状態
 
 このリポジトリは、曲ごとに自由なインタラクティブ音楽エフェクトを作るためのWeb system hostです。

@@ -31,6 +31,22 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 - `AGENTS.md` に、新しい曲作成時は既存の `song-packs/*` を読まないと明記する。
 - 既存曲はテンプレートではなくfixtureとして扱う。
 
+## system側fixture rendererが新曲の視覚アンカーになる危険
+
+既存曲パッケージを読まなくても、system側のfixture rendererやサンプル実装の視覚文法に引っ張られることがあります。
+
+実際に、`codex/traffic-jam-effect` の `81876a7 Add traffic jam visual adapter` は、中央収束、放射線、グロー、光ネットワークの構図が前作に近くなったため採用しません。
+
+現在の対策:
+
+- 煮ル果実「トラフィック・ジャム」の再実装方針を `docs/traffic-jam-redo-brief.md` に分離した。
+- 新曲作成時は、既存 `song-packs/*` だけでなく、既存fixture rendererの構図もテンプレート扱いしない。
+- `SoftLightRenderer` 的な表現を使う場合は、意図して使う理由を先に明文化する。
+
+注意:
+
+- `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても、その通知は破棄予定の古い実装です。取り込まないでください。
+
 ## fixture rendererがまだsystem側にある
 
 現在同梱している柔らかい光表現は、`src/renderers/softLightRenderer.ts` と `src/effects/` にあります。
