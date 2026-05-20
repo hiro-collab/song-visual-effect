@@ -10,6 +10,7 @@
 - 並行 worktree 作業では、作業開始時と区切りごとに `npm run sync:check` を確認する。
 - 他スレッドに取り込ませてよいコミットができたら `npm run sync:ready -- -m "短い説明"` を実行する。
 - 新しいスレッドで作業を始める場合は、`docs/thread-start.md` を読んで作業開始、ready確認、merge判断の流れを揃える。
+- Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけを対象にする。PC全体の同名プロセスや他worktreeのtargetを探して止めない。
 - 不明点は断定せず、「推測」と明記する。
 - 音源ファイルを解析しない。AI学習に使わない。
 - 歌詞ファイルはUTF-8として扱い、日本語を壊さない。
@@ -62,6 +63,14 @@
 - 描画方式をCanvas2Dに固定しない。
 - 歌詞タイミング編集はoptional toolとして扱う。
 - 既存曲は実例であって、新しい曲のテンプレートではない。
+
+## Launch Managerの並行作業ルール
+
+- `全停止` は「このLaunch ServerがPIDを持って管理している子プロセス」だけに効く。
+- 別worktreeのLaunch Manager、別スレッドが別portで起動したtarget、手動起動した外部プロセスは停止対象にしない。
+- 複数スレッドが同じLaunch Manager URLを開いている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
+- 並行作業では `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` をworktreeごとに分ける。
+- 停止操作や実装変更の前に、GUI下部の `config` / `runtime` とtargetのportを見て、自分のworktreeを操作していることを確認する。
 
 ## 新しい曲を作るときのルール
 

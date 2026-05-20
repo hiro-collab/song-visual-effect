@@ -49,6 +49,8 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 - 煮ル果実「トラフィック・ジャム」の再実装方針を `docs/traffic-jam-redo-brief.md` に分離した。
 - `docs/song-visual-independence.md` を追加した。
 - `templates/neutral-song-app/` に空のadapter scaffoldとvisual briefを追加した。
+- 新曲作成時は、既存 `song-packs/*` だけでなく、既存fixture rendererの構図もテンプレート扱いしない。
+- `SoftLightRenderer` 的な表現を使う場合は、意図して使う理由を先に明文化する。
 
 注意:
 
@@ -124,6 +126,7 @@ song-pack serverは、ローカル曲パッケージをブラウザへ配信し�
 - CORSは既定でfixture playerのoriginだけを許可する。
 - 隠しファイルと未許可拡張子は配信しない。
 - URLデコード失敗や不正な範囲リクエストはエラーとして扱う。
+- loopback host以外へのbindを起動時に拒否する。
 
 注意:
 

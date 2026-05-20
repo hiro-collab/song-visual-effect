@@ -9,7 +9,9 @@
 このリポジトリは「曲を支配するhost」ではなく、「曲アプリを助けるkit」を中心にします。
 
 ```text
-dev manager
+launch manager
+  launch/targets.json
+  managed target supervisor
   fixture player server
   song package server
 
@@ -39,18 +41,20 @@ song package or song app
 
 ## 起動管理
 
-分離構成では、複数のサーバーを手作業で起動するとトラブルが増えます。そのため `npm run dev` は起動管理サーバーを立ち上げ、fixture player app と song-pack server をまとめて管理します。
+分離構成では、複数のサーバーを手作業で起動するとトラブルが増えます。そのため `npm run dev` はLaunch Managerを立ち上げます。Launch ManagerはPC上のLaunch Serverを正本として、`launch/targets.json` に書かれたmanaged targetだけを起動、停止、監視します。
 
 ```text
 http://127.0.0.1:5172
-  dev manager
+  launch manager UI + API
 
 http://127.0.0.1:5173
-  fixture player app
+  fixture player app target
 
 http://127.0.0.1:5174
-  song package server
+  song package server target
 ```
+
+管理画面で `Basic fixture` setを起動すると、fixture player app と song package server が立ち上がります。GUIタブを閉じても起動中targetは止まりません。停止するにはTarget停止、Set停止、または全停止を使います。
 
 fixture player appは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定曲へ自動フォールバックせず、起動エラーとして扱います。
 
@@ -58,7 +62,14 @@ fixture player appは `?song=<manifest-url>` で曲パッケージの入口を�
 http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
 ```
 
-並行worktreeで起動する場合は、`DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` でポートをずらせます。起動管理サーバー経由でsong-pack serverを立てる場合、`PLAYER_PORT` に合わせたCORS許可originを自動で渡します。
+並行worktreeで起動する場合は、`DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` でポートをずらせます。Launch Managerは起動前にport衝突を確認し、衝突した場合は自動変更せずエラーとして表示します。song-pack serverを立てる場合、`PLAYER_PORT` に合わせたCORS許可originをtarget環境変数として渡します。
+
+Launch Managerの非責務:
+
+- 曲ごとの映像設計を決めること。
+- 曲ごとのJSON文法やadapter構成を固定すること。
+- 任意コマンドをGUIから入力させること。
+- 複数Launch Server調停、attached/delegated、LAN公開をMVPに含めること。
 
 ## System Kit
 

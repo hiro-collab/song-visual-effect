@@ -65,6 +65,28 @@ ready通知は「必ず取り込むもの」ではなく、「取り込み候補
 - fixture playerは回帰確認用であり、新曲の標準UIや標準rendererではない。
 - 曲固有のcue文法、主役構造、演出判断は曲側が持つ。
 
+## Launch Managerの停止範囲
+
+並行worktreeで作業しているとき、Launch Managerの停止操作は必ず範囲を確認します。
+
+基本ルール:
+
+- `全停止` は、そのLaunch Manager自身が起動したmanaged targetだけを止める。
+- PC全体から同名プロセスを探して止めない。
+- 他worktreeのLaunch Managerや、別portで起動しているtargetを止めない。
+- 同じLaunch Manager URLを複数スレッドで見ている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
+
+並行作業では、worktreeごとにportを分けます。
+
+```powershell
+$env:DEV_MANAGER_PORT=5182
+$env:PLAYER_PORT=5183
+$env:SONG_PACK_PORT=5184
+npm run dev
+```
+
+停止操作や起動管理の修正をする前に、Launch Manager画面下部の `config` / `runtime` と各targetのportを見て、自分のworktreeを操作していることを確認してください。
+
 ## ready通知への対応
 
 `npm run sync:check` で通知が出たら、次の順に判断します。

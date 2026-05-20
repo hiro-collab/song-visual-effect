@@ -57,8 +57,18 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 
 - `scripts/download-songle-json.ps1`: Songle Widget APIからJSONを取得するPowerShellスクリプト。許可URL、保存先、取得対象、最大サイズを検証し、取得後に曲長、拍数、BPM、サビ候補を要約する。
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
-- `scripts/dev-manager.mjs`: fixture player server と song-pack server をまとめて起動・停止する起動管理サーバー。
+- `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
+- `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。
+- `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP APIとHTML GUI。
+- `scripts/launch-manager/supervisor.mjs`: managed targetの起動、停止、再起動、状態管理。
+- `scripts/launch-manager/ports.mjs`: 起動前のport衝突確認。
+- `scripts/launch-manager/logs.mjs`: stdout/stderr保存とログ末尾取得。
+- `scripts/launch-manager/metrics.mjs`: PIDごとのCPU/memory簡易取得。
 - `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知を扱うローカル同期補助。
+
+## launch
+
+- `launch/targets.json`: Launch Managerが扱うTarget/Set定義。GUIから任意コマンドは入力させず、このローカルファイルに書かれたmanaged targetだけを起動する。
 
 ## templates
 
@@ -75,6 +85,8 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: このファイル。ディレクトリとファイルの役割。
 - `docs/decisions.md`: 設計判断と理由。
+- `docs/launch-manager-spec.md`: 複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様。
+- `docs/launch-manager-spec.html`: Launch Manager仕様をレビューしやすくした単一HTMLページ。
 - `docs/security.md`: ローカル開発サーバー、manifest、曲素材、Songle取得ツールの信頼境界と対策。
 - `docs/plans.md`: 今後の作業候補。
 - `docs/known-issues.md`: 既知の問題と注意点。

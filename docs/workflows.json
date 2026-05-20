@@ -3,6 +3,92 @@
   "title": "Music Effect Workflow Map",
   "language": "ja",
   "description": "Music Effectの主要な構成要素と、曲パッケージ読み込み、再生、歌詞タイミング調整、分離サーバー運用の流れを記録するJSONです。system kitとfixture playerを分けて説明し、人間向けの図示とLLM共有データを兼ねます。",
+  "layers": [
+    {
+      "id": "song-side",
+      "label": "曲ごとのシステム",
+      "summary": "曲ごとの素材、cue文法、adapter、描画方式、演出UIを自由に設計する領域です。既存曲やfixture rendererの構成に合わせる必要はありません。",
+      "role": "曲固有の意味、主役構造、表現、入力、出力を決める。",
+      "boundary": "system kitへ曲固有の見た目やcue文法を押し込まない。",
+      "componentIds": ["manifest", "songPack", "songAdapter"]
+    },
+    {
+      "id": "system-kit",
+      "label": "汎用補助 system kit",
+      "summary": "多くの曲で使いうる読み込み、時刻、フレーム、手動タイミング調整などのhelper群です。曲の作り方を束縛せず、必要な補助だけを渡します。",
+      "role": "素材読み込み、再生時刻、フレーム更新、標準ツールの小さな補助を提供する。",
+      "boundary": "標準の演出文法、標準renderer、曲専用adapterをここに固定しない。",
+      "componentIds": ["assets", "transport", "frameLoop", "timingEditor", "storage"]
+    },
+    {
+      "id": "fixture-player",
+      "label": "検証用アプリ",
+      "summary": "system kitの動作確認とデモのためのアプリです。新曲のテンプレートではなく、回帰確認や道具の試用に使います。",
+      "role": "起動確認、UI確認、手動タイミング編集、fixture adapterの検証を行う。",
+      "boundary": "fixtureの見た目やUIを新曲制作の既定値として扱わない。",
+      "componentIds": ["main", "effects", "browser"]
+    },
+    {
+      "id": "support",
+      "label": "起動・同期・文脈支援",
+      "summary": "複数サーバーの起動停止、曲パック配信、worktree同期、Codex作業引き継ぎを助ける領域です。",
+      "role": "作業環境を整え、複数スレッドが同じ前提で作業できるようにする。",
+      "boundary": "曲の演出判断や曲パッケージ構成をここで決めない。",
+      "componentIds": ["devManager", "songServer", "launchManagerSpec", "agents", "contextDocs", "threadStart", "songAuthoringDocs", "visualIndependence", "neutralTemplate"]
+    }
+  ],
+  "mapZones": [
+    {
+      "id": "launch-support",
+      "label": "起動・配信支援",
+      "summary": "Launch Serverや曲パック配信は、曲を束縛せず起動と配信を助ける領域です。",
+      "x": 3,
+      "y": 4,
+      "width": 33,
+      "height": 22,
+      "variant": "support"
+    },
+    {
+      "id": "song-owned",
+      "label": "曲ごとの自由領域",
+      "summary": "manifest、素材、adapter、cue文法は曲側が持ち、曲ごとに変えてよい領域です。",
+      "x": 37,
+      "y": 4,
+      "width": 60,
+      "height": 27,
+      "variant": "song"
+    },
+    {
+      "id": "fixture-runtime",
+      "label": "検証・実行画面",
+      "summary": "ブラウザとfixture playerは検証用の実行面です。新曲の標準テンプレートではありません。",
+      "x": 3,
+      "y": 29,
+      "width": 38,
+      "height": 45,
+      "variant": "fixture"
+    },
+    {
+      "id": "system-kit-zone",
+      "label": "汎用補助 system kit",
+      "summary": "assets、transport、frame、timingなど、曲が必要なhelperだけ選んで使う領域です。",
+      "x": 41,
+      "y": 31,
+      "width": 56,
+      "height": 43,
+      "variant": "kit"
+    },
+    {
+      "id": "context-guardrails",
+      "label": "文脈・ガードレール",
+      "summary": "AGENTS、docs、neutral templateは、新規作業が既存曲に引っ張られないための入口です。",
+      "x": 3,
+      "y": 77,
+      "width": 94,
+      "height": 19,
+      "variant": "context"
+    }
+  ],
   "components": [
     {
       "id": "browser",
@@ -129,10 +215,20 @@
       "label": "起動管理サーバー",
       "kind": "dev-server",
       "group": "サーバー",
-      "file": "scripts/dev-manager.mjs",
+      "file": "scripts/dev-manager.mjs / scripts/launch-manager/* / launch/targets.json",
       "x": 28,
       "y": 14,
-      "description": "npm run devで起動し、fixture playerとsong-pack serverをまとめて起動・停止します。"
+      "description": "npm run devでLaunch Serverを起動します。GUI/APIからlaunch/targets.jsonのTarget/Setだけを起動、停止、監視します。"
+    },
+    {
+      "id": "launchManagerSpec",
+      "label": "Launch仕様",
+      "kind": "spec",
+      "group": "文脈",
+      "file": "docs/launch-manager-spec.md / docs/launch-manager-spec.html",
+      "x": 10,
+      "y": 14,
+      "description": "複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様です。HTMLはレビュー用の見取り図です。"
     },
     {
       "id": "agents",
@@ -426,10 +522,53 @@
       ]
     },
     {
+      "id": "launch-manager-mvp",
+      "label": "簡素版Launch Managerを使う",
+      "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/SetをGUIから起動・停止・監視します。",
+      "trigger": "複数の曲用映像や補助サーバーを同時に管理したい",
+      "steps": [
+        {
+          "from": "threadStart",
+          "to": "launchManagerSpec",
+          "action": "仕様を読む",
+          "payload": "docs/launch-manager-spec.md",
+          "note": "MVPではmanaged targetだけ。複数Launch Server、attached/delegated、LAN公開は含めません。"
+        },
+        {
+          "from": "launchManagerSpec",
+          "to": "devManager",
+          "action": "実装構成を確認する",
+          "payload": "scripts/dev-manager.mjs -> scripts/launch-manager/*",
+          "note": "scripts/dev-manager.mjsは互換入口で、実体は分割したLaunch Serverモジュールです。"
+        },
+        {
+          "from": "launchManagerSpec",
+          "to": "songServer",
+          "action": "Targetとして扱う",
+          "payload": "launch/targets.json",
+          "note": "fixture playerとsong-pack serverをまずTarget化しました。曲用映像や保存APIもTargetとして追加できます。"
+        },
+        {
+          "from": "devManager",
+          "to": "browser",
+          "action": "GUIから操作する",
+          "payload": "Target card、Set selector、start/stop/restart/all stop",
+          "note": "UIは正本を持たず、PC上のLaunch Serverへ操作要求を送ります。停止対象は、そのLaunch Serverが起動したmanaged targetだけです。"
+        },
+        {
+          "from": "devManager",
+          "to": "contextDocs",
+          "action": "運用前提を共有する",
+          "payload": "docs/launch-manager-spec.md、docs/plans.md、docs/handoff.md、docs/workflows.json",
+          "note": "Launch Managerは曲の構成を束縛しない補助ツールとして扱います。"
+        }
+      ]
+    },
+    {
       "id": "split-server",
       "label": "起動管理で分離サーバーをまとめて起動",
-      "summary": "起動管理サーバーがfixture playerと曲パックサーバーを立ち上げ、検証用プレイヤーは外部manifestを読むだけにします。",
-      "trigger": "npm run dev を実行する",
+      "summary": "Launch Manager GUIからBasic fixture setを起動し、検証用プレイヤーは外部manifestを読むだけにします。",
+      "trigger": "npm run dev 後にBasic fixtureを起動する",
       "steps": [
         {
           "from": "browser",
@@ -442,14 +581,14 @@
           "from": "devManager",
           "to": "main",
           "action": "fixture playerを起動",
-          "payload": "npm run dev:player -- --port <PLAYER_PORT>",
-          "note": "Viteのfixture playerを起動します。"
+          "payload": "launch/targets.json -> npm run dev:player -- --port <PLAYER_PORT>",
+          "note": "起動前にport衝突を確認し、衝突時は自動変更せずエラーにします。"
         },
         {
           "from": "devManager",
           "to": "songServer",
           "action": "曲パックサーバーを起動",
-          "payload": "npm run dev:songs",
+          "payload": "launch/targets.json -> npm run dev:songs",
           "note": "song-packsをfixture player origin向けCORSつきで配信します。"
         },
         {

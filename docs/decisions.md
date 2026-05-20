@@ -147,3 +147,14 @@ A/Dキーによる歌詞打刻や補正UIは、Lyric TimingモードがOnのと�
 
 影響:
 新曲作成時の入口に `docs/song-visual-independence.md` を加える。最初のプレビュー後は、構図、色、主役オブジェクト、線/光の使い方、カメラ視点が前作に似すぎていないか確認する。
+
+## D012: Launch Managerは簡素な単一Launch Serverから始める
+
+決定:
+起動管理は、まずPC上に1つのLaunch Serverを立て、`launch/targets.json` に書かれたLaunch TargetとLaunch Setを起動、停止、監視する構成にする。
+
+理由:
+複数の曲用映像サーバー、fixture player、song-pack server、保存APIなどを同時に扱う必要がある一方、最初から複数Launch Server調停、delegated mode、自動port再割当、LAN公開、スマホ専用UIまで入れると構成が重くなり、使われなくなる可能性が高いため。
+
+影響:
+MVPではmanaged targetだけを扱う。Launch Manager UIは状態の正本を持たず、PC上のLaunch Serverへ操作要求を送るだけにする。曲ごとの映像構成やadapterはLaunch Manager側で決めない。詳細仕様は `docs/launch-manager-spec.md` に置く。

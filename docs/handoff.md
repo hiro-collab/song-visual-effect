@@ -29,6 +29,8 @@
 - 曲アプリ向けに `system/kit/songAdapterContext.ts` を追加し、raw manifest、base URL、`readJson()`、`readText()`、`readDesignCues()` を渡せるようにした。system kitは `design.cues` の中身を固定解釈しない。
 - fixture player内に中立的な `builtin:fixture-soft-light` adapter registryを置いている。外部adapter読み込みはまだ無効。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
+- 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
+- Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。
 
 ## 新しいスレッドの開始手順
 
@@ -74,7 +76,7 @@ npm install
 npm run dev
 ```
 
-`npm run dev` は起動管理サーバーを立て、fixture player と song-pack server をまとめて起動します。
+`npm run dev` はLaunch Managerを立てます。管理画面で `Basic fixture` setを起動すると、fixture player と song-pack server がまとめて起動します。
 
 ```text
 http://127.0.0.1:5172/
@@ -127,6 +129,7 @@ http://127.0.0.1:5173/docs/workflows.html
 - `examples/fixture-player/tools/lyricTimingTool.ts`: fixture playerに載せたoptional lyric timing UI。
 - `templates/neutral-song-app/`: 新曲向けの空scaffoldとvisual brief。
 - `docs/security.md`: 信頼境界と運用ルール。
+- `docs/launch-manager-spec.md`: 次に実装する簡素版Launch Manager仕様。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 
 ## 次にやるとよいこと
@@ -135,8 +138,17 @@ http://127.0.0.1:5173/docs/workflows.html
 
 1. fixture playerが新しい曲のテンプレートに見えないよう、docsとUI文言を維持する。
 2. 新曲実装担当が `templates/neutral-song-app/visual-brief.md` を先に埋める運用を定着させる。
-3. `launch-manager` 側でworktreeごとのポート割り当てと一括停止を整える。
+3. Launch ManagerのTargetに、曲ごとの映像サーバーや保存APIを追加する設計を進める。
 4. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
+
+Launch Managerを変更する場合:
+
+- まず `docs/launch-manager-spec.md` を読む。
+- 最初はmanaged targetだけを扱う。
+- 複数Launch Server調停、attached/delegated、自動port再割当、LAN公開、スマホ専用UIはMVPに含めない。
+- GUIから任意コマンドを入力させない。起動可能なものはローカルの `launch/targets.json` に書かれたTargetだけ。
+- 停止対象はLaunch Serverが起動してPIDを持つtargetだけ。PC全体の同名プロセスや他worktreeのtargetを停止対象にしない。
+- `scripts/dev-manager.mjs` は互換入口。実装本体は `scripts/launch-manager/`。
 
 ## 新規曲パック: traffic-jam
 

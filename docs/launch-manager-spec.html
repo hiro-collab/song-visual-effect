@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Launch Manager Spec</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101116;
+        --surface: #171920;
+        --surface-2: #20242c;
+        --surface-3: #2a2f39;
+        --line: rgba(255, 255, 255, 0.14);
+        --line-strong: rgba(255, 255, 255, 0.28);
+        --text: #f7f1e7;
+        --muted: #bdb7ad;
+        --quiet: #9298a3;
+        --accent: #f5c96f;
+        --blue: #80c7e8;
+        --green: #94d8ad;
+        --red: #efa1a1;
+        --shadow: rgba(0, 0, 0, 0.24);
+        font-family:
+          "Yu Gothic UI",
+          "Yu Gothic",
+          "Hiragino Sans",
+          "Meiryo",
+          system-ui,
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      code,
+      pre {
+        font-family: Consolas, "SFMono-Regular", monospace;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow: auto;
+        border-right: 1px solid var(--line);
+        background: #12131a;
+        padding: 22px 18px;
+      }
+
+      .sidebar h1 {
+        margin: 0 0 8px;
+        font-size: 22px;
+        line-height: 1.28;
+        letter-spacing: 0;
+      }
+
+      .sidebar p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav a {
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 9px 10px;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .nav a:hover,
+      .nav a:focus-visible {
+        border-color: var(--line-strong);
+        color: var(--text);
+        outline: none;
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .hero {
+        border-bottom: 1px solid var(--line);
+        padding: 30px 34px 24px;
+        background: #151720;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        border: 1px solid rgba(128, 199, 232, 0.48);
+        border-radius: 8px;
+        padding: 4px 9px;
+        color: var(--blue);
+        background: rgba(128, 199, 232, 0.08);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .hero h2 {
+        margin: 14px 0 8px;
+        max-width: 980px;
+        font-size: 32px;
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 980px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.75;
+      }
+
+      .source-link {
+        display: inline-flex;
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 11px;
+        color: var(--text);
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 13px;
+      }
+
+      .main {
+        display: grid;
+        gap: 18px;
+        padding: 22px 34px 36px;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: 0 18px 42px var(--shadow);
+      }
+
+      .panel-head {
+        border-bottom: 1px solid var(--line);
+        padding: 15px 17px;
+      }
+
+      .panel-head h3 {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.35;
+        letter-spacing: 0;
+      }
+
+      .panel-head p {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .panel-body {
+        padding: 17px;
+      }
+
+      .callout {
+        border: 1px solid rgba(245, 201, 111, 0.42);
+        border-radius: 8px;
+        padding: 14px 15px;
+        background: rgba(245, 201, 111, 0.09);
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--accent);
+        font-size: 13px;
+      }
+
+      .callout p {
+        margin: 0;
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .role-grid,
+      .two-grid,
+      .state-grid,
+      .metric-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .role-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .two-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .state-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .item {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 13px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .item.is-server {
+        border-color: rgba(245, 201, 111, 0.42);
+        background: rgba(245, 201, 111, 0.075);
+      }
+
+      .item.is-ui {
+        border-color: rgba(128, 199, 232, 0.42);
+        background: rgba(128, 199, 232, 0.075);
+      }
+
+      .item.is-target {
+        border-color: rgba(148, 216, 173, 0.36);
+        background: rgba(148, 216, 173, 0.06);
+      }
+
+      .item.is-later {
+        border-color: rgba(239, 161, 161, 0.34);
+        background: rgba(239, 161, 161, 0.055);
+      }
+
+      .item h4 {
+        margin: 0 0 7px;
+        font-size: 15px;
+        line-height: 1.35;
+      }
+
+      .item p,
+      .item li {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .item p {
+        margin: 0;
+      }
+
+      .item ul {
+        margin: 8px 0 0;
+        padding-left: 1.2em;
+      }
+
+      .flow {
+        display: grid;
+        gap: 9px;
+        counter-reset: flow;
+      }
+
+      .flow-step {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .flow-step::before {
+        counter-increment: flow;
+        content: counter(flow);
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: rgba(128, 199, 232, 0.16);
+        color: var(--blue);
+        font-weight: 700;
+        font-size: 12px;
+      }
+
+      .flow-step strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .flow-step span {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .table-wrap {
+        overflow: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+        line-height: 1.6;
+      }
+
+      th {
+        color: var(--blue);
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      td {
+        color: var(--muted);
+      }
+
+      .status {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 4px 8px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 12px;
+      }
+
+      pre {
+        overflow: auto;
+        margin: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        background: #0d0f14;
+        color: #e8dfd3;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .do-dont {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .do-dont h4 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+
+      .do-dont ul {
+        margin: 0;
+        padding-left: 1.2em;
+      }
+
+      .do-dont li {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .footer {
+        padding: 0 34px 30px;
+        color: var(--quiet);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 1180px) {
+        .page {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .nav {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .role-grid,
+        .state-grid,
+        .metric-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 700px) {
+        .hero,
+        .main,
+        .footer {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .hero h2 {
+          font-size: 25px;
+        }
+
+        .nav,
+        .role-grid,
+        .two-grid,
+        .state-grid,
+        .metric-grid,
+        .do-dont {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-step {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="sidebar">
+        <h1>Launch Manager</h1>
+        <p>複数の曲用映像や補助サーバーを、安全に起動、停止、監視するための簡素版仕様です。</p>
+        <nav class="nav" aria-label="ページ内ナビゲーション">
+          <a href="#summary">結論</a>
+          <a href="#roles">役割分担</a>
+          <a href="#scope">MVP範囲</a>
+          <a href="#lifecycle">起動と停止</a>
+          <a href="#status">状態と監視</a>
+          <a href="#targets">targets.json</a>
+          <a href="#ui">GUI</a>
+          <a href="#security">安全策</a>
+          <a href="#implementation">実装準備</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="hero">
+          <span class="eyebrow">Review HTML</span>
+          <h2>シンプルな起動管理から始める</h2>
+          <p>
+            最初から高機能な統合運用システムにせず、PC上に1つのLaunch Serverを置き、
+            起動対象をLaunch Targetとして一覧管理します。目的は、ライブや制作中に
+            「何が動いているか」「どのポートか」「どう止めるか」を迷わないことです。
+          </p>
+          <a class="source-link" href="./launch-manager-spec.md">Markdown仕様を見る</a>
+        </header>
+
+        <div class="main">
+          <section id="summary" class="panel">
+            <div class="panel-head">
+              <h3>結論</h3>
+              <p>構成を軽く保つため、Launch Managerはまず小さな親プロセスとして作ります。</p>
+            </div>
+            <div class="panel-body">
+              <div class="callout">
+                <strong>最初の形</strong>
+                <p>
+                  PC上に1つのLaunch Serverを起動し、`launch/targets.json` に書かれたTargetとSetを
+                  GUIから起動、停止、再起動、監視します。UIは正本を持たず、Launch Serverへ操作要求を送ります。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="roles" class="panel">
+            <div class="panel-head">
+              <h3>役割分担</h3>
+              <p>曲用映像サーバーとLaunch Serverを混ぜないことが一番大事です。</p>
+            </div>
+            <div class="panel-body role-grid">
+              <article class="item is-server">
+                <h4>Launch Server</h4>
+                <p>PC上で動く起動管理の本体。起動、停止、PID、port、ログ、リソースの正本を持ちます。</p>
+              </article>
+              <article class="item is-ui">
+                <h4>Launch Manager UI</h4>
+                <p>PCブラウザや将来のスマホから使う操作画面。命令を送るだけで、状態の正本は持ちません。</p>
+              </article>
+              <article class="item is-target">
+                <h4>Launch Target</h4>
+                <p>起動対象。曲用映像、fixture player、song-pack server、保存APIなどを同じ形で扱います。</p>
+              </article>
+              <article class="item">
+                <h4>Launch Set</h4>
+                <p>複数Targetをまとめた起動セット。Profileより軽い概念として扱います。</p>
+              </article>
+            </div>
+          </section>
+
+          <section id="scope" class="panel">
+            <div class="panel-head">
+              <h3>MVP範囲</h3>
+              <p>使われる道具にするため、最初は削ります。</p>
+            </div>
+            <div class="panel-body do-dont">
+              <div class="item is-target">
+                <h4>最初にやる</h4>
+                <ul>
+                  <li>PC上に1つのLaunch Server</li>
+                  <li>`launch/targets.json`</li>
+                  <li>Targetの起動、停止、再起動</li>
+                  <li>Setの起動、停止</li>
+                  <li>PID、port、URL、CPU、memory、ログ末尾の表示</li>
+                  <li>固定port衝突時はエラー表示</li>
+                </ul>
+              </div>
+              <div class="item is-later">
+                <h4>後回しにする</h4>
+                <ul>
+                  <li>複数Launch Serverの調停</li>
+                  <li>attached / delegated mode</li>
+                  <li>自動port再割当</li>
+                  <li>CPU/memory履歴グラフ</li>
+                  <li>WebSocket/SSE</li>
+                  <li>LAN公開、スマホ専用UI</li>
+                  <li>任意コマンド入力GUI</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="lifecycle" class="panel">
+            <div class="panel-head">
+              <h3>起動と停止</h3>
+              <p>GUIタブを閉じることと、起動中プロセスを止めることは分けます。</p>
+            </div>
+            <div class="panel-body two-grid">
+              <div>
+                <h4>起動の流れ</h4>
+                <div class="flow">
+                  <div class="flow-step"><div><strong>Launch Serverを起動</strong><span>PC上で1つだけ動かします。</span></div></div>
+                  <div class="flow-step"><div><strong>UIを開く</strong><span>PCブラウザ、将来はスマホから同じServerへアクセスします。</span></div></div>
+                  <div class="flow-step"><div><strong>TargetまたはSetを選ぶ</strong><span>起動対象はtargets.jsonに書かれたものだけです。</span></div></div>
+                  <div class="flow-step"><div><strong>検証して起動</strong><span>port衝突、cwd、ログ場所を確認してからspawnします。</span></div></div>
+                  <div class="flow-step"><div><strong>状態を表示</strong><span>health、PID、URL、ログ、resourceをUIに出します。</span></div></div>
+                </div>
+              </div>
+              <div>
+                <h4>停止の考え方</h4>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr><th>操作</th><th>挙動</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>個別停止</td><td>対象Targetだけ停止します。</td></tr>
+                      <tr><td>Set停止</td><td>Setに含まれるTargetを停止します。</td></tr>
+                      <tr><td>全停止</td><td>Launch Serverが管理するTargetを全部停止します。</td></tr>
+                      <tr><td>GUIタブを閉じる</td><td>何も止めません。</td></tr>
+                      <tr><td>Launch Server終了</td><td>MVPでは管理中Targetを停止してから終了します。</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="status" class="panel">
+            <div class="panel-head">
+              <h3>状態と監視</h3>
+              <p>細かい概念を増やしすぎず、UIでは5状態に絞ります。</p>
+            </div>
+            <div class="panel-body">
+              <div class="state-grid">
+                <div class="item"><h4><span class="status">stopped</span></h4><p>停止中。基本監視しません。</p></div>
+                <div class="item"><h4><span class="status">starting</span></h4><p>起動処理中。1秒ごとにhealth確認します。</p></div>
+                <div class="item"><h4><span class="status">running</span></h4><p>起動中。5秒ごとにhealth/resource確認します。</p></div>
+                <div class="item"><h4><span class="status">stopping</span></h4><p>停止処理中。停止完了を待ちます。</p></div>
+                <div class="item"><h4><span class="status">error</span></h4><p>起動失敗、異常終了、health失敗です。</p></div>
+              </div>
+              <div class="metric-grid" style="margin-top: 12px;">
+                <div class="item"><h4>UI更新</h4><p>`/api/status` を2秒ごとにポーリングします。</p></div>
+                <div class="item"><h4>ログ</h4><p>stdout/stderrをファイル保存し、GUIには末尾だけ表示します。</p></div>
+                <div class="item"><h4>リソース</h4><p>PID、CPU%、Memory MB、起動時刻、exit codeを表示します。</p></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="targets" class="panel">
+            <div class="panel-head">
+              <h3>targets.json</h3>
+              <p>RecipeとProfileを分けすぎず、最初はtargetsとsetsを1ファイルにまとめます。</p>
+            </div>
+            <div class="panel-body">
+              <pre><code>{
+  "targets": [
+    {
+      "id": "fixture-player",
+      "label": "Fixture player",
+      "kind": "web-app",
+      "cwd": ".",
+      "command": "npm",
+      "args": ["run", "dev:player", "--", "--port", "5173"],
+      "ports": [5173],
+      "urls": {
+        "open": "http://127.0.0.1:5173/"
+      },
+      "health": {
+        "url": "http://127.0.0.1:5173/",
+        "intervalMs": 5000
+      }
+    }
+  ],
+  "sets": [
+    {
+      "id": "basic-fixture",
+      "label": "Basic fixture",
+      "targets": ["fixture-player", "song-pack-server"]
+    }
+  ]
+}</code></pre>
+            </div>
+          </section>
+
+          <section id="ui" class="panel">
+            <div class="panel-head">
+              <h3>GUI</h3>
+              <p>ライブ用途では、賢さより事故らなさを優先します。</p>
+            </div>
+            <div class="panel-body two-grid">
+              <div class="item is-ui">
+                <h4>画面に置くもの</h4>
+                <ul>
+                  <li>Launch Set選択</li>
+                  <li>Set起動、Set停止、全停止</li>
+                  <li>Targetカード一覧</li>
+                  <li>起動、停止、再起動、開く</li>
+                  <li>状態、PID、port、URL、CPU、memory</li>
+                  <li>stdout/stderrの直近ログ</li>
+                </ul>
+              </div>
+              <div class="item is-server">
+                <h4>常に見せたい注意</h4>
+                <p>
+                  このタブを閉じても起動中のTargetは止まりません。停止するには各Targetの停止、Set停止、または全停止を使ってください。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="security" class="panel">
+            <div class="panel-head">
+              <h3>安全策</h3>
+              <p>スマホ操作やLAN公開は便利ですが、MVPでは入れません。</p>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>項目</th><th>MVP方針</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>bind</td><td>`127.0.0.1` のみ。</td></tr>
+                    <tr><td>POST API</td><td>same-originだけ許可。</td></tr>
+                    <tr><td>起動対象</td><td>targets.jsonに書かれたTargetだけ。</td></tr>
+                    <tr><td>cwd</td><td>リポジトリ内または明示許可ディレクトリ内。</td></tr>
+                    <tr><td>GUI</td><td>任意コマンド入力欄を作らない。</td></tr>
+                    <tr><td>停止対象</td><td>Launch Serverが起動したmanaged Targetだけ。</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="implementation" class="panel">
+            <div class="panel-head">
+              <h3>実装準備</h3>
+              <p>次プロセスでは、既存dev-managerを互換入口として残しながら中身を分けます。</p>
+            </div>
+            <div class="panel-body">
+              <pre><code>scripts/launch-manager/
+  config.mjs       targets.json読み込みと検証
+  supervisor.mjs   spawn/stop/restart/process状態
+  ports.mjs        port衝突確認
+  logs.mjs         stdout/stderr保存と末尾取得
+  metrics.mjs      PID/CPU/memoryの簡易取得
+  server.mjs       HTTP APIとHTML UI
+
+launch/
+  targets.json     初期TargetとSet</code></pre>
+            </div>
+          </section>
+        </div>
+
+        <footer class="footer">
+          正本は docs/launch-manager-spec.md です。このHTMLはレビュー用の見取り図として使います。
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

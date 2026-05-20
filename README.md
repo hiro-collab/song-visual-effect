@@ -11,11 +11,20 @@ npm install
 npm run dev
 ```
 
-`npm run dev` は起動管理サーバーを立ち上げ、fixture player app と song-pack server をまとめて起動します。
+`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、`Basic fixture` を選んで起動すると、fixture player app と song-pack server がまとめて起動します。
 
 ```text
 http://127.0.0.1:5172/
 ```
+
+Launch Managerでできること:
+
+- `launch/targets.json` に書かれたTarget/Setだけを起動する。
+- Targetごとの起動、停止、再起動、Set起動/停止、全停止を行う。
+- PID、port、health、CPU、memory、stdout/stderr末尾を見る。
+- port衝突時は自動で別portに逃がさず、エラーとして表示する。
+
+GUIタブを閉じても起動中Targetは止まりません。停止するには、管理画面のTarget停止、Set停止、または全停止を使ってください。Launch Manager自体を終了すると、MVPでは管理中Targetを停止してから終了します。
 
 fixture player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。
 
