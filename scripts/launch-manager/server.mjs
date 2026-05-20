@@ -235,7 +235,12 @@ const managerHtml = ({ title }) => `<!doctype html>
         return node;
       };
       const call = async (url, options = {}) => {
-        const response = await fetch(url, options);
+        let response;
+        try {
+          response = await fetch(url, options);
+        } catch (error) {
+          throw new Error("Launch Managerに接続できません。サーバーが止まっている可能性があります。npm run dev の端末と、この画面のURL/portを確認してから再読み込みしてください。");
+        }
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Request failed");
         return data;
