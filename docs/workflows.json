@@ -3,6 +3,40 @@
   "title": "Music Effect Workflow Map",
   "language": "ja",
   "description": "Music Effectの主要な構成要素と、曲パッケージ読み込み、再生、歌詞タイミング調整、分離サーバー運用の流れを記録するJSONです。system kitとfixture playerを分けて説明し、人間向けの図示とLLM共有データを兼ねます。",
+  "layers": [
+    {
+      "id": "song-side",
+      "label": "曲ごとのシステム",
+      "summary": "曲ごとの素材、cue文法、adapter、描画方式、演出UIを自由に設計する領域です。既存曲やfixture rendererの構成に合わせる必要はありません。",
+      "role": "曲固有の意味、主役構造、表現、入力、出力を決める。",
+      "boundary": "system kitへ曲固有の見た目やcue文法を押し込まない。",
+      "componentIds": ["manifest", "songPack", "songAdapter"]
+    },
+    {
+      "id": "system-kit",
+      "label": "汎用補助 system kit",
+      "summary": "多くの曲で使いうる読み込み、時刻、フレーム、手動タイミング調整などのhelper群です。曲の作り方を束縛せず、必要な補助だけを渡します。",
+      "role": "素材読み込み、再生時刻、フレーム更新、標準ツールの小さな補助を提供する。",
+      "boundary": "標準の演出文法、標準renderer、曲専用adapterをここに固定しない。",
+      "componentIds": ["assets", "transport", "frameLoop", "timingEditor", "storage"]
+    },
+    {
+      "id": "fixture-player",
+      "label": "検証用アプリ",
+      "summary": "system kitの動作確認とデモのためのアプリです。新曲のテンプレートではなく、回帰確認や道具の試用に使います。",
+      "role": "起動確認、UI確認、手動タイミング編集、fixture adapterの検証を行う。",
+      "boundary": "fixtureの見た目やUIを新曲制作の既定値として扱わない。",
+      "componentIds": ["main", "effects", "browser"]
+    },
+    {
+      "id": "support",
+      "label": "起動・同期・文脈支援",
+      "summary": "複数サーバーの起動停止、曲パック配信、worktree同期、Codex作業引き継ぎを助ける領域です。",
+      "role": "作業環境を整え、複数スレッドが同じ前提で作業できるようにする。",
+      "boundary": "曲の演出判断や曲パッケージ構成をここで決めない。",
+      "componentIds": ["devManager", "songServer", "agents", "contextDocs", "threadStart", "songAuthoringDocs", "visualIndependence", "neutralTemplate"]
+    }
+  ],
   "components": [
     {
       "id": "browser",

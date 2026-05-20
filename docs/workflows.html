@@ -7,16 +7,20 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #111217;
-        --panel: #1c1d26;
-        --panel-strong: #262838;
-        --line: rgba(255, 255, 255, 0.16);
-        --text: #f6f1e8;
-        --muted: #b9b4aa;
-        --accent: #ffd98a;
-        --accent-2: #9bd7ff;
-        --active: #fff3bf;
-        --danger: #ff9f9f;
+        --bg: #101116;
+        --surface: #171920;
+        --surface-2: #20232c;
+        --surface-3: #292d37;
+        --line: rgba(255, 255, 255, 0.14);
+        --line-strong: rgba(255, 255, 255, 0.24);
+        --text: #f7f1e7;
+        --muted: #bbb5aa;
+        --quiet: #8f95a1;
+        --accent: #f5c96f;
+        --accent-2: #80c7e8;
+        --ok: #94d8ad;
+        --warn: #efa1a1;
+        --shadow: rgba(0, 0, 0, 0.28);
         font-family:
           "Yu Gothic UI",
           "Yu Gothic",
@@ -33,333 +37,774 @@
       body {
         margin: 0;
         min-height: 100vh;
-        background:
-          radial-gradient(circle at 18% 12%, rgba(255, 217, 138, 0.16), transparent 26rem),
-          radial-gradient(circle at 84% 20%, rgba(155, 215, 255, 0.13), transparent 28rem),
-          linear-gradient(135deg, #111217, #191924 52%, #11131b);
+        background: var(--bg);
         color: var(--text);
       }
 
-      button {
+      button,
+      input {
         font: inherit;
       }
 
+      button {
+        color: inherit;
+      }
+
       .app {
-        display: grid;
-        grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+        min-width: 0;
         min-height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
       }
 
       .sidebar {
+        min-width: 0;
+        min-height: 100vh;
         border-right: 1px solid var(--line);
-        background: rgba(18, 18, 24, 0.82);
-        backdrop-filter: blur(18px);
-        padding: 22px;
-        overflow-y: auto;
+        background: #12131a;
+        display: grid;
+        grid-template-rows: auto auto auto minmax(0, 1fr);
       }
 
-      .sidebar h1 {
+      .brand {
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand h1 {
         margin: 0 0 8px;
-        font-size: 24px;
-        line-height: 1.2;
+        font-size: 22px;
+        line-height: 1.28;
         letter-spacing: 0;
       }
 
-      .sidebar p {
-        margin: 0 0 20px;
+      .brand p {
+        margin: 0;
         color: var(--muted);
         font-size: 13px;
-        line-height: 1.7;
+        line-height: 1.65;
+        overflow-wrap: anywhere;
       }
 
-      .flow-list {
+      .stats {
         display: grid;
-        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--line);
       }
 
-      .flow-button {
+      .stat {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 10px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .stat strong {
+        display: block;
+        color: var(--accent);
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .stat span {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .starter-panel {
+        min-width: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 14px 20px 16px;
+        display: grid;
+        gap: 12px;
+        background: rgba(128, 199, 232, 0.045);
+      }
+
+      .starter-panel h2 {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.35;
+      }
+
+      .starter-panel p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .starter-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+      }
+
+      .starter-list li {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 10px;
+        background: rgba(0, 0, 0, 0.14);
+      }
+
+      .starter-list strong,
+      .starter-list span {
+        display: block;
+      }
+
+      .starter-list strong {
+        margin-bottom: 3px;
+        color: var(--accent-2);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .starter-list span {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+
+      .starter-button {
+        width: 100%;
+        min-height: 34px;
+        border: 1px solid rgba(128, 199, 232, 0.55);
+        border-radius: 8px;
+        padding: 7px 10px;
+        background: rgba(128, 199, 232, 0.11);
+        cursor: pointer;
+        white-space: normal;
+      }
+
+      .starter-button:hover,
+      .starter-button:focus-visible {
+        border-color: rgba(128, 199, 232, 0.9);
+        outline: none;
+      }
+
+      .flow-panel {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .search-box {
+        padding: 14px 20px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .search-box label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .search-box input {
         width: 100%;
         border: 1px solid var(--line);
         border-radius: 8px;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.045);
+        padding: 10px 12px;
+        background: #0e0f14;
         color: var(--text);
+        outline: none;
+      }
+
+      .search-box input:focus {
+        border-color: rgba(245, 201, 111, 0.82);
+      }
+
+      .flow-list {
+        min-height: 0;
+        overflow: auto;
+        padding: 12px;
+        display: grid;
+        align-content: start;
+        gap: 9px;
+      }
+
+      .flow-button {
+        min-width: 0;
+        width: 100%;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 12px;
+        background: transparent;
         text-align: left;
         cursor: pointer;
-        transition:
-          border-color 160ms ease,
-          background 160ms ease,
-          transform 160ms ease;
       }
 
       .flow-button:hover,
       .flow-button:focus-visible {
-        border-color: rgba(255, 217, 138, 0.72);
+        border-color: var(--line-strong);
+        background: rgba(255, 255, 255, 0.045);
         outline: none;
-        transform: translateY(-1px);
       }
 
       .flow-button.is-active {
-        border-color: rgba(255, 217, 138, 0.92);
-        background: rgba(255, 217, 138, 0.13);
+        border-color: rgba(245, 201, 111, 0.9);
+        background: rgba(245, 201, 111, 0.12);
       }
 
       .flow-button strong {
         display: block;
-        margin-bottom: 4px;
+        margin-bottom: 5px;
         font-size: 14px;
+        line-height: 1.38;
       }
 
       .flow-button span {
         display: block;
         color: var(--muted);
         font-size: 12px;
-        line-height: 1.5;
-      }
-
-      .main {
-        display: grid;
-        grid-template-rows: minmax(420px, 56vh) minmax(280px, 1fr);
-        min-width: 0;
-      }
-
-      .map-shell {
-        position: relative;
-        min-height: 420px;
-        border-bottom: 1px solid var(--line);
-        overflow: hidden;
-      }
-
-      .map-header {
-        position: absolute;
-        z-index: 5;
-        top: 18px;
-        left: 22px;
-        max-width: min(720px, calc(100% - 44px));
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 8px;
-        padding: 12px 14px;
-        background: rgba(17, 18, 24, 0.72);
-        backdrop-filter: blur(12px);
-      }
-
-      .map-header h2 {
-        margin: 0 0 6px;
-        font-size: 20px;
-      }
-
-      .map-header p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.6;
-      }
-
-      .map {
-        position: absolute;
-        inset: 0;
-        min-width: 900px;
-      }
-
-      .edges {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-      }
-
-      .edge {
-        stroke: rgba(255, 255, 255, 0.14);
-        stroke-width: 2;
-        fill: none;
-      }
-
-      .edge.is-active {
-        stroke: var(--accent);
-        stroke-width: 4;
-        filter: drop-shadow(0 0 10px rgba(255, 217, 138, 0.5));
-      }
-
-      .component {
-        position: absolute;
-        z-index: 2;
-        width: 168px;
-        min-height: 104px;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        border-radius: 8px;
-        padding: 12px;
-        background: rgba(25, 26, 35, 0.82);
-        box-shadow: 0 18px 38px rgba(0, 0, 0, 0.24);
-        transform: translate(-50%, -50%);
-        transition:
-          border-color 160ms ease,
-          background 160ms ease,
-          box-shadow 160ms ease;
-      }
-
-      .component.is-active {
-        border-color: rgba(255, 217, 138, 0.95);
-        background: rgba(255, 217, 138, 0.14);
-        box-shadow: 0 0 0 1px rgba(255, 217, 138, 0.16), 0 20px 46px rgba(0, 0, 0, 0.35);
-      }
-
-      .component .kind {
-        display: inline-block;
-        margin-bottom: 8px;
-        color: var(--accent-2);
-        font-size: 11px;
-        line-height: 1;
-      }
-
-      .component h3 {
-        margin: 0 0 6px;
-        font-size: 15px;
-        line-height: 1.3;
-      }
-
-      .component p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 11px;
         line-height: 1.55;
+        overflow-wrap: anywhere;
       }
 
-      .detail {
+      .content {
+        min-width: 0;
+        min-height: 100vh;
         display: grid;
-        grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
-        gap: 18px;
-        padding: 22px;
-        overflow: auto;
+        grid-template-rows: auto auto minmax(0, 1fr);
       }
 
-      .detail-panel {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(28, 29, 38, 0.78);
-        padding: 18px;
+      .topbar {
+        border-bottom: 1px solid var(--line);
+        background: #151720;
+        padding: 18px 24px;
+        display: grid;
+        gap: 12px;
       }
 
-      .detail-panel h2,
-      .detail-panel h3 {
-        margin: 0 0 10px;
-        font-size: 18px;
+      .topbar h2 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.3;
+        letter-spacing: 0;
       }
 
-      .detail-panel p {
-        margin: 0 0 12px;
+      .topbar p {
+        margin: 0;
+        max-width: 1040px;
         color: var(--muted);
         font-size: 13px;
         line-height: 1.7;
+        overflow-wrap: anywhere;
       }
 
-      .meta-grid {
-        display: grid;
+      .top-actions {
+        display: flex;
+        flex-wrap: wrap;
         gap: 8px;
-        margin-top: 14px;
       }
 
-      .meta {
-        border-top: 1px solid var(--line);
-        padding-top: 10px;
+      .mode-button {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        min-height: 36px;
+        padding: 7px 12px;
+        background: rgba(255, 255, 255, 0.04);
+        cursor: pointer;
       }
 
-      .meta strong {
-        display: block;
-        margin-bottom: 4px;
-        color: var(--accent);
-        font-size: 12px;
+      .mode-button.is-active {
+        border-color: rgba(128, 199, 232, 0.9);
+        background: rgba(128, 199, 232, 0.14);
       }
 
-      .meta span {
+      .layer-map {
+        border-bottom: 1px solid var(--line);
+        background: #12141c;
+        padding: 16px 24px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .layer-map h3 {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.35;
+      }
+
+      .layer-map p {
+        margin: 0;
         color: var(--muted);
         font-size: 12px;
         line-height: 1.6;
+        overflow-wrap: anywhere;
+      }
+
+      .layer-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .layer-card {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.035);
+        display: grid;
+        gap: 8px;
+      }
+
+      .layer-card.is-song {
+        border-color: rgba(245, 201, 111, 0.42);
+        background: rgba(245, 201, 111, 0.075);
+      }
+
+      .layer-card.is-kit {
+        border-color: rgba(128, 199, 232, 0.42);
+        background: rgba(128, 199, 232, 0.075);
+      }
+
+      .layer-card.is-fixture {
+        border-color: rgba(148, 216, 173, 0.36);
+        background: rgba(148, 216, 173, 0.06);
+      }
+
+      .layer-card.is-support {
+        border-color: rgba(239, 161, 161, 0.34);
+        background: rgba(239, 161, 161, 0.055);
+      }
+
+      .layer-card h4 {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .layer-card dl {
+        margin: 0;
+        display: grid;
+        gap: 6px;
+      }
+
+      .layer-card dt {
+        color: var(--accent-2);
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      .layer-card dd {
+        margin: 2px 0 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+
+      .main-grid {
+        min-height: 0;
+        overflow: auto;
+        padding: 18px 24px 24px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: 0 18px 42px var(--shadow);
+      }
+
+      .panel-head {
+        border-bottom: 1px solid var(--line);
+        padding: 14px 16px;
+      }
+
+      .panel-head h3 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.35;
+      }
+
+      .panel-head p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+      }
+
+      .flow-summary {
+        padding: 16px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .summary-item {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 11px 12px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .summary-item strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--accent-2);
+        font-size: 12px;
+      }
+
+      .summary-item span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+      }
+
+      .path-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .path-node,
+      .path-arrow,
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        border-radius: 8px;
+        padding: 5px 9px;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .path-node {
+        border: 1px solid rgba(245, 201, 111, 0.42);
+        background: rgba(245, 201, 111, 0.11);
+        color: var(--text);
+        white-space: normal;
+      }
+
+      .path-arrow {
+        color: var(--accent);
+        padding-inline: 2px;
+      }
+
+      .tag {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
       }
 
       .steps {
         display: grid;
         gap: 10px;
         margin: 0;
-        padding: 0;
+        padding: 16px;
         list-style: none;
       }
 
       .step {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 12px;
         border: 1px solid var(--line);
         border-radius: 8px;
         padding: 12px;
         background: rgba(255, 255, 255, 0.035);
       }
 
-      .step-title {
+      .step-index {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: rgba(128, 199, 232, 0.16);
+        color: var(--accent-2);
+        font-weight: 700;
+        font-size: 12px;
+      }
+
+      .step-main {
+        min-width: 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .step-route {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 7px;
         align-items: center;
-        margin-bottom: 8px;
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 12px;
       }
 
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        min-height: 22px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 999px;
-        padding: 2px 8px;
+      .node-chip {
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        padding: 4px 8px;
+        background: var(--surface-2);
         color: var(--text);
-        background: rgba(255, 255, 255, 0.06);
-        font-size: 11px;
+        line-height: 1.35;
+        white-space: normal;
       }
 
-      .arrow {
-        color: var(--accent);
+      .step-action {
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.5;
+        font-weight: 700;
+        overflow-wrap: anywhere;
       }
 
-      .step dl {
+      .step-body {
         display: grid;
-        gap: 4px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .data-box {
+        min-width: 0;
+        border-top: 1px solid var(--line);
+        padding-top: 8px;
+      }
+
+      .data-box strong {
+        display: block;
+        color: var(--accent-2);
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+
+      .data-box span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+      }
+
+      .side-stack {
+        min-width: 0;
+        display: grid;
+        gap: 18px;
+      }
+
+      .component-toolbar {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        display: grid;
+        gap: 10px;
+      }
+
+      .component-toolbar input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 11px;
+        background: #0e0f14;
+        color: var(--text);
+      }
+
+      .component-groups {
+        max-height: 58vh;
+        overflow: auto;
+        padding: 12px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .component-group {
+        display: grid;
+        gap: 8px;
+      }
+
+      .component-group h4 {
         margin: 0;
+        color: var(--accent);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .component-card {
+        min-width: 0;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.035);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .component-card.is-active {
+        border-color: rgba(245, 201, 111, 0.85);
+        background: rgba(245, 201, 111, 0.11);
+      }
+
+      .component-card.is-selected {
+        outline: 2px solid rgba(128, 199, 232, 0.74);
+        outline-offset: 1px;
+      }
+
+      .component-card strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .component-card span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+      }
+
+      .component-detail {
+        padding: 16px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .component-detail h3 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .component-detail p {
+        margin: 0;
+        color: var(--muted);
         font-size: 12px;
         line-height: 1.6;
       }
 
-      .step dt {
+      .file {
+        color: var(--ok);
+        font-family: Consolas, "SFMono-Regular", monospace;
+        font-size: 11px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+
+      .all-components {
+        display: none;
+        grid-column: 1 / -1;
+      }
+
+      .all-components.is-visible {
+        display: block;
+      }
+
+      .table-wrap {
+        overflow: auto;
+      }
+
+      .component-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      .component-table th,
+      .component-table td {
+        border-bottom: 1px solid var(--line);
+        padding: 9px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .component-table th {
         color: var(--accent-2);
         font-weight: 700;
+        background: rgba(255, 255, 255, 0.025);
       }
 
-      .step dd {
-        margin: 0 0 6px;
+      .component-table td {
         color: var(--muted);
+        line-height: 1.5;
+        overflow-wrap: anywhere;
       }
 
-      .error {
-        color: var(--danger);
+      .empty {
+        padding: 14px;
+        color: var(--warn);
+        font-size: 13px;
       }
 
-      @media (max-width: 900px) {
+      @media (max-width: 1100px) {
         .app {
           grid-template-columns: 1fr;
         }
 
         .sidebar {
+          min-height: auto;
           border-right: 0;
           border-bottom: 1px solid var(--line);
         }
 
-        .main {
-          grid-template-rows: 440px auto;
+        .flow-list {
+          max-height: 280px;
         }
 
-        .map-shell {
-          overflow-x: auto;
-        }
-
-        .detail {
+        .main-grid {
           grid-template-columns: 1fr;
+        }
+
+        .layer-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .component-groups {
+          max-height: none;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .brand,
+        .stats,
+        .starter-panel,
+        .search-box,
+        .topbar,
+        .layer-map,
+        .main-grid {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .summary-grid,
+        .step-body,
+        .layer-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .step {
+          grid-template-columns: 1fr;
+        }
+
+        .step-index {
+          width: 100%;
+          justify-content: start;
+          padding-left: 10px;
         }
       }
     </style>
@@ -367,169 +812,408 @@
   <body>
     <div class="app">
       <aside class="sidebar">
-        <h1>ワークフロー地図</h1>
-        <p>
-          フローを選ぶと、関係するパッケージ/コンポーネントと、渡されるデータの流れを強調します。
-          内容は <code>workflows.json</code> から読み込んでいます。
-        </p>
-        <div id="flow-list" class="flow-list" aria-label="ワークフロー一覧"></div>
+        <header class="brand">
+          <h1>ワークフロー地図</h1>
+          <p id="app-description">JSONからフローを読み込んでいます。</p>
+        </header>
+
+        <section class="stats" aria-label="地図の統計">
+          <div class="stat">
+            <strong id="flow-count">0</strong>
+            <span>フロー</span>
+          </div>
+          <div class="stat">
+            <strong id="component-count">0</strong>
+            <span>部品</span>
+          </div>
+        </section>
+
+        <section class="starter-panel" aria-label="新規作業者の入口">
+          <div>
+            <h2>新規作業者の入口</h2>
+            <p>会話履歴に頼らず、リポジトリ内の地図から作業を始めるための最短導線です。</p>
+          </div>
+          <ol class="starter-list">
+            <li>
+              <strong>最初に読む</strong>
+              <span>AGENTS.md → docs/thread-start.md → docs/handoff.md</span>
+            </li>
+            <li>
+              <strong>同期を見る</strong>
+              <span>git status と npm run sync:check。ready通知は取り込み候補として判断します。</span>
+            </li>
+            <li>
+              <strong>新曲作成</strong>
+              <span>既存song-packsやfixture effectsを読まず、song-authoring系docsから始めます。</span>
+            </li>
+          </ol>
+          <button id="starter-flow-button" class="starter-button" type="button">スレッド開始フローを見る</button>
+        </section>
+
+        <section class="flow-panel" aria-label="ワークフロー選択">
+          <div class="search-box">
+            <label for="flow-search">フロー検索</label>
+            <input id="flow-search" type="search" placeholder="例: 起動、歌詞、adapter">
+          </div>
+          <div id="flow-list" class="flow-list"></div>
+        </section>
       </aside>
 
-      <main class="main">
-        <section class="map-shell" aria-label="コンポーネント地図">
-          <div class="map-header">
-            <h2 id="map-title">読み込み中</h2>
-            <p id="map-description">JSONから構成情報を読み込んでいます。</p>
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h2 id="flow-title">読み込み中</h2>
+            <p id="flow-summary">ワークフローJSONを読み込んでいます。</p>
           </div>
-          <div id="map" class="map">
-            <svg id="edges" class="edges" aria-hidden="true"></svg>
+          <div class="top-actions" aria-label="表示切り替え">
+            <button id="mode-flow" class="mode-button is-active" type="button">選択フロー</button>
+            <button id="mode-all" class="mode-button" type="button">全コンポーネント</button>
           </div>
+        </header>
+
+        <section class="layer-map" aria-label="システムの層">
+          <div>
+            <h3>システムの層</h3>
+            <p>曲ごとの自由なシステム、汎用補助、検証用アプリ、起動・同期支援を分けて見ます。</p>
+          </div>
+          <div id="layer-grid" class="layer-grid"></div>
         </section>
 
-        <section class="detail" aria-label="選択中フローの詳細">
-          <article class="detail-panel">
-            <h2 id="flow-title">フローを選択してください</h2>
-            <p id="flow-summary">左の一覧から見たい操作を選ぶと、ここに目的ときっかけが表示されます。</p>
-            <div class="meta-grid">
-              <div class="meta">
-                <strong>きっかけ</strong>
-                <span id="flow-trigger">未選択</span>
+        <div class="main-grid">
+          <section class="panel" aria-label="選択中フローの概要">
+            <div class="panel-head">
+              <h3>選択中フロー</h3>
+              <p>ノードを重ねず、処理順に読むための地図です。</p>
+            </div>
+            <div class="flow-summary">
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <strong>きっかけ</strong>
+                  <span id="flow-trigger">未選択</span>
+                </div>
+                <div class="summary-item">
+                  <strong>LLMに渡すなら</strong>
+                  <span id="flow-share">flow id、steps、payload、noteを共有します。</span>
+                </div>
               </div>
-              <div class="meta">
-                <strong>LLMに伝えるときの見方</strong>
-                <span>このJSONのflow id、steps、payload、noteを渡すと、機能追加やバグ修正時に流れを共有しやすくなります。</span>
+              <div>
+                <div class="tag">経路</div>
+                <div id="path-strip" class="path-strip" aria-label="フロー経路"></div>
               </div>
             </div>
-          </article>
-          <article class="detail-panel">
-            <h3>受け渡しの手順</h3>
             <ol id="steps" class="steps"></ol>
-          </article>
-        </section>
+          </section>
+
+          <aside class="side-stack">
+            <section class="panel" aria-label="コンポーネント一覧">
+              <div class="panel-head">
+                <h3>関係コンポーネント</h3>
+                <p>選択中フローに出るものを強調します。検索すると一覧全体を絞れます。</p>
+              </div>
+              <div class="component-toolbar">
+                <input id="component-search" type="search" placeholder="component / file / group">
+              </div>
+              <div id="component-groups" class="component-groups"></div>
+            </section>
+
+            <section class="panel" aria-label="コンポーネント詳細">
+              <div id="component-detail" class="component-detail"></div>
+            </section>
+          </aside>
+
+          <section id="all-components-panel" class="panel all-components" aria-label="全コンポーネント表">
+            <div class="panel-head">
+              <h3>全コンポーネント</h3>
+              <p>重なりを避けるため、全体俯瞰は表形式にしています。</p>
+            </div>
+            <div class="table-wrap">
+              <table class="component-table">
+                <thead>
+                  <tr>
+                    <th>group</th>
+                    <th>component</th>
+                    <th>kind</th>
+                    <th>file</th>
+                    <th>description</th>
+                  </tr>
+                </thead>
+                <tbody id="component-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
       </main>
     </div>
 
     <script>
       const state = {
         data: null,
-        activeFlowId: null
+        activeFlowId: null,
+        selectedComponentId: null,
+        mode: "flow",
+        flowSearch: "",
+        componentSearch: ""
       };
 
       const byId = (id) => document.getElementById(id);
+      const text = (value) => value == null ? "" : String(value);
 
-      const labelOf = (componentId) => {
-        const component = state.data.components.find((item) => item.id === componentId);
-        return component ? component.label : componentId;
+      const make = (tag, className, value) => {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (value !== undefined) element.textContent = text(value);
+        return element;
       };
 
-      const edgeId = (from, to) => `edge-${from}-${to}`;
+      const componentById = (id) => state.data.components.find((item) => item.id === id);
+      const labelOf = (id) => componentById(id)?.label ?? id;
+
+      const activeFlow = () => state.data.flows.find((item) => item.id === state.activeFlowId) ?? state.data.flows[0];
+
+      const activeComponentIds = () => {
+        const flow = activeFlow();
+        const ids = new Set();
+        for (const step of flow?.steps ?? []) {
+          ids.add(step.from);
+          ids.add(step.to);
+        }
+        return ids;
+      };
+
+      const normalized = (value) => text(value).toLowerCase();
+
+      const flowMatches = (flow) => {
+        const query = normalized(state.flowSearch);
+        if (!query) return true;
+        return [flow.id, flow.label, flow.summary, flow.trigger]
+          .map(normalized)
+          .some((value) => value.includes(query));
+      };
+
+      const componentMatches = (component) => {
+        const query = normalized(state.componentSearch);
+        if (!query) return true;
+        return [component.id, component.label, component.kind, component.group, component.file, component.description]
+          .map(normalized)
+          .some((value) => value.includes(query));
+      };
+
+      const setActiveFlow = (flowId) => {
+        state.activeFlowId = flowId;
+        const firstStep = activeFlow()?.steps?.[0];
+        state.selectedComponentId = firstStep?.from ?? state.data.components[0]?.id;
+        render();
+      };
+
+      const setSelectedComponent = (componentId) => {
+        state.selectedComponentId = componentId;
+        renderComponents();
+        renderComponentDetail();
+      };
+
+      const setMode = (mode) => {
+        state.mode = mode;
+        renderMode();
+      };
 
       const renderFlows = () => {
         const list = byId("flow-list");
-        list.innerHTML = "";
-        for (const flow of state.data.flows) {
-          const button = document.createElement("button");
+        list.replaceChildren();
+        const flows = state.data.flows.filter(flowMatches);
+        if (!flows.length) {
+          list.append(make("p", "empty", "一致するフローがありません。"));
+          return;
+        }
+
+        for (const flow of flows) {
+          const button = make("button", "flow-button");
           button.type = "button";
-          button.className = "flow-button";
           button.dataset.flowId = flow.id;
-          button.innerHTML = `<strong>${flow.label}</strong><span>${flow.summary}</span>`;
+          button.classList.toggle("is-active", flow.id === state.activeFlowId);
+          button.append(make("strong", "", flow.label));
+          button.append(make("span", "", flow.summary));
           button.addEventListener("click", () => setActiveFlow(flow.id));
           list.append(button);
         }
       };
 
-      const renderMap = () => {
-        const map = byId("map");
-        const svg = byId("edges");
-        map.querySelectorAll(".component").forEach((node) => node.remove());
-        svg.innerHTML = "";
-        svg.setAttribute("viewBox", "0 0 100 100");
-        svg.setAttribute("preserveAspectRatio", "none");
-
-        for (const flow of state.data.flows) {
-          for (const step of flow.steps) {
-            const from = state.data.components.find((item) => item.id === step.from);
-            const to = state.data.components.find((item) => item.id === step.to);
-            if (!from || !to || byId(edgeId(from.id, to.id))) continue;
-
-            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            const dx = Math.abs(to.x - from.x);
-            const curve = Math.max(8, dx * 0.32);
-            path.id = edgeId(from.id, to.id);
-            path.classList.add("edge");
-            path.setAttribute(
-              "d",
-              `M ${from.x} ${from.y} C ${from.x + curve} ${from.y}, ${to.x - curve} ${to.y}, ${to.x} ${to.y}`
-            );
-            path.setAttribute("pathLength", "100");
-            path.setAttribute("vector-effect", "non-scaling-stroke");
-            svg.append(path);
-          }
-        }
-
-        for (const component of state.data.components) {
-          const node = document.createElement("article");
-          node.id = `component-${component.id}`;
-          node.className = "component";
-          node.style.left = `${component.x}%`;
-          node.style.top = `${component.y}%`;
-          node.innerHTML = `
-            <span class="kind">${component.group} / ${component.kind}</span>
-            <h3>${component.label}</h3>
-            <p>${component.description}</p>
-          `;
-          map.append(node);
-        }
+      const renderTop = () => {
+        const flow = activeFlow();
+        byId("flow-title").textContent = flow?.label ?? "フローなし";
+        byId("flow-summary").textContent = flow?.summary ?? "workflows.jsonにflowがありません。";
+        byId("flow-trigger").textContent = flow?.trigger ?? "未定義";
+        byId("flow-share").textContent = flow ? `${flow.id} / ${flow.steps.length} steps` : "未選択";
       };
 
-      const renderDetail = (flow) => {
-        byId("flow-title").textContent = flow.label;
-        byId("flow-summary").textContent = flow.summary;
-        byId("flow-trigger").textContent = flow.trigger;
+      const renderLayers = () => {
+        const root = byId("layer-grid");
+        root.replaceChildren();
+        const variants = ["is-song", "is-kit", "is-fixture", "is-support"];
+        (state.data.layers ?? []).forEach((layer, index) => {
+          const card = make("article", `layer-card ${variants[index % variants.length]}`);
+          card.append(make("h4", "", layer.label));
+          card.append(make("p", "", layer.summary));
 
-        const steps = byId("steps");
-        steps.innerHTML = "";
-        flow.steps.forEach((step, index) => {
-          const item = document.createElement("li");
-          item.className = "step";
-          item.innerHTML = `
-            <div class="step-title">
-              <span class="pill">${index + 1}</span>
-              <span class="pill">${labelOf(step.from)}</span>
-              <span class="arrow">→</span>
-              <span class="pill">${labelOf(step.to)}</span>
-            </div>
-            <dl>
-              <dt>処理</dt>
-              <dd>${step.action}</dd>
-              <dt>渡されるもの</dt>
-              <dd>${step.payload}</dd>
-              <dt>メモ</dt>
-              <dd>${step.note}</dd>
-            </dl>
-          `;
-          steps.append(item);
+          const list = make("dl", "");
+          for (const [term, value] of [["役割", layer.role], ["境界", layer.boundary]]) {
+            const dt = make("dt", "", term);
+            const dd = make("dd", "", value);
+            list.append(dt, dd);
+          }
+
+          const componentLabels = (layer.componentIds ?? [])
+            .map(labelOf)
+            .filter(Boolean)
+            .join(" / ");
+          if (componentLabels) {
+            list.append(make("dt", "", "主な部品"), make("dd", "", componentLabels));
+          }
+          card.append(list);
+          root.append(card);
         });
       };
 
-      const setActiveFlow = (flowId) => {
-        state.activeFlowId = flowId;
-        const flow = state.data.flows.find((item) => item.id === flowId);
+      const renderPath = () => {
+        const strip = byId("path-strip");
+        strip.replaceChildren();
+        const flow = activeFlow();
         if (!flow) return;
 
-        document.querySelectorAll(".flow-button").forEach((button) => {
-          button.classList.toggle("is-active", button.dataset.flowId === flowId);
-        });
-        document.querySelectorAll(".component").forEach((node) => node.classList.remove("is-active"));
-        document.querySelectorAll(".edge").forEach((node) => node.classList.remove("is-active"));
-
+        const path = [];
         for (const step of flow.steps) {
-          byId(`component-${step.from}`)?.classList.add("is-active");
-          byId(`component-${step.to}`)?.classList.add("is-active");
-          byId(edgeId(step.from, step.to))?.classList.add("is-active");
+          if (!path.length || path[path.length - 1] !== step.from) path.push(step.from);
+          path.push(step.to);
         }
 
-        renderDetail(flow);
+        const compactPath = path.filter((id, index) => index === 0 || id !== path[index - 1]);
+        compactPath.forEach((componentId, index) => {
+          const chip = make("button", "path-node", labelOf(componentId));
+          chip.type = "button";
+          chip.addEventListener("click", () => setSelectedComponent(componentId));
+          strip.append(chip);
+          if (index < compactPath.length - 1) strip.append(make("span", "path-arrow", "→"));
+        });
+      };
+
+      const renderSteps = () => {
+        const list = byId("steps");
+        list.replaceChildren();
+        const flow = activeFlow();
+        if (!flow) return;
+
+        flow.steps.forEach((step, index) => {
+          const item = make("li", "step");
+          item.append(make("div", "step-index", index + 1));
+
+          const main = make("div", "step-main");
+          const route = make("div", "step-route");
+          const from = make("button", "node-chip", labelOf(step.from));
+          from.type = "button";
+          from.addEventListener("click", () => setSelectedComponent(step.from));
+          const to = make("button", "node-chip", labelOf(step.to));
+          to.type = "button";
+          to.addEventListener("click", () => setSelectedComponent(step.to));
+          route.append(from, make("span", "path-arrow", "→"), to);
+
+          main.append(route);
+          main.append(make("div", "step-action", step.action));
+
+          const body = make("div", "step-body");
+          const payload = make("div", "data-box");
+          payload.append(make("strong", "", "渡されるもの"));
+          payload.append(make("span", "", step.payload));
+          const note = make("div", "data-box");
+          note.append(make("strong", "", "メモ"));
+          note.append(make("span", "", step.note));
+          body.append(payload, note);
+          main.append(body);
+          item.append(main);
+          list.append(item);
+        });
+      };
+
+      const groupedComponents = (components) => {
+        const groups = new Map();
+        for (const component of components) {
+          const group = component.group || "その他";
+          if (!groups.has(group)) groups.set(group, []);
+          groups.get(group).push(component);
+        }
+        return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ja"));
+      };
+
+      const renderComponents = () => {
+        const root = byId("component-groups");
+        root.replaceChildren();
+        const activeIds = activeComponentIds();
+        const components = state.data.components.filter(componentMatches);
+
+        if (!components.length) {
+          root.append(make("p", "empty", "一致するコンポーネントがありません。"));
+          return;
+        }
+
+        for (const [group, items] of groupedComponents(components)) {
+          const section = make("section", "component-group");
+          section.append(make("h4", "", group));
+          for (const component of items) {
+            const button = make("button", "component-card");
+            button.type = "button";
+            button.classList.toggle("is-active", activeIds.has(component.id));
+            button.classList.toggle("is-selected", component.id === state.selectedComponentId);
+            button.append(make("strong", "", component.label));
+            button.append(make("span", "", `${component.kind} / ${component.file}`));
+            button.addEventListener("click", () => setSelectedComponent(component.id));
+            section.append(button);
+          }
+          root.append(section);
+        }
+      };
+
+      const renderComponentDetail = () => {
+        const root = byId("component-detail");
+        root.replaceChildren();
+        const component = componentById(state.selectedComponentId) ?? componentById(activeFlow()?.steps?.[0]?.from);
+        if (!component) {
+          root.append(make("p", "empty", "コンポーネントを選択してください。"));
+          return;
+        }
+
+        root.append(make("span", "tag", `${component.group} / ${component.kind}`));
+        root.append(make("h3", "", component.label));
+        root.append(make("p", "", component.description));
+        root.append(make("div", "file", component.file));
+      };
+
+      const renderComponentTable = () => {
+        const body = byId("component-table-body");
+        body.replaceChildren();
+        for (const component of state.data.components) {
+          const row = document.createElement("tr");
+          for (const value of [component.group, component.label, component.kind, component.file, component.description]) {
+            const cell = document.createElement("td");
+            cell.textContent = text(value);
+            row.append(cell);
+          }
+          body.append(row);
+        }
+      };
+
+      const renderMode = () => {
+        byId("mode-flow").classList.toggle("is-active", state.mode === "flow");
+        byId("mode-all").classList.toggle("is-active", state.mode === "all");
+        byId("all-components-panel").classList.toggle("is-visible", state.mode === "all");
+      };
+
+      const render = () => {
+        renderFlows();
+        renderTop();
+        renderLayers();
+        renderPath();
+        renderSteps();
+        renderComponents();
+        renderComponentDetail();
+        renderMode();
       };
 
       const boot = async () => {
@@ -537,15 +1221,36 @@
           const response = await fetch("workflows.json", { cache: "no-store" });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           state.data = await response.json();
-          byId("map-title").textContent = state.data.title;
-          byId("map-description").textContent = state.data.description;
-          renderFlows();
-          renderMap();
-          setActiveFlow(state.data.flows[0]?.id);
+          state.activeFlowId = state.data.flows[0]?.id ?? null;
+          state.selectedComponentId = state.data.flows[0]?.steps?.[0]?.from ?? state.data.components[0]?.id ?? null;
+
+          byId("app-description").textContent = state.data.description;
+          byId("flow-count").textContent = state.data.flows.length;
+          byId("component-count").textContent = state.data.components.length;
+
+          byId("flow-search").addEventListener("input", (event) => {
+            state.flowSearch = event.target.value;
+            renderFlows();
+          });
+          byId("component-search").addEventListener("input", (event) => {
+            state.componentSearch = event.target.value;
+            renderComponents();
+          });
+          byId("mode-flow").addEventListener("click", () => setMode("flow"));
+          byId("mode-all").addEventListener("click", () => setMode("all"));
+          byId("starter-flow-button").addEventListener("click", () => {
+            if (state.data.flows.some((flow) => flow.id === "thread-start")) {
+              state.flowSearch = "";
+              byId("flow-search").value = "";
+              setActiveFlow("thread-start");
+            }
+          });
+
+          renderComponentTable();
+          render();
         } catch (error) {
-          byId("map-title").textContent = "JSONを読み込めませんでした";
-          byId("map-description").innerHTML =
-            '<span class="error">Viteなどのローカルサーバー経由で docs/workflows.html を開いてください。</span>';
+          byId("flow-title").textContent = "JSONを読み込めませんでした";
+          byId("flow-summary").textContent = "Viteなどのローカルサーバー経由で docs/workflows.html を開いてください。";
           console.error(error);
         }
       };
