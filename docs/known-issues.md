@@ -33,6 +33,10 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 
 ## fixture rendererはexamplesに隔離したが、まだ目立ちやすい
 
+既存曲パッケージを読まなくても、fixture rendererやサンプル実装の視覚文法に引っ張られることがあります。
+
+実際に、`codex/traffic-jam-effect` の `81876a7 Add traffic jam visual adapter` は、中央収束、放射線、グロー、光ネットワークの構図が前作に近くなったため採用しません。
+
 現在同梱している柔らかい光表現は、`examples/fixture-player/` にあります。
 
 曲実装担当からのフィードバック:
@@ -42,8 +46,13 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 
 現在の対策:
 
+- 煮ル果実「トラフィック・ジャム」の再実装方針を `docs/traffic-jam-redo-brief.md` に分離した。
 - `docs/song-visual-independence.md` を追加した。
 - `templates/neutral-song-app/` に空のadapter scaffoldとvisual briefを追加した。
+
+注意:
+
+- `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても、その通知は破棄予定の古い実装です。取り込まないでください。
 
 次の改善:
 
