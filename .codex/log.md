@@ -149,3 +149,14 @@
 - Updated `AGENTS.md`, `docs/song-authoring.md`, `docs/workflows.json`, and
   handoff docs so new song work starts from the neutral brief rather than
   fixture renderers or old song effects.
+
+## 2026-05-20 Thread Start Workflow
+
+- Added `docs/thread-start.md` as the first-read workflow for new Codex
+  threads.
+- Documented the required startup checks: `git status --short --branch` and
+  `npm run sync:check`.
+- Clarified that ready notices are merge candidates, not automatic merge
+  commands.
+- Linked the new thread workflow from `AGENTS.md`, `README.md`,
+  `docs/handoff.md`, `docs/module-map.md`, and `.codex/shared_note.md`.

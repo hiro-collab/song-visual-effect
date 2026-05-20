@@ -155,12 +155,22 @@
       "description": "architecture、module-map、decisions、plans、known-issues、handoffで作業文脈を保持します。"
     },
     {
+      "id": "threadStart",
+      "label": "スレッド開始手順",
+      "kind": "knowledge-base",
+      "group": "文脈",
+      "file": "docs/thread-start.md",
+      "x": 46,
+      "y": 86,
+      "description": "新しいCodexスレッドが最初に読む導線です。git status、sync:check、担当分類、ready通知のmerge判断をまとめます。"
+    },
+    {
       "id": "songAuthoringDocs",
       "label": "曲作成ルール",
       "kind": "knowledge-base",
       "group": "文脈",
       "file": "docs/song-authoring.md",
-      "x": 50,
+      "x": 61,
       "y": 86,
       "description": "新しい曲を作るときに既存曲を読まないためのルールです。曲ごとの自由な構成を守ります。"
     },
@@ -170,7 +180,7 @@
       "kind": "knowledge-base",
       "group": "文脈",
       "file": "docs/song-visual-independence.md",
-      "x": 70,
+      "x": 76,
       "y": 86,
       "description": "既存fixture rendererの中央発光、放射線、光ネットワーク、グローに引っ張られないためのチェックリストです。"
     },
@@ -186,6 +196,42 @@
     }
   ],
   "flows": [
+    {
+      "id": "thread-start",
+      "label": "新しいスレッドが作業を始める",
+      "summary": "AGENTS.mdからthread-startへ進み、現在branch、ready通知、担当範囲、読むべきdocsを確認してから作業します。",
+      "trigger": "新しいCodexスレッドで作業を始める",
+      "steps": [
+        {
+          "from": "agents",
+          "to": "threadStart",
+          "action": "開始手順を読む",
+          "payload": "docs/thread-start.md",
+          "note": "長い会話履歴に頼らず、最初の確認とmerge判断を同じ手順に揃えます。"
+        },
+        {
+          "from": "threadStart",
+          "to": "devManager",
+          "action": "同期状態を確認",
+          "payload": "git status --short --branch / npm run sync:check",
+          "note": "ready通知は取り込み候補です。自動mergeの指示ではありません。"
+        },
+        {
+          "from": "threadStart",
+          "to": "contextDocs",
+          "action": "担当範囲を分類",
+          "payload": "system kit、fixture player、song app、launch、docs",
+          "note": "system kitに曲固有adapterやfixtureの見た目を入れる変更は止めて確認します。"
+        },
+        {
+          "from": "contextDocs",
+          "to": "threadStart",
+          "action": "確認方法を決める",
+          "payload": "npm run build、workflows.json parse、必要なブラウザ確認",
+          "note": "作業後にready通知を出せる状態まで持っていきます。"
+        }
+      ]
+    },
     {
       "id": "boot-with-manifest",
       "label": "曲パッケージを読み込んで起動",

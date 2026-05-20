@@ -28,6 +28,7 @@ a reference.
 Start from:
 
 - `AGENTS.md`
+- `docs/thread-start.md`
 - `docs/system-overview.md`
 - `docs/song-authoring.md`
 - `docs/song-visual-independence.md`
@@ -132,6 +133,8 @@ reference or if you are doing a regression check.
   - `_worktrees/traffic-jam-effect`: `codex/traffic-jam-effect`
   - `_worktrees/launch-manager`: `codex/launch-manager`
 - See `docs/worktree-guide.md` before starting parallel Codex threads.
+- New threads should read `docs/thread-start.md` before deciding whether to
+  merge ready notices.
 - Use `npm run sync:check` at the start of work and at safe stopping points.
 - Use `npm run sync:ready -- -m "short message"` after a clean commit that other worktrees may merge.
 - See `docs/worktree-sync.md` for the ready/check/merge flow.

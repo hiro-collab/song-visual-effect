@@ -30,6 +30,19 @@
 - fixture player内に中立的な `builtin:fixture-soft-light` adapter registryを置いている。外部adapter読み込みはまだ無効。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 
+## 新しいスレッドの開始手順
+
+新規スレッドは、最初に `docs/thread-start.md` を読んでください。
+
+最初に実行する確認:
+
+```powershell
+git status --short --branch
+npm run sync:check
+```
+
+ready通知は「必ずmerge」ではなく「取り込み候補」です。system kitに曲固有adapterや既存fixtureの見た目を入れる変更は、そのまま取り込まないでください。
+
 重要:
 
 - 既存の曲パッケージはテンプレートではない。
@@ -100,6 +113,7 @@ http://127.0.0.1:5173/docs/workflows.html
 
 - `AGENTS.md`: エージェント向け入口。
 - `README.md`: 利用方法。
+- `docs/thread-start.md`: 新しいスレッドの開始手順、ready確認、merge判断。
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲作成時のアンカー回避ルール。
 - `docs/song-visual-independence.md`: 既存fixtureの見た目に引っ張られないためのチェックリスト。
