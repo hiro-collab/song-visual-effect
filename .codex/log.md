@@ -110,9 +110,27 @@
 
 ## 2026-05-20 Adapter Cues Resume
 
-- Added same-build song adapter interfaces and registry under `src/adapters/`.
-- Kept external adapter loading disabled; only `builtin:` adapters are selected.
-- Wrapped the existing soft light renderer as `builtin:fixture-soft-light`.
-- Added `builtin:traffic-jam`, which reads `design.cues` through `SongAdapterContext.assets.readDesignCues()` and interprets chorus candidates plus interlude emphasis inside the song adapter.
-- Updated `song-packs/traffic-jam/manifest.json` to use `webAdapter: "builtin:traffic-jam"`.
-- Improved `scripts/download-songle-json.ps1` with a post-download summary: title, duration, Songle recognized/updated times, beat count, BPM median/average, and chorus repeat ranges.
+- Added a first-pass same-build adapter experiment and improved
+  `scripts/download-songle-json.ps1` with a post-download summary: title,
+  duration, Songle recognized/updated times, beat count, BPM median/average,
+  and chorus repeat ranges.
+- The song-specific adapter experiment was later superseded by the system kit
+  refactor below. New song adapters should not be added to the kit itself.
+
+## 2026-05-20 System Kit Refactor
+
+- Shifted the project from a host-centered shape to `system/kit` plus
+  `examples/fixture-player`.
+- Removed the system-side Traffic Jam adapter. `song-packs/traffic-jam` now has
+  no `webAdapter` binding in the system kit branch.
+- Moved reusable helpers to `system/kit`: asset loading, safe fetch, transport,
+  frame loop, timing helpers, damping/palette helpers, manual lyric timing data,
+  and song adapter context.
+- Moved runnable UI, fixture renderer, fixture adapter registry, lyric timing UI,
+  particles, and light network effects under `examples/fixture-player`.
+- Renamed the individual Vite script from `dev:system` to `dev:player` so the
+  launch manager starts a fixture player rather than implying a required host.
+- Added `system/kit/index.ts` as the public helper API entry.
+- Added `DEV_MANAGER_PORT`, `PLAYER_PORT`, and `SONG_PACK_PORT` support to the
+  dev manager for parallel worktrees, and verified start/stop on
+  `5182/5183/5184`.

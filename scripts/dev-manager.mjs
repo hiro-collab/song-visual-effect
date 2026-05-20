@@ -4,6 +4,11 @@ import { platform } from "node:os";
 
 const host = process.env.DEV_MANAGER_HOST ?? "127.0.0.1";
 const port = Number(process.env.DEV_MANAGER_PORT ?? 5172);
+const playerPort = Number(process.env.PLAYER_PORT ?? process.env.SYSTEM_APP_PORT ?? 5173);
+const songPackPort = Number(process.env.SONG_PACK_PORT ?? 5174);
+const playerUrl = `http://127.0.0.1:${playerPort}/`;
+const songPackUrl = `http://127.0.0.1:${songPackPort}/`;
+const defaultSongCorsOrigins = [`http://127.0.0.1:${playerPort}`, `http://localhost:${playerPort}`].join(",");
 const isWindows = platform() === "win32";
 const npmCommand = isWindows ? "cmd.exe" : "npm";
 const npmArgs = (...args) => (isWindows ? ["/c", "npm", ...args] : args);
@@ -19,17 +24,21 @@ const baseSecurityHeaders = {
 };
 
 const services = {
-  system: {
-    label: "System app",
+  player: {
+    label: "Fixture player",
     command: npmCommand,
-    args: npmArgs("run", "dev:system", "--", "--port", "5173"),
-    url: "http://127.0.0.1:5173/"
+    args: npmArgs("run", "dev:player", "--", "--port", String(playerPort)),
+    url: playerUrl
   },
   songs: {
     label: "Song pack server",
     command: npmCommand,
     args: npmArgs("run", "dev:songs"),
-    url: "http://127.0.0.1:5174/"
+    env: {
+      SONG_PACK_PORT: String(songPackPort),
+      SONG_PACK_CORS_ORIGINS: process.env.SONG_PACK_CORS_ORIGINS ?? defaultSongCorsOrigins
+    },
+    url: songPackUrl
   }
 };
 
@@ -84,7 +93,7 @@ const startService = (name) => {
 
   const child = spawn(service.command, service.args, {
     cwd: process.cwd(),
-    env: process.env,
+    env: { ...process.env, ...(service.env ?? {}) },
     windowsHide: true,
     stdio: ["ignore", "pipe", "pipe"]
   });
@@ -211,14 +220,14 @@ const html = () => `<!doctype html>
       <header>
         <div>
           <h1>Music Effect Dev Manager</h1>
-          <p>system server と song-pack server をまとめて起動・停止します。曲ごとの構成は固定せず、ここでは起動だけを管理します。</p>
+          <p>fixture player と song-pack server をまとめて起動・停止します。曲ごとの構成は固定せず、ここでは検証用サーバーの起動だけを管理します。</p>
         </div>
         <div class="actions">
           <button data-action="start-all">全て起動</button>
           <button data-action="stop-all">全て停止</button>
-          <a class="launch" href="http://127.0.0.1:5173/" target="_blank" rel="noreferrer">空のsystemを開く</a>
-          <a class="launch" href="http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json" target="_blank" rel="noreferrer">動作確認fixture</a>
-          <a class="launch" href="http://127.0.0.1:5173/docs/workflows.html" target="_blank" rel="noreferrer">ワークフロー地図</a>
+          <a class="launch" href="${playerUrl}" target="_blank" rel="noreferrer">空のplayerを開く</a>
+          <a class="launch" href="${playerUrl}?song=${songPackUrl}shining-star/manifest.json" target="_blank" rel="noreferrer">動作確認fixture</a>
+          <a class="launch" href="${playerUrl}docs/workflows.html" target="_blank" rel="noreferrer">ワークフロー地図</a>
         </div>
       </header>
       <section id="services" class="grid"></section>

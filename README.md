@@ -1,8 +1,8 @@
-# Music Effect System Host
+# Music Effect System Kit
 
-音楽に同期したインタラクティブ映像エフェクトを、曲ごとに自由に作るためのWeb system hostです。
+音楽に同期したインタラクティブ映像エフェクトを、曲ごとに自由に作るための補助kitです。
 
-このリポジトリの中心は、特定の曲の構成ではありません。system hostは、再生、入力、フレームループ、表示領域、起動管理、optional toolを提供します。曲ごとの演出、データ構造、JSON文法、UI、描画方式は曲パッケージ側で自由に決めます。
+このリポジトリの中心は、特定の曲の構成ではありません。`system/kit` は、manifest読み込み、再生、フレームループ、タイミング処理、安全なasset読み込みなどの小さな補助機能を提供します。曲ごとの演出、データ構造、JSON文法、UI、描画方式は曲側で自由に決めます。
 
 ## Setup
 
@@ -11,13 +11,13 @@ npm install
 npm run dev
 ```
 
-`npm run dev` は起動管理サーバーを立ち上げ、system app と song-pack server をまとめて起動します。
+`npm run dev` は起動管理サーバーを立ち上げ、fixture player app と song-pack server をまとめて起動します。
 
 ```text
 http://127.0.0.1:5172/
 ```
 
-system appは `?song=<manifest-url>` で曲パッケージを指定して開きます。
+fixture player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。
 
 ```text
 http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
@@ -28,8 +28,17 @@ manifest URLを指定しない場合、特定の曲へ自動フォールバッ�
 個別に起動する場合は、次も使えます。
 
 ```powershell
-npm run dev:system
+npm run dev:player
 npm run dev:songs
+```
+
+別worktreeで同時に起動する場合は、ポート衝突を避けるために環境変数でずらします。
+
+```powershell
+$env:DEV_MANAGER_PORT=5182
+$env:PLAYER_PORT=5183
+$env:SONG_PACK_PORT=5184
+npm run dev
 ```
 
 ## System-Neutral Docs
@@ -52,7 +61,7 @@ docs/song-authoring.md
 
 曲パッケージは `song-packs/<song-id>/` に置けます。ただし、このディレクトリにある既存曲はテンプレートではなく、あくまで個別の実装例です。
 
-このWeb system hostで曲を読む場合は、入口としてmanifest URLを渡します。manifestの先の構成は、曲ごとに自由に設計して構いません。
+同梱のfixture playerで曲を読む場合は、入口としてmanifest URLを渡します。manifestの先の構成は、曲ごとに自由に設計して構いません。
 
 最小manifestの考え方:
 
@@ -83,7 +92,7 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 
 ## Optional Lyric Timing Tool
 
-歌詞の切り替わりがずれている場合は、ブラウザ上で手動キーフレームを打てます。この機能はsystem hostのoptional toolです。歌詞がない曲や、別のタイミング構造を使う曲では使わなくても構いません。
+歌詞の切り替わりがずれている場合は、ブラウザ上で手動キーフレームを打てます。この機能はfixture playerに載せているoptional toolです。歌詞がない曲や、別のタイミング構造を使う曲では使わなくても構いません。
 
 基本操作:
 
@@ -110,7 +119,8 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 - 既定の開発サーバーは `127.0.0.1` で使い、外部ネットワークへ公開しないでください。
 - APIキー、秘密鍵、トークンを曲パッケージ、docs、プロンプト、ログに置かないでください。
 - manifest内の曲素材パスは、既定でその曲パッケージ配下だけを読みます。
-- system appのoriginを変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
+- fixture playerのoriginを変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
+- `npm run dev` で `PLAYER_PORT` を変えた場合は、起動管理サーバーがsong-pack serverのCORS許可originも合わせて渡します。
 - 詳細は `docs/security.md` を参照してください。
 
 ## Workflow Map

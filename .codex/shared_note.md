@@ -2,19 +2,22 @@
 
 ## Current Project Shape
 
-This repository is now a system host for song-specific interactive music effects.
+This repository is now a system kit with a small fixture player for
+song-specific interactive music effects.
 
-The system host should provide helpers only:
+The system kit should provide helpers only:
 
 - dev manager
 - song-pack static server
 - manifest loading
 - transport
 - frame loop
-- input/surface helpers
-- optional lyric timing tools
+- safe asset helpers
+- optional lyric timing data helpers
 
-The system host must not define the creative structure of a new song.
+The fixture player is for regression checks and optional lyric timing UI. It is
+not the required host or template for new songs. The system kit must not define
+the creative structure of a new song.
 
 ## New Song Authoring Rule
 
@@ -34,7 +37,7 @@ Do not start from:
 - existing song manifests
 - existing `analysis/`
 - existing `design/`
-- existing fixture renderer behavior
+- existing fixture player or renderer behavior
 - old Shining Star notes
 
 Existing song packs are fixtures or specific song workspaces, not templates.
@@ -67,10 +70,10 @@ npm run dev
 This starts:
 
 - dev manager: `http://127.0.0.1:5172/`
-- system app: `http://127.0.0.1:5173/`
+- fixture player: `http://127.0.0.1:5173/`
 - song-pack server: `http://127.0.0.1:5174/`
 
-The system app requires an explicit song manifest URL:
+The fixture player requires an explicit song manifest URL:
 
 ```text
 http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
@@ -78,9 +81,18 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
 
 No implicit default song should be loaded.
 
+For parallel worktrees, set alternate ports before `npm run dev`:
+
+```powershell
+$env:DEV_MANAGER_PORT=5182
+$env:PLAYER_PORT=5183
+$env:SONG_PACK_PORT=5184
+npm run dev
+```
+
 ## Song Adapter Context
 
-`src/runtime/songAdapterContext.ts` now provides a first-pass adapter context:
+`system/kit/songAdapterContext.ts` provides a first-pass asset/context helper:
 
 - raw manifest
 - base URL
@@ -89,13 +101,13 @@ No implicit default song should be loaded.
 - `readText()`
 - `readDesignCues()`
 
-The system host must not interpret the cue schema as a system-level standard.
-Song adapters own cue semantics.
+The system kit must not interpret the cue schema as a system-level standard.
+Song apps or adapters own cue semantics.
 
-`src/adapters/registry.ts` now selects same-build `builtin:` adapters only.
-External adapter loading is intentionally disabled for now. `builtin:traffic-jam`
-uses `readDesignCues()` to read `analysis/visual-cues.json` and interpret chorus
-candidates plus interlude emphasis inside the song adapter.
+`examples/fixture-player/adapters/registry.ts` selects only fixture-local
+same-build adapters. External adapter loading is intentionally disabled for now.
+The fixture player currently ships only `builtin:fixture-soft-light`. Do not add
+new song-specific adapters to the system kit just because a song package exists.
 
 ## Notes For Future Agents
 
@@ -109,7 +121,7 @@ reference or if you are doing a regression check.
 - Local parallel worktrees are kept under `C:\Users\kawai\works\music-effect\_worktrees`.
 - `_worktrees/` is ignored by Git, so the parent directory and root status stay clean.
 - Current worktrees:
-  - `_worktrees/adapter-cues`: `codex/wip-adapter-cues-traffic-jam`
+  - `_worktrees/adapter-cues`: `codex/system-kit-refactor`
   - `_worktrees/download-security`: `codex/download-security`
   - `_worktrees/traffic-jam-effect`: `codex/traffic-jam-effect`
   - `_worktrees/launch-manager`: `codex/launch-manager`

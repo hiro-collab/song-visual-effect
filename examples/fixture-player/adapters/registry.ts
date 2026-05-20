@@ -1,11 +1,9 @@
-import type { SongAdapterContext } from "../runtime/songAdapterContext";
-import type { SongApp, SongAppFactory, SongAppServices } from "./types";
-import { createFixtureSoftLightApp } from "./builtin/fixtureSoftLight";
-import { createTrafficJamApp } from "./builtin/trafficJam";
+import type { SongAdapterContext } from "../../../system/kit/songAdapterContext";
+import type { SongApp, SongAppFactory, SongAppServices } from "../../../system/kit/songApp";
+import { createFixtureSoftLightApp } from "./fixtureSoftLight";
 
 const BUILTIN_ADAPTERS: Record<string, SongAppFactory> = {
-  "builtin:fixture-soft-light": createFixtureSoftLightApp,
-  "builtin:traffic-jam": createTrafficJamApp
+  "builtin:fixture-soft-light": createFixtureSoftLightApp
 };
 
 const fallback = (context: SongAdapterContext, services: SongAppServices, reason: string) =>
@@ -21,5 +19,5 @@ export const createSongApp = async (context: SongAdapterContext, services: SongA
     return factory(context, services);
   }
 
-  return fallback(context, services, "external adapter loading disabled");
+  return fallback(context, services, "song-owned adapter loading is outside this fixture player");
 };

@@ -2,7 +2,7 @@
   "schema": "music-effect.workflow-map.v1",
   "title": "Music Effect Workflow Map",
   "language": "ja",
-  "description": "Music Effectの主要な構成要素と、曲パッケージ読み込み、再生、歌詞タイミング調整、分離サーバー運用の流れを記録するJSONです。人間向けの図示と、LLMへ流れを説明するための共有データを兼ねます。",
+  "description": "Music Effectの主要な構成要素と、曲パッケージ読み込み、再生、歌詞タイミング調整、分離サーバー運用の流れを記録するJSONです。system kitとfixture playerを分けて説明し、人間向けの図示とLLM共有データを兼ねます。",
   "components": [
     {
       "id": "browser",
@@ -16,13 +16,13 @@
     },
     {
       "id": "main",
-      "label": "main.ts",
-      "kind": "host",
-      "group": "システム",
-      "file": "src/main.ts",
+      "label": "fixture player",
+      "kind": "fixture-player",
+      "group": "検証用アプリ",
+      "file": "examples/fixture-player/main.ts",
       "x": 28,
       "y": 38,
-      "description": "現在の司令塔です。起動、入力登録、再生状態、フレーム更新、歌詞表示、曲adapter接続をまとめます。"
+      "description": "system kitを使った動作確認用プレイヤーです。起動、入力登録、再生状態、フレーム更新、歌詞表示、fixture adapter接続をまとめます。"
     },
     {
       "id": "manifest",
@@ -38,8 +38,8 @@
       "id": "assets",
       "label": "assets.ts",
       "kind": "loader",
-      "group": "システム",
-      "file": "src/data/assets.ts",
+      "group": "system kit",
+      "file": "system/kit/assets.ts",
       "x": 50,
       "y": 38,
       "description": "manifestを読み、Songle JSON、歌詞、手動タイミング、palette、markersをMusicMapへ変換します。"
@@ -58,48 +58,48 @@
       "id": "transport",
       "label": "再生制御",
       "kind": "system-service",
-      "group": "システム",
-      "file": "src/main.ts",
+      "group": "system kit",
+      "file": "system/kit/transport.ts",
       "x": 72,
       "y": 38,
-      "description": "audio要素または内部クロックから現在時刻を作り、再生、停止、シークを制御します。将来はcore/transportへ分離予定です。"
+      "description": "audio要素または内部クロックから現在時刻を作り、再生、停止、シークを制御するhelperです。"
     },
     {
       "id": "frameLoop",
       "label": "フレームループ",
       "kind": "system-service",
-      "group": "システム",
-      "file": "src/main.ts",
+      "group": "system kit",
+      "file": "system/kit/frameLoop.ts",
       "x": 28,
       "y": 66,
-      "description": "requestAnimationFrame(tick)で毎フレーム更新します。現在時刻を見て、歌詞と映像を更新します。"
+      "description": "requestAnimationFrame(tick)で毎フレーム更新するhelperです。fixture playerや曲アプリが必要に応じて使います。"
     },
     {
       "id": "songAdapter",
-      "label": "曲adapter",
+      "label": "曲アプリ/adapter",
       "kind": "adapter",
-      "group": "演出",
-      "file": "src/adapters",
+      "group": "曲側",
+      "file": "song package or song app",
       "x": 38,
       "y": 66,
-      "description": "同一ビルド内のbuiltin adapterです。system hostからcontextを受け取り、曲固有のcue文法を曲側で解釈します。外部adapter読み込みはまだ無効です。"
+      "description": "曲側が持つ演出コードです。system kitから必要なcontextやhelperだけを受け取り、曲固有のcue文法を曲側で解釈します。外部adapter読み込みはまだ未設計です。"
     },
     {
       "id": "effects",
       "label": "エフェクト群",
       "kind": "visual",
       "group": "演出",
-      "file": "src/effects",
+      "file": "examples/fixture-player/effects",
       "x": 55,
       "y": 66,
-      "description": "粒子、光線ネットワーク、色ramp、ダンピング制御を担当します。現在はfixture用の柔らかい光表現で、新しい曲のテンプレートではありません。"
+      "description": "fixture player用の粒子、光線ネットワーク、色ramp、ダンピング制御です。新しい曲のテンプレートではありません。"
     },
     {
       "id": "timingEditor",
       "label": "歌詞タイミング編集",
       "kind": "tool",
       "group": "ツール",
-      "file": "src/lyrics/manualTiming.ts",
+      "file": "examples/fixture-player/tools/lyricTimingTool.ts / system/kit/manualTiming.ts",
       "x": 72,
       "y": 66,
       "description": "A/Dキー、全体補正、途中から補正、ストーン表示、Export用JSON生成を担当します。音声波形は解析しません。"
@@ -122,7 +122,7 @@
       "file": "scripts/serve-song-packs.mjs",
       "x": 91,
       "y": 14,
-      "description": "song-packsを別ポートで配信します。CORSはsystem appのoriginに限定し、manifestやJSONを読めるようにします。"
+      "description": "song-packsを別ポートで配信します。CORSはfixture playerのoriginに限定し、manifestやJSONを読めるようにします。"
     },
     {
       "id": "devManager",
@@ -132,7 +132,7 @@
       "file": "scripts/dev-manager.mjs",
       "x": 28,
       "y": 14,
-      "description": "npm run devで起動し、system appとsong-pack serverをまとめて起動・停止します。"
+      "description": "npm run devで起動し、fixture playerとsong-pack serverをまとめて起動・停止します。"
     },
     {
       "id": "agents",
@@ -210,9 +210,9 @@
         {
           "from": "main",
           "to": "songAdapter",
-          "action": "曲adapterを作る",
+          "action": "fixture adapterを作る",
           "payload": "SongAdapterContext、canvas、ctx",
-          "note": "manifest.webAdapterがbuiltinの場合だけ同一ビルド内adapterを選びます。外部コードはまだ読み込みません。"
+          "note": "fixture player内の検証用adapterだけを選びます。未知の曲専用adapterは安全のため実行せず、fallback表示にします。"
         }
       ]
     },
@@ -284,7 +284,7 @@
           "to": "effects",
           "action": "必要なエフェクトを更新",
           "payload": "MusicMap、design.cues、beat、chorus、markers、pointer",
-          "note": "Traffic Jam adapterはvisual-cuesのchorus候補と間奏強調を曲側で解釈します。"
+          "note": "曲専用cueを使う場合、その解釈は曲アプリ側に閉じます。system kitはcue文法を標準化しません。"
         },
         {
           "from": "effects",
@@ -348,7 +348,7 @@
     {
       "id": "split-server",
       "label": "起動管理で分離サーバーをまとめて起動",
-      "summary": "起動管理サーバーがsystem appと曲パックサーバーを立ち上げ、システムは外部manifestを読むだけにします。",
+      "summary": "起動管理サーバーがfixture playerと曲パックサーバーを立ち上げ、検証用プレイヤーは外部manifestを読むだけにします。",
       "trigger": "npm run dev を実行する",
       "steps": [
         {
@@ -361,16 +361,16 @@
         {
           "from": "devManager",
           "to": "main",
-          "action": "system appを起動",
-          "payload": "npm run dev:system -- --port 5173",
-          "note": "Viteのsystem appを起動します。"
+          "action": "fixture playerを起動",
+          "payload": "npm run dev:player -- --port <PLAYER_PORT>",
+          "note": "Viteのfixture playerを起動します。"
         },
         {
           "from": "devManager",
           "to": "songServer",
           "action": "曲パックサーバーを起動",
           "payload": "npm run dev:songs",
-          "note": "song-packsをsystem app origin向けCORSつきで配信します。"
+          "note": "song-packsをfixture player origin向けCORSつきで配信します。"
         },
         {
           "from": "main",
@@ -398,15 +398,15 @@
     {
       "id": "future-adapter",
       "label": "曲別Web Adapter化",
-      "summary": "曲固有の演出配線をadapterへ移し、システムは補助contextだけを渡します。",
-      "trigger": "manifest.webAdapterでbuiltin adapterを指定する",
+      "summary": "曲固有の演出配線を曲側adapterへ移し、system kitは補助contextだけを渡します。",
+      "trigger": "曲側がWeb adapterや別ランタイム用adapterを設計する",
       "steps": [
         {
           "from": "manifest",
           "to": "songAdapter",
           "action": "webAdapterを指定",
-          "payload": "builtin:traffic-jam など",
-          "note": "現段階では同一ビルド内のbuiltin adapterのみ許可します。外部adapterはセキュリティ設計後に扱います。"
+          "payload": "曲側で定義したadapter IDやURL",
+          "note": "system kitは曲専用adapterを持ちません。外部adapterはセキュリティ設計後に扱います。"
         },
         {
           "from": "main",

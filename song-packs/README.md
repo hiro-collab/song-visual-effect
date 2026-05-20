@@ -16,4 +16,4 @@ docs/system-overview.md
 docs/song-authoring.md
 ```
 
-このWeb system hostで読む場合は、入口としてmanifest URLが必要です。ただしmanifestの先の構造は曲ごとに設計して構いません。
+同梱のfixture playerで読む場合は、入口としてmanifest URLが必要です。ただしmanifestの先の構造は曲ごとに設計して構いません。

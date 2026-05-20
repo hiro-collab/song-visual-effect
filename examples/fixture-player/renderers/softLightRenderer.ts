@@ -1,9 +1,9 @@
-import type { MusicMap, PointerState } from "../types";
-import { DampValue } from "../effects/damping";
-import { ColorRamp } from "../effects/palette";
+import type { MusicMap, PointerState } from "../../../system/kit/types";
+import { DampValue } from "../../../system/kit/damping";
+import { ColorRamp } from "../../../system/kit/palette";
 import { ParticleField } from "../effects/particles";
 import { LightNetwork } from "../effects/lightNetwork";
-import { activeRange, beatAt, emphasisAt } from "../music/timing";
+import { activeRange, beatAt, emphasisAt } from "../../../system/kit/timing";
 
 export class SoftLightRenderer {
   private readonly pointer: PointerState = { x: 0, y: 0, active: false, down: false };

@@ -1,8 +1,8 @@
-import type { AppElements } from "../runtime/dom";
-import type { LyricCue, LyricKeyframe, LyricTimingAdjustments, MusicMap } from "../types";
-import { clamp } from "../effects/damping";
-import { lyricIndexAt } from "../music/timing";
-import { Transport } from "../runtime/transport";
+import type { AppElements } from "../dom";
+import type { LyricCue, LyricKeyframe, LyricTimingAdjustments, MusicMap } from "../../../system/kit/types";
+import { clamp } from "../../../system/kit/damping";
+import { lyricIndexAt } from "../../../system/kit/timing";
+import { Transport } from "../../../system/kit/transport";
 import {
   applyLyricAdjustments,
   buildLyricsFromKeyframes,
@@ -10,7 +10,7 @@ import {
   makeTimingExport,
   normalizeAdjustments,
   normalizeKeyframes
-} from "../lyrics/manualTiming";
+} from "../../../system/kit/manualTiming";
 
 type TimingSnapshot = {
   keyframes: LyricKeyframe[];

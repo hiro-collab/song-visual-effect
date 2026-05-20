@@ -7,7 +7,7 @@ were not used as templates.
 
 ## Contents
 
-- `manifest.json`: minimal entry for the current web system host.
+- `manifest.json`: minimal entry that the fixture player can load for checks.
 - `design/effect-direction.md`: effect direction for the future interactive visual.
 - `analysis/*.json`: Songle Widget API data and project-owned visual cue notes.
 - `CREDITS.md`: source links and attribution notes.
@@ -21,12 +21,12 @@ were not used as templates.
 
 ## Local Preview
 
-After starting the dev manager with `npm run dev`, the current host can load the
+After starting the dev manager with `npm run dev`, the fixture player can load the
 manifest at:
 
 ```text
 http://127.0.0.1:5173/?song=http://127.0.0.1:5174/traffic-jam/manifest.json
 ```
 
-The current system renderer is still a fixture renderer, so this preview is only
+The current player renderer is still a fixture renderer, so this preview is only
 for validating loading and timing data until a song-specific adapter is created.

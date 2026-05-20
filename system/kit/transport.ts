@@ -1,4 +1,4 @@
-import { clamp } from "../effects/damping";
+import { clamp } from "./damping";
 
 const clampTime = (time: number, duration: number) => Math.min(Math.max(0, time), Math.max(0, duration));
 

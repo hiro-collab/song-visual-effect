@@ -18,23 +18,24 @@
 - `http://127.0.0.1:5173/docs/workflows.html`
 - `http://127.0.0.1:5173/?song=<manifest-url>`
 
-## P1: 曲に依存しないsystem hostを維持する
+## P1: 曲に依存しないsystem kitを維持する
 
 目的:
-`src/main.ts` と周辺runtimeを、曲に依存しない補助ランタイムへ近づける。
+曲に依存しない補助機能を `system/kit` に集約し、fixture playerを `examples/fixture-player` に隔離する。
 
 現状:
 
-- `src/runtime/transport.ts`: 再生、停止、現在時刻、シーク。
-- `src/runtime/frameLoop.ts`: `requestAnimationFrame` の登録とtick管理。
-- `src/runtime/dom.ts`: DOM要素取得。
-- `src/tools/lyricTimingTool.ts`: optional lyric timing tool。
+- `system/kit/transport.ts`: 再生、停止、現在時刻、シーク。
+- `system/kit/frameLoop.ts`: `requestAnimationFrame` の登録とtick管理。
+- `system/kit/assets.ts`: manifest読み込みとMusicMap変換。
+- `system/kit/songAdapterContext.ts`: 曲アプリ用のasset reader。
+- `examples/fixture-player/`: 動作確認用プレイヤー。新しい曲のテンプレートではない。
 
 次の候補:
 
-- `src/runtime/input.ts`: キー、ポインタ、ボタン入力。
-- `src/runtime/surface.ts`: 表示領域、fullscreen。
-- fixture rendererを曲adapter候補へ切り出す。
+- `system/kit/index.ts` で公開API入口を明示した。今後はここを太らせすぎず、必要なhelperだけをexportする。
+- fixture playerのUIやrendererをさらに「例」として隔離する。
+- 曲アプリ雛形を作る場合も、既存曲ではなく空のscaffoldから始める。
 
 非目的:
 
@@ -87,10 +88,9 @@ export function createSongApp(context) {
 
 - 安全な外部adapter読み込み方式を設計する。
 - `song-packs/<song-id>/adapters/web/` への移動を検討する。
-- manifestの `design.cues` のような曲専用cue JSONを、system hostが固定スキーマへ潰さずadapterへ渡せるようにする。初期helperは実装済み。
+- manifestの `design.cues` のような曲専用cue JSONを、system kitが固定スキーマへ潰さず曲アプリへ渡せるようにする。初期helperは実装済み。
 - adapterには `MusicMap` だけでなく、raw manifest、base URL、任意の曲所有JSONを安全に読むためのhelperを渡す。初期helperは実装済み。
-- 同一ビルド内の `builtin:` adapter registryは実装済み。外部adapter読み込みはまだ無効。
-- `builtin:traffic-jam` は `readDesignCues()` で `analysis/visual-cues.json` を読み、chorus候補と間奏強調を曲adapter側で解釈する。
+- 同一ビルド内のfixture adapter registryは `examples/fixture-player` に隔離済み。外部adapter読み込みはまだ無効。
 
 ## P3a: 曲専用cueとfixture向けmarkersを分離する
 
@@ -102,23 +102,24 @@ export function createSongApp(context) {
 - `MusicMap.markers` は `warmSections` / `lineEmphasis` など、現在のrenderer寄りの形になっている。
 - 新しい曲では、間奏、バッシング、視線、衝突ブローなど、曲専用のcue文法が必要になる。
 - `manifest.design.cues` は `SongAdapterContext.assets.readDesignCues()` で読み込める。
-- `manifest.webAdapter` に `builtin:traffic-jam` を指定すると、同一ビルド内のTraffic Jam adapterがcueを読む。
+- fixture playerは曲専用cueを標準解釈しない。曲ごとのcue文法は曲アプリ側で扱う。
 
 候補:
 
-- 曲adapter実装をさらに育て、`SongManifest.design.cues` を曲側の文法として解釈する。
-- system共通の `markers` は後方互換/簡易renderer用に残す。
-- 曲専用cueはschema名だけ確認し、中身は曲adapterが解釈する。
+- 曲アプリ実装を作る場合、`SongManifest.design.cues` を曲側の文法として解釈する。
+- kit共通の `markers` は後方互換/簡易renderer用に残す。
+- 曲専用cueはschema名だけ確認し、中身は曲アプリ/adapterが解釈する。
 - Songle由来の拍/サビと、手動で打つキック/ブロー/歌詞アクセントを別レイヤーとして扱う。
 
 ## P4: 起動管理を追加する
 
 目的:
-system server、song-pack server、将来の保存APIを手作業で1つずつ起動しなくてよいようにする。
+fixture player、song-pack server、将来の保存APIを手作業で1つずつ起動しなくてよいようにする。
 
 候補:
 
 - まずは `npm run dev` でローカル起動管理サーバーを立てる。完了。
+- `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` でworktreeごとにポートをずらせる。完了。
 - さらに必要ならGUI付きランチャー。
 
 リスク:

@@ -1,12 +1,12 @@
-import type { Beat, LyricCue, Markers, MusicMap, Palette, Range, SongManifest } from "../types";
-import { DEFAULT_PALETTE } from "../effects/palette";
+import type { Beat, LyricCue, Markers, MusicMap, Palette, Range, SongManifest } from "./types";
+import { DEFAULT_PALETTE } from "./palette";
 import {
   DEFAULT_MAX_TEXT_BYTES,
   fetchBoundedJson,
   fetchBoundedText,
   resolveHttpUrl,
   resolveWithinBaseUrl
-} from "../runtime/safeFetch";
+} from "./safeFetch";
 
 const compactPaths = (paths: Array<string | null | undefined>) => paths.filter((path): path is string => Boolean(path));
 

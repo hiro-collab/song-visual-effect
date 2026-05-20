@@ -6,57 +6,40 @@
 
 - `AGENTS.md`: Codex/エージェント向けの常時指示。詳細は `docs/` へ誘導する。
 - `README.md`: 人間向けの起動方法、素材配置、利用方法。
-- `index.html`: アプリのDOM骨格。Canvas、Audio、歌詞表示、操作UIを置く。
+- `index.html`: fixture playerのDOM骨格。Canvas、Audio、歌詞表示、操作UIを置く。
 - `package.json`: npm scriptsと依存関係。
 - `vite.config.mjs`: Vite設定。曲データは別サーバーで配信するため、ViteのpublicDirは無効化している。
 
-## src
+## system/kit
 
-- `src/main.ts`: system hostの入口。DOM取得、起動、入力登録、transport、song adapter、optional toolを接続する。
-- `src/styles.css`: アプリ本体の見た目。Canvas上の歌詞、操作バー、Lyric Timingパネル、シーケンスバーなど。
-- `src/types.ts`: MusicMap、SongManifest、歌詞、beat、markersなどの型定義。
+曲に依存しない補助ライブラリです。曲名、曲専用cue、描画方式を固定しません。
 
-## src/runtime
+- `system/kit/types.ts`: MusicMap、SongManifest、歌詞、beat、markersなどの型定義。
+- `system/kit/index.ts`: 曲アプリが参照しやすい公開API入口。必要なhelperだけをここから選んでimportできる。
+- `system/kit/assets.ts`: manifestと曲パッケージを読み、fixture playerや曲アプリで使う `MusicMap` に変換する。既存曲へ暗黙フォールバックしない。
+- `system/kit/safeFetch.ts`: manifestや曲素材を安全に読むためのURL検証、パッケージ境界チェック、サイズ上限つきfetch。
+- `system/kit/songAdapterContext.ts`: 曲アプリへ渡せる補助context。manifest、base URL、曲パッケージ内asset readerを持つ。
+- `system/kit/songApp.ts`: fixture playerと簡易adapterの最小インターフェース。
+- `system/kit/transport.ts`: 再生、停止、シーク、現在時刻を扱う。
+- `system/kit/frameLoop.ts`: `requestAnimationFrame` によるフレーム更新。
+- `system/kit/timing.ts`: beat、chorus、lyricsなどの時刻検索。
+- `system/kit/manualTiming.ts`: 手動歌詞キーフレーム、全体/範囲補正、Export用JSON生成。
+- `system/kit/damping.ts`: `DampValue`、`clamp`、`smoothstep`、`decayPulse` などの数値制御。
+- `system/kit/palette.ts`: paletteから色rampを作る。fixture rendererでも使うが、曲固有の標準ではない。
 
-- `src/runtime/dom.ts`: system appのDOM要素を取得する。
-- `src/runtime/transport.ts`: 再生、停止、シーク、現在時刻を扱う。
-- `src/runtime/frameLoop.ts`: `requestAnimationFrame` によるフレーム更新。
-- `src/runtime/safeFetch.ts`: manifestや曲素材を安全に読むためのURL検証、パッケージ境界チェック、サイズ上限つきfetch。
-- `src/runtime/songAdapterContext.ts`: 曲adapterへ渡す補助context。manifest、base URL、曲パッケージ内asset readerを持つ。
+## examples/fixture-player
 
-## src/adapters
+system kitを使った動作確認用アプリです。新しい曲のテンプレートではありません。
 
-- `src/adapters/types.ts`: system hostと曲adapterの最小インターフェース。
-- `src/adapters/registry.ts`: 同一ビルド内の `builtin:` adapterだけを選択する。外部adapterはまだ読み込まない。
-- `src/adapters/builtin/fixtureSoftLight.ts`: 既存fixture rendererをadapterとして包む。
-- `src/adapters/builtin/trafficJam.ts`: `design.cues` を曲専用文法として読み、Traffic Jam向けにchorus候補と間奏強調を解釈する。
-
-## src/data
-
-- `src/data/assets.ts`: manifestと曲パッケージを読み、アプリ内部で使う `MusicMap` に変換する。既存曲へ暗黙フォールバックしない。
-
-## src/music
-
-- `src/music/timing.ts`: beat、chorus、lyricsなどの時刻検索。
-
-## src/renderers
-
-- `src/renderers/softLightRenderer.ts`: 現在同梱しているfixture用の柔らかい光表現。新しい曲のテンプレートではない。
-
-## src/effects
-
-- `src/effects/damping.ts`: `DampValue`、`clamp`、`smoothstep`、`decayPulse` などの数値制御。
-- `src/effects/palette.ts`: paletteから色rampを作る。柔らかい色変化に使う。
-- `src/effects/particles.ts`: 背景粒子の描画。
-- `src/effects/lightNetwork.ts`: 動点と線を使った光線ネットワーク。
-
-## src/lyrics
-
-- `src/lyrics/manualTiming.ts`: 手動歌詞キーフレーム、全体/範囲補正、Export用JSON生成。
-
-## src/tools
-
-- `src/tools/lyricTimingTool.ts`: 歌詞タイミング編集UI。system hostのoptional tool。
+- `examples/fixture-player/main.ts`: fixture playerの入口。DOM取得、起動、入力登録、transport、fixture adapter、optional toolを接続する。
+- `examples/fixture-player/styles.css`: fixture playerの見た目。Canvas上の歌詞、操作バー、Lyric Timingパネル、シーケンスバーなど。
+- `examples/fixture-player/dom.ts`: fixture playerのDOM要素を取得する。
+- `examples/fixture-player/adapters/registry.ts`: fixture player内で使う中立的な `builtin:` adapter registry。曲固有adapterはここに増やさない。
+- `examples/fixture-player/adapters/fixtureSoftLight.ts`: 既存soft light rendererをfixture adapterとして包む。
+- `examples/fixture-player/renderers/softLightRenderer.ts`: fixture用の柔らかい光表現。新しい曲のテンプレートではない。
+- `examples/fixture-player/effects/particles.ts`: fixture renderer用の背景粒子。
+- `examples/fixture-player/effects/lightNetwork.ts`: fixture renderer用の動点と光線ネットワーク。
+- `examples/fixture-player/tools/lyricTimingTool.ts`: fixture playerに載せている歌詞タイミング編集UI。system kitの必須UIではない。
 
 ## song-packs
 
@@ -67,14 +50,15 @@
 - 既存の曲パッケージはテンプレートではない。
 - 新しい曲を作るときは、既存の `song-packs/*` を読まない。
 - 曲ごとの構成、JSON文法、UI、演出コード、描画方式は自由に変えてよい。
-- Web system hostで読む場合は、入口としてmanifest URLを渡す。
+- fixture playerで読む場合は、入口としてmanifest URLを渡す。
 - `song-packs/*/audio/`: ローカル音源配置用。音源ファイルはコミットしない。
 
 ## scripts
 
 - `scripts/download-songle-json.ps1`: Songle Widget APIからJSONを取得するPowerShellスクリプト。許可URL、保存先、取得対象、最大サイズを検証し、取得後に曲長、拍数、BPM、サビ候補を要約する。
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
-- `scripts/dev-manager.mjs`: system server と song-pack server をまとめて起動・停止する起動管理サーバー。
+- `scripts/dev-manager.mjs`: fixture player server と song-pack server をまとめて起動・停止する起動管理サーバー。
+- `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知を扱うローカル同期補助。
 
 ## docs
 
@@ -89,6 +73,8 @@
 - `docs/handoff.md`: 次のCodexスレッドへ渡す要約。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 - `docs/workflows.html`: `workflows.json` を可視化する単一HTMLページ。
+- `docs/worktree-guide.md`: local worktree構成の使い方。
+- `docs/worktree-sync.md`: 並行worktree間のready/check/merge運用。
 
 ## .codex
 

@@ -1,4 +1,4 @@
-import type { MusicMap, SongManifest } from "../types";
+import type { MusicMap, SongManifest } from "./types";
 import { fetchBoundedJson, fetchBoundedText, resolveWithinBaseUrl } from "./safeFetch";
 
 type SongAssetReadOptions = {

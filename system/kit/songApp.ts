@@ -1,4 +1,4 @@
-import type { SongAdapterContext } from "../runtime/songAdapterContext";
+import type { SongAdapterContext } from "./songAdapterContext";
 
 export type SongAppServices = {
   canvas: HTMLCanvasElement;

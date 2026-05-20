@@ -6,18 +6,18 @@
 
 ## 目的
 
-このリポジトリのシステム側は、曲ごとの演出を決める親ではなく、曲アプリを支える補助ランタイムです。
+このリポジトリのシステム側は、曲ごとの演出を決める親ではなく、曲アプリを支える補助kitです。
 
 システム側が提供するもの:
 
 - 開発用の起動管理。
 - 曲パッケージ配信用の静的サーバー。
-- ブラウザ上の再生、停止、シーク、現在時刻。
-- フレームループ。
-- キー、ポインタ、ボタンなどの入力。
-- 全画面表示などの表示補助。
+- ブラウザ上の再生、停止、シーク、現在時刻のhelper。
+- フレームループhelper。
 - 曲データを読むための最小限のmanifest読み込み。
-- optional toolとしての歌詞タイミング編集。
+- 曲パッケージ内assetを安全に読むhelper。
+- 歌詞タイミング編集のデータ処理helper。
+- 動作確認用のfixture player。
 
 システム側が決めないもの:
 
@@ -32,14 +32,14 @@
 ## 境界
 
 ```text
-system host
-  transport / frame / input / surface / tools / storage
-    ↓ 補助context
-song application
-  effect design / data grammar / renderer / live controls
+song application or fixture player
+  imports helper functions from system/kit
+
+system/kit
+  transport / frame / assets / timing / manual timing data
 ```
 
-system hostは、曲アプリへ時間、入力、保存、表示領域などの能力を渡します。曲アプリは、それらを使ってもよいし、使わなくても構いません。
+曲アプリは `system/kit` から必要なものだけをimportします。使わないhelperがあっても構いません。
 
 曲側の自由度を守るため、システム文書では既存曲の内部構成を標準として説明しません。既存曲は動作確認用のfixture、または具体例としてだけ扱います。
 
@@ -50,7 +50,7 @@ system hostは、曲アプリへ時間、入力、保存、表示領域などの
 ```text
 dev manager
   ↓ starts/stops
-system app server
+fixture player server
 song package server
 ```
 
@@ -66,11 +66,11 @@ npm run dev
 http://127.0.0.1:5172/
 ```
 
-system appは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定の曲を自動選択せず、起動エラーとして扱います。
+同梱のfixture playerは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定の曲を自動選択せず、起動エラーとして扱います。
 
 ## 曲パッケージの最小契約
 
-曲パッケージの構成は曲ごとに変えてよいです。ただし、現在のWeb system hostで読む場合は、入口としてmanifestが必要です。
+曲パッケージの構成は曲ごとに変えてよいです。ただし、同梱のfixture playerで読む場合は、入口としてmanifestが必要です。
 
 最小manifestの考え方:
 

@@ -6,70 +6,113 @@
 
 ## 全体像
 
+このリポジトリは「曲を支配するhost」ではなく、「曲アプリを助けるkit」を中心にします。
+
 ```text
 dev manager
-  system app server
+  fixture player server
   song package server
 
-browser
-  index.html
-  src/main.ts
-    runtime helpers
-    optional tools
-    renderer / song adapter
+system/kit
+  manifest loading
+  safe asset reader
+  transport
+  frame loop
+  timing helpers
+  lyric timing data helpers
 
-song package
+examples/fixture-player
+  small runnable player for regression checks
+  optional lyric timing UI
+  fixture renderer
+
+song package or song app
   manifest entry
   song-owned assets
   song-owned grammar
-  optional adapter
+  song-owned app / adapter
 ```
 
-システム側は曲の中身を決めません。system appは `?song=<manifest-url>` を入口として受け取り、そのmanifestを読むだけです。manifest URLがない場合、特定曲へ自動フォールバックせず、起動エラーとして扱います。
+`system/kit` は曲を知りません。曲名、曲ごとのcue文法、演出思想、描画方式を固定しません。
 
-```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
-```
+現在のブラウザ画面は `examples/fixture-player` です。これは動作確認用の小さなプレイヤーであり、すべての曲を従わせる本体ではありません。
 
 ## 起動管理
 
-分離構成では、複数のサーバーを手作業で起動するとトラブルが増えます。そのため `npm run dev` は起動管理サーバーを立ち上げ、system app と song-pack server をまとめて管理します。
+分離構成では、複数のサーバーを手作業で起動するとトラブルが増えます。そのため `npm run dev` は起動管理サーバーを立ち上げ、fixture player app と song-pack server をまとめて管理します。
 
 ```text
 http://127.0.0.1:5172
   dev manager
 
 http://127.0.0.1:5173
-  system app
+  fixture player app
 
 http://127.0.0.1:5174
   song package server
 ```
 
-## System Host
+fixture player appは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定曲へ自動フォールバックせず、起動エラーとして扱います。
 
-system hostの責務:
+```text
+http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
+```
 
-- manifest URLを受け取る。
+並行worktreeで起動する場合は、`DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` でポートをずらせます。起動管理サーバー経由でsong-pack serverを立てる場合、`PLAYER_PORT` に合わせたCORS許可originを自動で渡します。
+
+## System Kit
+
+`system/kit` の責務:
+
+- manifest URLを受け取るためのhelper。
 - 曲パッケージの入口を読む。
-- ブラウザのDOM、Audio、入力、フレームループを準備する。
-- 再生、停止、シーク、現在時刻を扱う。
-- optional toolを提供する。
-- 曲アプリやrendererへ補助contextを渡す。
+- 曲パッケージ内のassetを境界チェックつきで読む。
+- JSONとテキストをサイズ上限つきで取得する。
+- 再生、停止、シーク、現在時刻を扱う `Transport`。
+- `requestAnimationFrame` のフレームループ。
+- beat、chorus、lyricsなどの時刻検索。
+- 手動歌詞タイミング調整のデータ処理。
+- fixture playerや曲アプリへ渡す最小限の `SongAdapterContext`。
 
-system hostの非責務:
+`system/kit` の非責務:
 
 - 曲固有の演出を決めること。
 - 曲固有のJSON文法を固定すること。
 - 既存曲の構成を標準化すること。
 - 描画方式をCanvas2Dに固定すること。
-- 歌詞タイミング編集を全曲必須にすること。
+- 歌詞タイミング編集UIを全曲必須にすること。
+- 曲ごとのWebアプリを必ずこのfixture playerに載せること。
+
+## Fixture Player
+
+`examples/fixture-player` は、system kitを使った動作確認用アプリです。
+
+役割:
+
+- manifestを読み、画面に曲情報を表示する。
+- 既存のsoft light rendererで簡易的に映像確認する。
+- optional lyric timing UIを試せるようにする。
+- system kitの回帰確認に使う。
+
+非役割:
+
+- 新しい曲のテンプレートになること。
+- 曲ごとの標準UIになること。
+- 外部Web adapterを安全に読み込むこと。
+- 曲専用cue文法をシステム標準として解釈すること。
+
+`index.html` はこのfixture playerを読み込みます。
+
+```text
+index.html
+  -> examples/fixture-player/main.ts
+```
 
 ## Song Package
 
 曲パッケージは、曲ごとの素材、演出意図、データ文法、adapter、クレジットを持つ場所です。
 
-曲パッケージ内の構成は自由です。現在のWeb system hostで読むにはmanifestが必要ですが、manifestの先の構造は曲ごとに設計できます。
+曲パッケージ内の構成は自由です。fixture playerで読むにはmanifestが必要ですが、manifestの先の構造は曲ごとに設計できます。
 
 最小manifest:
 
@@ -84,99 +127,31 @@ system hostの非責務:
 
 歌詞、解析JSON、音源、クレジット、Web adapterなどは必要な場合だけ追加します。
 
-## 現在の実装モジュール
+## Security Boundary
 
-```text
-src/main.ts
-  起動、入力登録、song adapter/toolの接続
-
-src/runtime/
-  DOM取得、再生制御、フレームループ、song adapter context
-
-src/adapters/
-  system hostと曲固有adapterの接続
-
-src/data/assets.ts
-  manifest読み込みと最小MusicMap変換
-
-src/music/timing.ts
-  beat、chorus、lyricの時刻検索
-
-src/renderers/
-  現在同梱しているfixture用の描画実装
-
-src/tools/
-  optional tool
-
-src/lyrics/
-  歌詞タイミング調整のデータ処理
-```
-
-現在は同一ビルド内の `builtin:` adapterだけを許可しています。外部サーバーから任意コードを読み込むadapterは、セキュリティ設計が固まるまで無効です。
-
-`builtin:fixture-soft-light` は既存fixture rendererをadapterとして包みます。`builtin:traffic-jam` は曲専用の `design.cues` を読み、system側でcue文法を固定せずに曲adapter側で解釈する最初の例です。
-
-## フレーム更新
-
-`src/runtime/frameLoop.ts` が `requestAnimationFrame` を使って毎フレームの更新を予約します。各フレームでは現在時刻を読み、曲アプリまたはrendererが必要な表示を更新します。
-
-```text
-requestAnimationFrame
-  -> current time
-  -> song adapter
-  -> optional tools
-  -> next frame
-```
-
-## 曲データ読み込み
-
-`src/data/assets.ts` はmanifestを入口にします。
-
-- manifestの場所を基準に相対パスを解決する。
-- 指定された曲パッケージ内の素材だけを読む。
-- 別曲のデータへ勝手にフォールバックしない。
-- manifest URLがない、またはmanifestが読めない場合は起動失敗として扱う。
-- manifest URLと素材URLは `http:` / `https:` に限定する。
-- JSONとテキストはサイズ上限つきで読み、巨大レスポンスをそのまま処理しない。
-
-この方針により、既存曲が暗黙のデフォルトになることを避けます。
-
-## セキュリティ境界
-
-このシステムはローカル開発向けです。既定では各サーバーを `127.0.0.1` にbindし、
-外部ネットワークへ公開しません。詳しい運用ルールは `docs/security.md` を参照してください。
+このシステムはローカル開発向けです。既定では各サーバーを `127.0.0.1` にbindし、外部ネットワークへ公開しません。詳しい運用ルールは `docs/security.md` を参照してください。
 
 重要な境界:
 
-- song-pack serverは、既定でsystem appのoriginからのCORSだけを許可する。
+- manifest URLと素材URLは `http:` / `https:` に限定する。
+- 曲パッケージ内assetは、既定ではそのパッケージ配下だけを読む。
+- JSONとテキストはサイズ上限つきで読み、巨大レスポンスをそのまま処理しない。
+- song-pack serverは、既定でfixture playerのoriginからのCORSだけを許可する。
 - song-pack serverは隠しファイルと未許可拡張子を配信しない。
 - dev managerの起動・停止APIは、同一origin相当のリクエストだけを受け付ける。
-- dev managerのログはHTMLとして挿入せず、テキストとして表示する。
 - 外部Web adapterを直接読み込む設計は任意コード実行につながるため、まだ採用しない。
-
-## Optional Tool
-
-歌詞タイミング編集はsystem側のoptional toolです。
-
-```text
-baseLyrics
-  + manualKeyframes
-  + lyricAdjustments
-  = workingLyrics
-```
-
-歌詞がない曲、別のタイミング構造を使う曲、別ランタイムで動く曲は、このtoolを使わなくて構いません。
 
 ## 今後の方向
 
-次段階では、曲固有の演出をより曲パッケージ側のWeb adapterへ移します。
+次段階では、曲ごとのWebアプリが `system/kit` から必要なhelperだけをimportする形へ寄せます。
 
 ```text
-system host
-  context: transport, frame, input, assets, surface, tools, storage
-    ↓
-song web adapter
-  createSongApp(context)
+song app
+  imports only what it needs from system/kit
+
+system/kit
+  offers helpers
+  does not own the song
 ```
 
-外部サーバーからWeb adapterを直接読み込む設計は、任意コード実行や信頼境界の問題があります。現在は同一ビルド内でadapterを分離し、外部adapter化はセキュリティ設計を固めてから行います。
+外部Web adapterを扱う場合は、CORS、信頼境界、任意コード実行、保存APIとの関係を別途設計してから導入します。

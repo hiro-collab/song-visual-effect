@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node scripts/dev-manager.mjs",
     "dev:manager": "node scripts/dev-manager.mjs",
-    "dev:system": "vite --host 127.0.0.1",
+    "dev:player": "vite --host 127.0.0.1",
     "dev:songs": "node scripts/serve-song-packs.mjs",
     "build": "tsc --noEmit && vite build",
     "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1",

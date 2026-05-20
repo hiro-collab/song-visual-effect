@@ -1,5 +1,5 @@
-import type { PointerState } from "../types";
-import { ColorRamp } from "./palette";
+import type { PointerState } from "../../../system/kit/types";
+import { ColorRamp } from "../../../system/kit/palette";
 
 type Particle = {
   x: number;
