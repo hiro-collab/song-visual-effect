@@ -98,3 +98,15 @@ semantics.
 If the user asks for a new song effect, keep the first pass independent and
 song-specific. Only use existing song packs if the user explicitly asks for a
 reference or if you are doing a regression check.
+
+## Local Git Worktrees
+
+- The root worktree stays at `C:\Users\kawai\works\music-effect` on `main`.
+- Local parallel worktrees are kept under `C:\Users\kawai\works\music-effect\_worktrees`.
+- `_worktrees/` is ignored by Git, so the parent directory and root status stay clean.
+- Current worktrees:
+  - `_worktrees/adapter-cues`: `codex/wip-adapter-cues-traffic-jam`
+  - `_worktrees/download-security`: `codex/download-security`
+  - `_worktrees/traffic-jam-effect`: `codex/traffic-jam-effect`
+  - `_worktrees/launch-manager`: `codex/launch-manager`
+- See `docs/worktree-guide.md` before starting parallel Codex threads.

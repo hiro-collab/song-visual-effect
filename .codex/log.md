@@ -87,3 +87,16 @@
 - The dev manager starts/stops the system app and song-pack server together.
 - `song-packs/traffic-jam/` was added as a planning package for 煮ル果実
   「トラフィック・ジャム」. It should not become a template for later songs.
+
+## 2026-05-20 Worktree Setup
+
+- User paused implementation to prepare parallel Codex work.
+- Stopped local development servers before reorganizing.
+- Added `_worktrees/` to `.gitignore` and committed it on `main`.
+- Checkpointed in-progress adapter cues / Traffic Jam work on `codex/wip-adapter-cues-traffic-jam`.
+- Created local worktrees under the project root:
+  - `_worktrees/adapter-cues`
+  - `_worktrees/download-security`
+  - `_worktrees/traffic-jam-effect`
+  - `_worktrees/launch-manager`
+- Added `docs/worktree-guide.md` to explain the worktree layout and parallel-work cautions.
