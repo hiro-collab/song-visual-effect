@@ -30,6 +30,10 @@
 - song-pack server は隠しファイルと未許可拡張子を配信しません。
 - dev manager の状態変更APIは、同一origin相当のブラウザリクエストだけを受け付けます。
 - dev manager のログ表示は `textContent` / DOM生成で行い、HTMLとして解釈しません。
+- Launch Manager の管理画面はCSP、frame拒否、権限拒否ヘッダーを付け、同一originのAPIだけに接続します。
+- Launch Manager のtarget定義は、作業ディレクトリをリポジトリ配下に限定し、commandを単純なコマンド名に限定します。
+- Launch Manager のtarget定義では、`PATH`、`COMSPEC`、`SYSTEMROOT`、`NODE_OPTIONS` などrunner側の重要環境変数を上書きできません。
+- Windows上の `npm` / `npx` target は `cmd.exe /c` を介すため、target引数にshellメタ文字が含まれる場合は起動前に拒否します。
 - Songle取得スクリプトは `SongId`、対象URL、取得target、保存先、サイズ、JSON構文を検証します。
 
 ## 運用ルール
@@ -38,6 +42,7 @@
 - fixture player のポートやoriginを変える場合は、`SONG_PACK_CORS_ORIGINS` を明示してください。
 - 起動管理サーバー経由で `PLAYER_PORT` を変える場合は、song-pack serverへ対応するCORS許可originを渡します。個別起動では手動で合わせてください。
 - localStorage は作業用キャッシュです。秘密情報や未公開の権利素材情報を保存しないでください。
+- Launch Manager のruntimeログは `.codex/runtime/` に生成されます。Gitでは無視しますが、targetのstdout/stderrに秘密情報を出さないでください。
 - 外部Web adapterを直接読み込む設計は、任意コード実行になるため未許可です。
 - 保存APIを追加する場合は、保存先を曲パッケージ内の限定ファイルに固定し、任意パス書き込みを禁止してください。
 

@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,8 +8,25 @@ import { LaunchSupervisor } from "./supervisor.mjs";
 const baseSecurityHeaders = {
   "Cache-Control": "no-store",
   "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "no-referrer"
+  "Referrer-Policy": "no-referrer",
+  "Cross-Origin-Opener-Policy": "same-origin",
+  "Cross-Origin-Resource-Policy": "same-origin",
+  "X-Frame-Options": "DENY",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()"
 };
+
+const htmlSecurityHeaders = (nonce) => ({
+  ...baseSecurityHeaders,
+  "Content-Security-Policy": [
+    "default-src 'none'",
+    `script-src 'nonce-${nonce}'`,
+    `style-src 'nonce-${nonce}'`,
+    "connect-src 'self'",
+    "base-uri 'none'",
+    "form-action 'none'",
+    "frame-ancestors 'none'"
+  ].join("; ")
+});
 
 const sendJson = (response, status, body) => {
   response.writeHead(status, {
@@ -33,13 +51,13 @@ const escapeHtml = (value) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-const managerHtml = ({ title }) => `<!doctype html>
+const managerHtml = ({ title, nonce }) => `<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
-    <style>
+    <style nonce="${escapeHtml(nonce)}">
       :root {
         color-scheme: dark;
         --bg: #101116;
@@ -225,7 +243,7 @@ const managerHtml = ({ title }) => `<!doctype html>
       <section id="targets" class="grid" aria-label="Launch targets"></section>
       <p id="runtime" class="footer"></p>
     </main>
-    <script>
+    <script nonce="${escapeHtml(nonce)}">
       const state = { status: null, busy: false };
       const byId = (id) => document.getElementById(id);
       const make = (tag, className, text) => {
@@ -442,11 +460,12 @@ export const startLaunchManager = async ({
         sendText(response, 405, "Method not allowed");
         return;
       }
+      const nonce = randomBytes(16).toString("base64url");
       response.writeHead(200, {
-        ...baseSecurityHeaders,
+        ...htmlSecurityHeaders(nonce),
         "Content-Type": "text/html; charset=utf-8"
       });
-      response.end(managerHtml({ title }));
+      response.end(managerHtml({ title, nonce }));
     } catch (error) {
       sendJson(response, 500, { ok: false, error: error.message });
     }

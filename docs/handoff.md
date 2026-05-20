@@ -9,6 +9,7 @@
 - 煮ル果実「トラフィック・ジャム」の映像エフェクトは、`codex/traffic-jam-effect` の `81876a7 Add traffic jam visual adapter` を採用しません。
 - 別スレッドで作り直す場合は `docs/traffic-jam-redo-brief.md` を読んでください。
 - `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても取り込まないでください。
+- `codex/live-beat-sync-prototype` は旧 `src/` 構成を含むため、Launch Manager入りの現行構成へ直接mergeしないでください。必要な変更だけ現行構成へ移植してください。
 
 ## 現在の状態
 
@@ -31,6 +32,7 @@
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 - 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。
+- 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
 
 ## 新しいスレッドの開始手順
 

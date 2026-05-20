@@ -3,7 +3,10 @@ import { isAbsolute, resolve, sep } from "node:path";
 
 const DEFAULT_CONFIG_PATH = "launch/targets.json";
 const ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/;
+const COMMAND_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
+const SHELL_META_PATTERN = /[&|<>^%!"]/;
 const TEMPLATE_PATTERN = /\$\{([A-Z0-9_]+)(?::-(.*?))?\}/g;
+const PROTECTED_ENV_NAMES = new Set(["COMSPEC", "NODE_OPTIONS", "PATH", "PATHEXT", "SYSTEMROOT"]);
 
 const asArray = (value, label) => {
   if (!Array.isArray(value)) throw new Error(`${label} must be an array.`);
@@ -43,6 +46,22 @@ const validateId = (value, label) => {
     throw new Error(`${label} must use letters, numbers, hyphen, or underscore.`);
   }
   return id;
+};
+
+const validateCommand = (value, label) => {
+  const command = asString(value, label);
+  if (!COMMAND_PATTERN.test(command)) {
+    throw new Error(`${label} must be a command name, not a path or shell expression.`);
+  }
+  return command;
+};
+
+const validateArg = (value, label) => {
+  const arg = asString(value, label);
+  if (SHELL_META_PATTERN.test(arg)) {
+    throw new Error(`${label} must not contain shell metacharacters.`);
+  }
+  return arg;
 };
 
 const expandTemplate = (value, env) => value.replace(TEMPLATE_PATTERN, (_match, name, fallback = "") => {
@@ -89,6 +108,9 @@ const normalizeEnv = (rawEnv = {}, label) => {
   return Object.fromEntries(
     Object.entries(rawEnv).map(([key, value]) => {
       if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) throw new Error(`${label}.${key} is not a valid env name.`);
+      if (PROTECTED_ENV_NAMES.has(key.toUpperCase())) {
+        throw new Error(`${label}.${key} must not override the Launch Manager runner environment.`);
+      }
       return [key, asString(value, `${label}.${key}`)];
     })
   );
@@ -105,9 +127,9 @@ const normalizeTarget = (rawTarget, index, root) => {
     throw new Error(`Target ${id} cwd must stay inside the repository: ${cwdText}`);
   }
 
-  const command = asString(rawTarget.command, `targets[${index}].command`);
+  const command = validateCommand(rawTarget.command, `targets[${index}].command`);
   const args = asArray(rawTarget.args ?? [], `targets[${index}].args`).map((arg, argIndex) =>
-    asString(arg, `targets[${index}].args[${argIndex}]`)
+    validateArg(arg, `targets[${index}].args[${argIndex}]`)
   );
   const ports = asArray(rawTarget.ports ?? [], `targets[${index}].ports`).map((port, portIndex) =>
     normalizePort(port, `targets[${index}].ports[${portIndex}]`)
