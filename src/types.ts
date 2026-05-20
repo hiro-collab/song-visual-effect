@@ -59,6 +59,40 @@ export type Markers = {
   lineEmphasis?: Array<{ time: number; duration: number; intensity?: number }>;
 };
 
+export type SongManifest = {
+  schema?: "music-effect.song-manifest.v1" | string;
+  id: string;
+  title: string;
+  artist: string;
+  duration?: number;
+  credits?: string | null;
+  lyrics?: string | null;
+  analysis?: {
+    song?: string | null;
+    beat?: string | null;
+    chord?: string | null;
+    melody?: string | null;
+    chorus?: string | null;
+    timing?: string | null;
+    markers?: string | null;
+    palette?: string | null;
+  };
+  audio?: string | null;
+  design?: {
+    effect?: string | null;
+    cues?: string | null;
+  };
+  webAdapter?: string | null;
+};
+
+export type MusicSource = {
+  manifestUrl: string;
+  baseUrl: string;
+  audioUrl?: string;
+  creditsUrl?: string;
+  webAdapterUrl?: string;
+};
+
 export type MusicMap = {
   title: string;
   artist: string;
@@ -70,6 +104,7 @@ export type MusicMap = {
   markers: Markers;
   palette: Palette;
   warnings: string[];
+  source: MusicSource;
 };
 
 export type PointerState = {

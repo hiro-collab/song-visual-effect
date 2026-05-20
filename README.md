@@ -10,12 +10,29 @@ npm run download:songle
 npm run dev
 ```
 
-`music_src` はViteの公開素材ディレクトリとして使っています。既存の `music_src/Lyrics.txt` はUTF-8のまま読み込みます。
+`music_src` は従来互換の公開素材ディレクトリとして使っています。既存の `music_src/Lyrics.txt` はUTF-8のまま読み込みます。
+
+分離構成を試す場合は、2つのターミナルで起動します。
+
+```powershell
+npm run dev:system
+npm run dev:songs
+```
+
+その後、システム側を次のURLで開きます。
+
+```text
+http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
+```
+
+この構成では、Webシステムは曲の中身を決めません。`song` クエリで指定された `manifest.json` を読み、歌詞、Songle JSON、palette、markers、手動タイミング、音源パスを曲パッケージ側から取得します。
 
 ## Material Layout
 
 ```text
 music_src/
+  manifest.json
+  CREDITS.md
   Lyrics.txt
   analysis/
     song.json
@@ -30,6 +47,36 @@ music_src/
 ```
 
 音源を置ける場合は `music_src/audio/shining_star.mp3` に配置してください。未配置でも内部クロックで映像だけ動きます。画面下の `Audio` からローカル音源を選ぶこともできます。
+
+## Song Package Layout
+
+曲ごとの素材は `song-packs/<song-id>/` にも置けます。別サーバーで配信できるよう、曲の入口は `manifest.json` にします。
+
+```text
+song-packs/
+  shining-star/
+    manifest.json
+    CREDITS.md
+    Lyrics.txt
+    analysis/
+      song.json
+      beat.json
+      chord.json
+      melody.json
+      chorus.json
+      lyrics_timing.json
+      markers.json
+      palette.json
+    audio/
+      .gitkeep
+    design/
+      effect_design.md
+      cues.json
+```
+
+音源ファイルはライセンス上コミットしません。分離サーバーで音源も配信したい場合は、ローカル環境で `song-packs/shining-star/audio/maou_14_shining_star.mp3` のように配置してください。
+
+`manifest.json` は曲パッケージの入口です。相対パスは manifest の場所を基準に解決されます。別の曲や別システムへ持ち出す場合も、この manifest と `design/` の演出意図を中心に扱います。
 
 ## Design
 
@@ -83,3 +130,13 @@ music_src/
 - ブラウザ上では音源を再生するだけにする。
 - 演出タイミングはSongle/TextAlive由来のJSON、歌詞テキスト、手動マーカーから作る。
 - 公開やイベント利用時は、魔王魂とSongle/TextAlive側の利用条件を確認する。
+
+## Architecture Direction
+
+このWebシステムは曲アプリを束縛する親ではなく、補助ランタイムとして扱います。
+
+- System: 再生、入力、フレームループ、全画面、保存、歌詞タイミング編集などを提供する。
+- Song Package: 曲ごとの素材、解析JSON、演出意図、クレジット、手動タイミングを持つ。
+- Adapter: Web、TouchDesigner、Unityなど、実行環境ごとの接続コードを後付けできるようにする。
+
+今の実装では、まず `manifest.json` と `?song=` により曲データの外部化を始めています。次の段階で、Shining Star固有の演出を曲側の Web adapter へ移す予定です。

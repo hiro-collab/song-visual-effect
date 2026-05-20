@@ -796,9 +796,11 @@ const boot = async () => {
   lyricAdjustments = readAdjustments();
   rebuildWorkingLyrics();
   ramp = new ColorRamp(musicMap.palette);
-  const audioPath = await findBundledAudio();
+  const audioPath = await findBundledAudio(musicMap);
   if (audioPath) audio.src = audioPath;
-  dataStatus.textContent = musicMap.warnings.length ? musicMap.warnings.join(" / ") : "Songle ready";
+  dataStatus.textContent = musicMap.warnings.length
+    ? `${musicMap.title}: ${musicMap.warnings.join(" / ")}`
+    : `${musicMap.title}: song pack ready`;
   timingLast.textContent = manualKeyframes.length
     ? "保存済みの手動キーフレームを読み込みました"
     : "Off: ボタンまたはTで調整モード";

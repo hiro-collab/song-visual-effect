@@ -5,6 +5,8 @@ dist/
 # Do not commit licensed music assets into the repository.
 music_src/audio/*
 !music_src/audio/.gitkeep
+song-packs/*/audio/*
+!song-packs/*/audio/.gitkeep
 
 .DS_Store
 Thumbs.db

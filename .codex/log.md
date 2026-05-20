@@ -50,3 +50,17 @@
   - The active lyric display reads from adjusted stone timing immediately, so live adjustment does not require reloading JSON.
 - Added sequence-bar seeking. Clicking or dragging the lyric sequence bar updates `audio.currentTime` when audio is loaded, or the internal playback clock when no audio source is present.
 - Added Space key playback toggle, while preserving normal typing behavior when form controls are focused.
+
+## 2026-05-20
+
+- User asked to separate reusable system code from song-specific application code.
+- Clarified design principle: the system server must be a helper runtime, not a controller that forces a song into one model. Other runtimes and adapters must remain possible.
+- Before refactor, committed current adjusted lyric timing data:
+  - `87c4c25 Add adjusted lyric timing data`
+- Started manifest/song-package separation:
+  - Added `music_src/manifest.json` for backward-compatible single-server use.
+  - Added `song-packs/shining-star/manifest.json` for separate song-pack server use.
+  - Copied lyrics and analysis JSON into `song-packs/shining-star`.
+  - Added `CREDITS.md` and `design/cues.json`.
+  - Added a Node static song-pack server with CORS support: `scripts/serve-song-packs.mjs`.
+  - Added `npm run dev:system` and `npm run dev:songs`.

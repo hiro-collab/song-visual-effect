@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "dev:system": "vite --host 127.0.0.1",
+    "dev:songs": "node scripts/serve-song-packs.mjs",
     "build": "tsc --noEmit && vite build",
     "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1"
   },
@@ -13,4 +15,3 @@
     "vite": "^6.3.5"
   }
 }
-

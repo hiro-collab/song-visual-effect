@@ -1,10 +1,13 @@
-import type { Beat, LyricCue, Markers, MusicMap, Palette, Range } from "../types";
+import type { Beat, LyricCue, Markers, MusicMap, Palette, Range, SongManifest } from "../types";
 import { DEFAULT_PALETTE } from "../effects/palette";
 
 const JSON_HEADERS = { Accept: "application/json" };
+const DEFAULT_MANIFEST_PATH = "/manifest.json";
 
-const fetchText = async (paths: string[]) => {
-  for (const path of paths) {
+const compactPaths = (paths: Array<string | null | undefined>) => paths.filter((path): path is string => Boolean(path));
+
+const fetchText = async (paths: Array<string | null | undefined>) => {
+  for (const path of compactPaths(paths)) {
     try {
       const response = await fetch(path, { cache: "no-store" });
       if (response.ok) return await response.text();
@@ -15,8 +18,8 @@ const fetchText = async (paths: string[]) => {
   return "";
 };
 
-const fetchJson = async <T>(paths: string[]): Promise<T | null> => {
-  for (const path of paths) {
+const fetchJson = async <T>(paths: Array<string | null | undefined>): Promise<T | null> => {
+  for (const path of compactPaths(paths)) {
     try {
       const response = await fetch(path, { headers: JSON_HEADERS, cache: "no-store" });
       if (response.ok) return (await response.json()) as T;
@@ -26,6 +29,38 @@ const fetchJson = async <T>(paths: string[]): Promise<T | null> => {
   }
   return null;
 };
+
+const absoluteUrl = (path: string) => new URL(path, window.location.href).toString();
+
+const sourceBaseUrl = (manifestUrl: string) => new URL(".", manifestUrl).toString();
+
+const resolveSourcePath = (baseUrl: string, path: string | null | undefined) => {
+  if (!path) return null;
+  return new URL(path, baseUrl).toString();
+};
+
+const isSongManifest = (value: unknown): value is SongManifest => {
+  if (!value || typeof value !== "object") return false;
+  const manifest = value as Partial<SongManifest>;
+  return typeof manifest.id === "string" && typeof manifest.title === "string" && typeof manifest.artist === "string";
+};
+
+export const getSongManifestUrl = () => {
+  const queryValue = new URLSearchParams(window.location.search).get("song");
+  return absoluteUrl(queryValue || DEFAULT_MANIFEST_PATH);
+};
+
+const loadManifest = async (manifestUrl: string) => {
+  const manifest = await fetchJson<unknown>([manifestUrl]);
+  return isSongManifest(manifest) ? manifest : null;
+};
+
+const sourcePaths = (
+  manifest: SongManifest | null,
+  baseUrl: string,
+  sourcePath: string | null | undefined,
+  legacyPaths: string[]
+) => (manifest ? [resolveSourcePath(baseUrl, sourcePath)] : legacyPaths);
 
 const asSeconds = (value: unknown): number | null => {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
@@ -131,13 +166,13 @@ const uniqueSorted = <T>(items: T[], pick: (item: T) => number) => {
   return sorted.filter((item, index) => index === 0 || Math.abs(pick(item) - pick(sorted[index - 1])) > 0.015);
 };
 
-const parseLyricLines = (text: string) => {
+const parseLyricLines = (text: string, title: string) => {
   const lines = text
     .replace(/^\uFEFF/, "")
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line && !line.includes("作詞作曲"));
-  return lines[0] === "シャイニングスター" ? lines.slice(1) : lines;
+  return lines[0] === title || lines[0] === "シャイニングスター" ? lines.slice(1) : lines;
 };
 
 const parseLyrics = (lyricLines: string[], duration: number): LyricCue[] => {
@@ -174,33 +209,41 @@ const generatedChorus = (markers: Markers, duration: number): Range[] => {
   ];
 };
 
-export const loadMusicMap = async (): Promise<MusicMap> => {
+export const loadMusicMap = async (manifestUrl = getSongManifestUrl()): Promise<MusicMap> => {
   const warnings: string[] = [];
+  const resolvedManifestUrl = absoluteUrl(manifestUrl);
+  const manifest = await loadManifest(resolvedManifestUrl);
+  const baseUrl = manifest ? sourceBaseUrl(resolvedManifestUrl) : absoluteUrl("/");
+  const analysis = manifest?.analysis ?? {};
+  if (!manifest) warnings.push("manifest fallback");
+
   const [markers, palette, songJson, beatJson, chorusJson, lyricJson, lyricText] = await Promise.all([
-    fetchJson<Markers>(["/analysis/markers.json"]),
-    fetchJson<Palette>(["/analysis/palette.json"]),
-    fetchJson<Record<string, unknown>>(["/analysis/song.json"]),
-    fetchJson<unknown>(["/analysis/beat.json", "/analysis/songle_beat.json"]),
-    fetchJson<unknown>(["/analysis/chorus.json", "/analysis/songle_chorus.json"]),
-    fetchJson<unknown>(["/analysis/lyrics_timing.json"]),
-    fetchText(["/Lyrics.txt", "/lyrics/Lyrics.txt"])
+    fetchJson<Markers>(sourcePaths(manifest, baseUrl, analysis.markers, ["/analysis/markers.json"])),
+    fetchJson<Palette>(sourcePaths(manifest, baseUrl, analysis.palette, ["/analysis/palette.json"])),
+    fetchJson<Record<string, unknown>>(sourcePaths(manifest, baseUrl, analysis.song, ["/analysis/song.json"])),
+    fetchJson<unknown>(sourcePaths(manifest, baseUrl, analysis.beat, ["/analysis/beat.json", "/analysis/songle_beat.json"])),
+    fetchJson<unknown>(sourcePaths(manifest, baseUrl, analysis.chorus, ["/analysis/chorus.json", "/analysis/songle_chorus.json"])),
+    fetchJson<unknown>(sourcePaths(manifest, baseUrl, analysis.timing, ["/analysis/lyrics_timing.json"])),
+    fetchText(sourcePaths(manifest, baseUrl, manifest?.lyrics, ["/Lyrics.txt", "/lyrics/Lyrics.txt"]))
   ]);
 
   const usableMarkers = markers ?? {};
   const songDuration = songJson ? readNumber(songJson, ["duration", "length"]) : null;
-  const duration = songDuration ?? usableMarkers.estimatedDuration ?? 318;
+  const duration = songDuration ?? manifest?.duration ?? usableMarkers.estimatedDuration ?? 318;
   const beats = beatJson ? collectBeats(beatJson) : [];
   const chorus = chorusJson ? collectRanges(chorusJson) : [];
   const timedLyrics = lyricJson ? collectTimedLyrics(lyricJson) : [];
-  const lyricLines = parseLyricLines(lyricText);
+  const title = manifest?.title ?? "Shining Star";
+  const artist = manifest?.artist ?? "MaouDamashii / Koichi Morita";
+  const lyricLines = parseLyricLines(lyricText, title);
 
   if (!beatJson || beats.length < 8) warnings.push("beat fallback");
   if (!chorusJson || chorus.length === 0) warnings.push("chorus fallback");
   if (!timedLyrics.length) warnings.push("rough lyrics");
 
   return {
-    title: "Shining Star",
-    artist: "MaouDamashii / Koichi Morita",
+    title,
+    artist,
     duration,
     beats: beats.length >= 8 ? beats : generatedBeats(duration),
     chorus: chorus.length ? chorus : generatedChorus(usableMarkers, duration),
@@ -208,18 +251,27 @@ export const loadMusicMap = async (): Promise<MusicMap> => {
     lyricLines,
     markers: usableMarkers,
     palette: palette ?? DEFAULT_PALETTE,
-    warnings
+    warnings,
+    source: {
+      manifestUrl: resolvedManifestUrl,
+      baseUrl,
+      audioUrl: resolveSourcePath(baseUrl, manifest?.audio) ?? undefined,
+      creditsUrl: resolveSourcePath(baseUrl, manifest?.credits) ?? undefined,
+      webAdapterUrl: resolveSourcePath(baseUrl, manifest?.webAdapter) ?? undefined
+    }
   };
 };
 
-export const findBundledAudio = async () => {
+export const findBundledAudio = async (musicMap?: MusicMap) => {
   const paths = [
+    musicMap?.source.audioUrl,
+    "/audio/maou_14_shining_star.mp3",
     "/audio/shining_star.mp3",
     "/audio/ShiningStar.mp3",
     "/shining_star.mp3",
     "/ShiningStar.mp3"
   ];
-  for (const path of paths) {
+  for (const path of compactPaths(paths)) {
     try {
       const response = await fetch(path, { cache: "no-store" });
       const contentType = response.headers.get("content-type") ?? "";

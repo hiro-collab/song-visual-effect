@@ -1,0 +1,24 @@
+{
+  "schema": "music-effect.song-manifest.v1",
+  "id": "shining-star",
+  "title": "Shining Star",
+  "artist": "MaouDamashii / Koichi Morita",
+  "credits": "./CREDITS.md",
+  "lyrics": "./Lyrics.txt",
+  "analysis": {
+    "song": "./analysis/song.json",
+    "beat": "./analysis/beat.json",
+    "chord": "./analysis/chord.json",
+    "melody": "./analysis/melody.json",
+    "chorus": "./analysis/chorus.json",
+    "timing": "./analysis/lyrics_timing.json",
+    "markers": "./analysis/markers.json",
+    "palette": "./analysis/palette.json"
+  },
+  "audio": "./audio/maou_14_shining_star.mp3",
+  "design": {
+    "effect": "./design/effect_design.md",
+    "cues": "./design/cues.json"
+  },
+  "webAdapter": null
+}

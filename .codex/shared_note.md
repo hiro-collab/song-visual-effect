@@ -8,9 +8,11 @@ Build a web-based interactive music effect for MaouDamashii "Shining Star" using
 
 - Workspace: `C:\Users\kawai\works\music-effect`
 - Existing source folder: `music_src`
+- New portable song package folder: `song-packs/shining-star`
 - Existing lyrics file: `music_src/Lyrics.txt`
 - The lyrics text is UTF-8. Be careful not to corrupt Japanese text when reading or editing.
-- Songle JSON has not been downloaded yet.
+- Songle JSON has been downloaded into `music_src/analysis` and copied into `song-packs/shining-star/analysis`.
+- Current adjusted lyric timing data is committed at `music_src/analysis/lyrics_timing.json`.
 
 ## Songle Source
 
@@ -59,6 +61,23 @@ The user wants this to become usable in live/event contexts:
 - Color options/presets to match the venue mood.
 
 Current priority: build the base system first, then add those live controls iteratively.
+
+## Runtime / Song Package Separation
+
+Design principle from user:
+
+- The system server must not constrain each song's application or performance design.
+- It should provide helpers only: transport, frame loop, input, asset loading, storage, fullscreen, and optional timing tools.
+- Song-specific meaning, materials, timing, credits, and effect intent belong to the song package.
+- If another runtime is better for a song, the package should allow that. Web, TouchDesigner, Unity, OBS, or another system should be possible through adapters.
+
+Current implementation direction:
+
+- `manifest.json` is the song package entrypoint.
+- The system can load a song with `?song=<manifest-url>`.
+- `song-packs` can be served separately with CORS by `npm run dev:songs`.
+- Existing `music_src` remains as a compatibility public directory for the current Vite app.
+- Next architectural step after manifest loading: move Shining Star specific effect wiring into a web adapter, leaving the system host thinner.
 
 ## Manual Lyric Timing
 
