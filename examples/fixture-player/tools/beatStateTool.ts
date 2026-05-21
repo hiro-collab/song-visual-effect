@@ -36,7 +36,7 @@ export class BeatStateTool {
   constructor(private readonly options: BeatStateToolOptions) {
     const usesFallback = options.musicMap.warnings.includes("beat fallback");
     const source: BeatSyncSource = {
-      label: usesFallback ? "Fallback beats" : "Analysis beats",
+      label: usesFallback ? "仮ビート / Fallback" : "解析ビート / Analysis",
       isFallback: usesFallback
     };
     this.reader = createBeatSyncReader({
@@ -64,27 +64,27 @@ export class BeatStateTool {
     this.next.textContent = nextIndex === null ? "--" : `#${nextIndex}`;
     this.phase.textContent = formatPhase(state.phase);
     this.bpm.textContent = formatBpm(state.estimatedBpm);
-    this.near.textContent = state.isNearBeat ? "near" : "--";
-    this.enter.textContent = state.didEnterBeat ? "entered" : "--";
+    this.near.textContent = state.isNearBeat ? "近い / near" : "--";
+    this.enter.textContent = state.didEnterBeat ? "進入 / enter" : "--";
   }
 
   private buildPanel() {
     this.panel.className = "beat-state-panel";
-    this.panel.setAttribute("aria-label", "Beat state monitor");
+    this.panel.setAttribute("aria-label", "拍状態モニター");
     this.panel.innerHTML = `
       <div class="beat-state-head">
         <div>
-          <strong>Beat State</strong>
+          <strong>拍状態 / Beat State</strong>
         </div>
       </div>
       <dl class="beat-state-grid">
-        <div><dt>Source</dt><dd data-slot="source"></dd></div>
-        <div><dt>Beat</dt><dd data-slot="beat"></dd></div>
-        <div><dt>Next</dt><dd data-slot="next"></dd></div>
-        <div><dt>Phase</dt><dd data-slot="phase"></dd></div>
+        <div><dt>出所</dt><dd data-slot="source"></dd></div>
+        <div><dt>拍</dt><dd data-slot="beat"></dd></div>
+        <div><dt>次</dt><dd data-slot="next"></dd></div>
+        <div><dt>位相</dt><dd data-slot="phase"></dd></div>
         <div><dt>BPM</dt><dd data-slot="bpm"></dd></div>
-        <div><dt>Near</dt><dd data-slot="near"></dd></div>
-        <div><dt>Enter</dt><dd data-slot="enter"></dd></div>
+        <div><dt>拍近傍</dt><dd data-slot="near"></dd></div>
+        <div><dt>拍進入</dt><dd data-slot="enter"></dd></div>
       </dl>
     `;
     this.source = this.slot("source");

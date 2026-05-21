@@ -39,6 +39,10 @@ export type BeatSyncState = {
 
 const DEFAULT_HIT_WINDOW = 0.08;
 const DEFAULT_SOURCE: BeatSyncSource = { label: "beats" };
+type NormalizedBeatGrid = ReturnType<typeof normalizeBeatGrid>;
+type BeatSyncNormalizedFrameInput = Omit<BeatSyncFrameInput, "beats"> & {
+  beats: NormalizedBeatGrid;
+};
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -81,11 +85,11 @@ export const estimateBeatBpm = (beat: Beat | null, nextBeat: Beat | null) => {
   return interval && interval > 0 ? 60 / interval : null;
 };
 
-export const getBeatSyncState = (input: BeatSyncFrameInput): BeatSyncState => {
+const getBeatSyncStateFromGrid = (input: BeatSyncNormalizedFrameInput): BeatSyncState => {
   const rawTime = finiteOr(input.time, 0);
   const offset = finiteOr(input.offset, 0);
   const time = rawTime + offset;
-  const beats = normalizeBeatGrid(input.beats);
+  const beats = input.beats;
   const source = normalizeBeatSyncSource(input.source);
   const hitWindow = Math.max(0, finiteOr(input.hitWindow, DEFAULT_HIT_WINDOW));
 
@@ -141,25 +145,48 @@ export const getBeatSyncState = (input: BeatSyncFrameInput): BeatSyncState => {
   };
 };
 
+export const getBeatSyncState = (input: BeatSyncFrameInput): BeatSyncState => (
+  getBeatSyncStateFromGrid({
+    ...input,
+    beats: normalizeBeatGrid(input.beats)
+  })
+);
+
 export const createBeatSyncReader = (options: BeatSyncReaderOptions) => {
+  const beats = normalizeBeatGrid(options.beats);
   let previousBeatIndex: number | null = null;
+  let previousTime: number | null = null;
 
   return {
     update(): BeatSyncState {
+      const rawTime = finiteOr(options.getTime(), 0);
       const offset = typeof options.offset === "function" ? options.offset() : options.offset;
-      const state = getBeatSyncState({
-        time: options.getTime(),
-        beats: options.beats,
-        offset,
+      const resolvedOffset = finiteOr(offset, 0);
+      const time = rawTime + resolvedOffset;
+      const timeMovedBackward = previousTime !== null && time < previousTime;
+      const previousBeatIndexForState = timeMovedBackward ? null : previousBeatIndex;
+      let state = getBeatSyncStateFromGrid({
+        time: rawTime,
+        beats,
+        offset: resolvedOffset,
         source: options.source,
-        previousBeatIndex,
+        previousBeatIndex: previousBeatIndexForState,
         hitWindow: options.hitWindow
       });
+      const beatIndexMovedBackward =
+        previousBeatIndexForState !== null &&
+        state.beatIndex >= 0 &&
+        state.beatIndex < previousBeatIndexForState;
+      if (beatIndexMovedBackward) {
+        state = { ...state, didEnterBeat: false };
+      }
       previousBeatIndex = state.beatIndex;
+      previousTime = state.time;
       return state;
     },
     reset() {
       previousBeatIndex = null;
+      previousTime = null;
     }
   };
 };

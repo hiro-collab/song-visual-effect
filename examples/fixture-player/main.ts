@@ -33,9 +33,14 @@ const {
 let musicMap: MusicMap;
 let transport: Transport;
 let timingTool: LyricTimingTool;
-let beatStateTool: BeatStateTool;
+let beatStateTool: BeatStateTool | null = null;
 let songContext: SongAdapterContext;
 let songApp: SongApp;
+
+const isBeatStateToolEnabled = () => {
+  const value = new URLSearchParams(window.location.search).get("beatState")?.toLowerCase();
+  return value === "1" || value === "true" || value === "on" || value === "show";
+};
 
 const setPlayingIcon = () => {
   const playing = transport?.isPlaying() ?? false;
@@ -56,7 +61,7 @@ const tick = (_now: number, dt: number) => {
   const time = currentTime() % musicMap.duration;
   const userGlow = Number.parseFloat(glowRange.value);
   songApp.render({ time, dt, userGlow });
-  beatStateTool.update();
+  beatStateTool?.update();
   updateLyrics(time);
 
   const duration = transport.duration(musicMap.duration);
@@ -125,13 +130,15 @@ const boot = async () => {
       onSeek: updateLyrics,
       resetVisualTiming: () => songApp.resetVisualTiming?.()
     });
-    beatStateTool = new BeatStateTool({
-      musicMap,
-      getTime: () => currentTime() % musicMap.duration
-    });
     songApp.resize();
     setupInput();
-    beatStateTool.mount(document.querySelector("#app") ?? document.body);
+    if (isBeatStateToolEnabled()) {
+      beatStateTool = new BeatStateTool({
+        musicMap,
+        getTime: () => currentTime() % musicMap.duration
+      });
+      beatStateTool.mount(document.querySelector("#app") ?? document.body);
+    }
     timingTool.bindControls();
     timingTool.initialize();
     const audioPath = await findBundledAudio(musicMap);

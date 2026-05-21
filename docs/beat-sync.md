@@ -1,31 +1,32 @@
 # Beat Sync Kit
 
-Beat sync is a system-kit helper for reading beat state from a normalized beat
-grid. It is not a song renderer, tap-alignment controller, DOM widget, or
-Songle JSON parser.
+Beat Sync Kit は、正規化済みの beat 配列から現在の拍状態を読むための
+`system/kit` helper です。曲の描画、tap 補正、DOM UI、Songle JSON の
+parser ではありません。
 
-The goal is to let a song app opt into beat-aware behavior without making the
-system host decide how that song should look.
+目的は、曲アプリが必要なときだけ beat-aware な演出を使えるようにすることです。
+system host 側が曲ごとの見た目や演出判断を決めないよう、小さい補助機能として
+切り出しています。
 
-## Responsibilities
+## 役割
 
-`system/kit/beatSync.ts` does:
+`system/kit/beatSync.ts` が行うこと:
 
-- accept a current time source
-- accept normalized beat objects
-- apply an optional offset in seconds
-- return current beat state
-- report source metadata such as `Analysis beats` or `Fallback beats`
+- 現在再生時刻を受け取る
+- 正規化済みの `Beat[]` を受け取る
+- 任意の offset 秒数を適用する
+- 現在の拍状態を返す
+- `解析ビート` や `仮ビート` などの source 情報を返す
 
-It does not:
+行わないこと:
 
-- fetch external URLs
-- parse a specific service's JSON shape
-- analyze audio files or waveforms
-- save files
-- touch DOM, Canvas, or song-specific renderer code
+- 外部 URL を取得する
+- 特定サービスの JSON 構造を読む
+- 音源ファイルや波形を解析する
+- ファイルへ保存する
+- DOM、Canvas、曲固有 renderer に触る
 
-## Basic Use
+## 基本的な使い方
 
 ```ts
 import { createBeatSyncReader } from "../../system/kit";
@@ -35,7 +36,7 @@ const beatSync = createBeatSyncReader({
   beats: musicMap.beats,
   offset: 0,
   source: {
-    label: musicMap.warnings.includes("beat fallback") ? "Fallback beats" : "Analysis beats",
+    label: musicMap.warnings.includes("beat fallback") ? "仮ビート" : "解析ビート",
     isFallback: musicMap.warnings.includes("beat fallback")
   }
 });
@@ -43,37 +44,42 @@ const beatSync = createBeatSyncReader({
 const state = beatSync.update();
 ```
 
-`state` contains:
+`state` には次の情報が入ります。
 
 - `beatIndex`
 - `beat`
 - `nextBeat`
-- `phase` from `0..1`
+- `phase`: `0..1`
 - `isNearBeat`
 - `didEnterBeat`
 - `estimatedBpm`
 - `source`
-- `rawTime`, `time`, and `offset`
+- `rawTime`, `time`, `offset`
 
-Use `getBeatSyncState()` directly when a pure function is easier than a
-stateful reader.
+純粋関数として扱いたい場合は `getBeatSyncState()` を直接使えます。
+`createBeatSyncReader()` は作成時に beat 配列を正規化して保持するため、
+毎フレーム `normalizeBeatGrid()` を呼びません。beat 配列を差し替える場合は
+reader を作り直してください。
 
-## Beat Hit Semantics
+## Beat Hit の意味
 
-The helper separates two different ideas that are easy to accidentally mix:
+拍の判定は、似ているけれど用途が違う 2 つの値に分けています。
 
-- `isNearBeat`: true while `time` is within `hitWindow` seconds after the
-  current beat. This can be computed by the pure `getBeatSyncState()` call.
-- `didEnterBeat`: true only on the frame where a stateful reader observes the
-  current `beatIndex` advance from the previous update.
+- `isNearBeat`: 現在の `time` が拍から `hitWindow` 秒以内にいる間 `true`。
+  `getBeatSyncState()` の純粋関数呼び出しだけで計算できます。
+- `didEnterBeat`: stateful reader が前回 update から `beatIndex` の前進を
+  観測したフレームだけ `true`。一拍につき一度だけ発火させたい演出向けです。
 
-Use `isNearBeat` for glow windows, meters, or forgiving UI. Use
-`didEnterBeat` for one-shot triggers that must fire once per beat.
+発光の幅、メーター、曖昧さを許す UI には `isNearBeat` を使います。
+一度だけ鳴らす・出す・切り替える処理には `didEnterBeat` を使います。
+
+曲時間が末尾から先頭に戻った場合や、シークで時刻または `beatIndex` が
+巻き戻った場合、reader は前回拍をリセットします。そのフレームでは
+`didEnterBeat` を出さず、次に beat index が前進したときから再び発火します。
 
 ## Beat Input
 
-The kit expects beat objects that are already normalized into the project beat
-shape:
+kit が期待する beat は、プロジェクト共通の `Beat` 形に正規化済みの配列です。
 
 ```ts
 type Beat = {
@@ -84,32 +90,40 @@ type Beat = {
 };
 ```
 
-Times are seconds. Beat arrays should be sorted by `time`, although
-`normalizeBeatGrid()` can sanitize and sort a copy.
+時刻は秒です。配列は `time` 昇順が望ましいですが、`normalizeBeatGrid()` は
+コピーを作って sanitize と sort を行えます。
 
-Song-specific JSON formats remain outside this module. A song package or thin
-adapter should map Songle, hand-authored, or other beat data into `Beat[]`
-before calling the kit.
+Songle など曲ごとの JSON 形式は、この module の外側で扱います。曲パッケージ
+または薄い adapter が、Songle、手入力、その他の beat データを `Beat[]` に
+読み替えてから kit に渡してください。
 
 ## Fixture Player Tool
 
-The fixture player mounts a minimal optional monitor from
-`examples/fixture-player/tools/beatStateTool.ts`. It shows:
+fixture player には、診断用の optional tool として
+`examples/fixture-player/tools/beatStateTool.ts` があります。
 
-- source label
-- current beat
-- next beat
-- phase
-- estimated BPM
+通常は表示されません。確認したいときだけ URL に `beatState=1` を付けます。
+
+```text
+http://127.0.0.1:5173/?song=<manifest-url>&beatState=1
+```
+
+表示する情報:
+
+- 出所
+- 現在の拍
+- 次の拍
+- 位相
+- 推定 BPM
 - `isNearBeat`
 - `didEnterBeat`
 
-The tool is diagnostic only. It does not alter playback, lyrics, visual timing,
-or song renderer behavior.
+この tool は診断表示のみです。再生、歌詞、映像時刻、曲 renderer の挙動は
+変更しません。
 
-## Safety
+## 安全制約
 
-- Do not analyze audio waveform data.
-- Do not use music files for AI training.
-- Pass beat data from existing JSON, manual input, or song-owned adapters.
-- Keep tap alignment and feedback control as a separate optional layer.
+- 音源波形を解析しない
+- 音楽ファイルを AI 学習に使わない
+- beat 情報は既存 JSON、手入力、または曲側 adapter から渡す
+- tap 補正や feedback control は別の optional layer として扱う
