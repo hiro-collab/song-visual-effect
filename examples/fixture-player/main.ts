@@ -10,6 +10,7 @@ import { createSongApp } from "./adapters/registry";
 import type { SongApp } from "../../system/kit/songApp";
 import { lyricAt } from "../../system/kit/timing";
 import { LyricTimingTool } from "./tools/lyricTimingTool";
+import { BeatStateTool } from "./tools/beatStateTool";
 
 const elements = getAppElements();
 const {
@@ -32,6 +33,7 @@ const {
 let musicMap: MusicMap;
 let transport: Transport;
 let timingTool: LyricTimingTool;
+let beatStateTool: BeatStateTool;
 let songContext: SongAdapterContext;
 let songApp: SongApp;
 
@@ -54,6 +56,7 @@ const tick = (_now: number, dt: number) => {
   const time = currentTime() % musicMap.duration;
   const userGlow = Number.parseFloat(glowRange.value);
   songApp.render({ time, dt, userGlow });
+  beatStateTool.update();
   updateLyrics(time);
 
   const duration = transport.duration(musicMap.duration);
@@ -122,8 +125,13 @@ const boot = async () => {
       onSeek: updateLyrics,
       resetVisualTiming: () => songApp.resetVisualTiming?.()
     });
+    beatStateTool = new BeatStateTool({
+      musicMap,
+      getTime: () => currentTime() % musicMap.duration
+    });
     songApp.resize();
     setupInput();
+    beatStateTool.mount(document.querySelector("#app") ?? document.body);
     timingTool.bindControls();
     timingTool.initialize();
     const audioPath = await findBundledAudio(musicMap);

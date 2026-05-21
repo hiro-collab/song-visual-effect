@@ -30,6 +30,14 @@ export type { SongApp, SongAppFactory, SongAppFrame, SongAppServices } from "./s
 export { Transport } from "./transport";
 export { startFrameLoop } from "./frameLoop";
 export { activeRange, beatAt, emphasisAt, lyricAt, lyricIndexAt } from "./timing";
+export type { BeatSyncFrameInput, BeatSyncReaderOptions, BeatSyncSource, BeatSyncState } from "./beatSync";
+export {
+  createBeatSyncReader,
+  estimateBeatBpm,
+  getBeatSyncState,
+  normalizeBeatGrid,
+  normalizeBeatSyncSource
+} from "./beatSync";
 export {
   applyLyricAdjustments,
   buildLyricsFromKeyframes,
