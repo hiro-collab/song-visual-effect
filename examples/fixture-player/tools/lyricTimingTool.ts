@@ -295,7 +295,7 @@ export class LyricTimingTool {
   private ensureSequenceElements() {
     const elements = this.options.elements;
     if (this.sequenceStoneElements.length === this.workingLyrics.length) return;
-    elements.sequenceStones.innerHTML = "";
+    elements.sequenceStones.replaceChildren();
     this.sequenceStoneElements = this.workingLyrics.map((cue, index) => {
       const ghost = document.createElement("div");
       const link = document.createElement("div");

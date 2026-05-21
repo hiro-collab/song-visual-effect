@@ -22,6 +22,17 @@ const formatBpm = (bpm: number | null) => (bpm === null ? "--" : bpm.toFixed(1))
 
 const formatPhase = (phase: number) => `${Math.round(phase * 100)}%`;
 
+const make = <K extends keyof HTMLElementTagNameMap>(
+  tagName: K,
+  options: { className?: string; text?: string; slot?: string } = {}
+) => {
+  const element = document.createElement(tagName);
+  if (options.className) element.className = options.className;
+  if (options.text !== undefined) element.textContent = options.text;
+  if (options.slot) element.dataset.slot = options.slot;
+  return element;
+};
+
 export class BeatStateTool {
   private readonly reader;
   private readonly panel = document.createElement("aside");
@@ -71,22 +82,27 @@ export class BeatStateTool {
   private buildPanel() {
     this.panel.className = "beat-state-panel";
     this.panel.setAttribute("aria-label", "拍状態モニター");
-    this.panel.innerHTML = `
-      <div class="beat-state-head">
-        <div>
-          <strong>拍状態 / Beat State</strong>
-        </div>
-      </div>
-      <dl class="beat-state-grid">
-        <div><dt>出所</dt><dd data-slot="source"></dd></div>
-        <div><dt>拍</dt><dd data-slot="beat"></dd></div>
-        <div><dt>次</dt><dd data-slot="next"></dd></div>
-        <div><dt>位相</dt><dd data-slot="phase"></dd></div>
-        <div><dt>BPM</dt><dd data-slot="bpm"></dd></div>
-        <div><dt>拍近傍</dt><dd data-slot="near"></dd></div>
-        <div><dt>拍進入</dt><dd data-slot="enter"></dd></div>
-      </dl>
-    `;
+    const head = make("div", { className: "beat-state-head" });
+    const titleWrap = make("div");
+    titleWrap.append(make("strong", { text: "拍状態 / Beat State" }));
+    head.append(titleWrap);
+
+    const grid = make("dl", { className: "beat-state-grid" });
+    for (const [label, slot] of [
+      ["出所", "source"],
+      ["拍", "beat"],
+      ["次", "next"],
+      ["位相", "phase"],
+      ["BPM", "bpm"],
+      ["拍近傍", "near"],
+      ["拍進入", "enter"]
+    ] as const) {
+      const row = make("div");
+      row.append(make("dt", { text: label }), make("dd", { slot }));
+      grid.append(row);
+    }
+
+    this.panel.replaceChildren(head, grid);
     this.source = this.slot("source");
     this.beat = this.slot("beat");
     this.next = this.slot("next");
