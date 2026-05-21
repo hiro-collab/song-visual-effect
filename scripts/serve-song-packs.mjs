@@ -1,4 +1,4 @@
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, realpathSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,12 +8,7 @@ const root = resolve(__dirname, "..", "song-packs");
 const port = Number(process.env.SONG_PACK_PORT ?? 5174);
 const host = process.env.SONG_PACK_HOST ?? "127.0.0.1";
 const defaultCorsOrigins = "http://127.0.0.1:5173,http://localhost:5173";
-const allowedCorsOrigins = new Set(
-  (process.env.SONG_PACK_CORS_ORIGINS ?? defaultCorsOrigins)
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean)
-);
+const realRoot = realpathSync(root);
 
 const mimeTypes = new Map([
   [".json", "application/json; charset=utf-8"],
@@ -36,12 +31,44 @@ const baseSecurityHeaders = {
 };
 
 const assertLoopbackHost = (value, label) => {
-  if (!["127.0.0.1", "localhost", "::1"].includes(value)) {
+  const normalized = value.toLowerCase().replace(/^\[(.*)\]$/, "$1");
+  if (!["127.0.0.1", "localhost", "::1"].includes(normalized)) {
     throw new Error(`${label} must be a loopback host. Refusing to bind to ${value}.`);
   }
 };
 
 assertLoopbackHost(host, "SONG_PACK_HOST");
+
+if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+  throw new Error("SONG_PACK_PORT must be a TCP port number.");
+}
+
+const isInside = (parent, child) => {
+  const baseKey = process.platform === "win32" ? parent.toLowerCase() : parent;
+  const targetKey = process.platform === "win32" ? child.toLowerCase() : child;
+  return targetKey === baseKey || targetKey.startsWith(`${baseKey}${sep}`);
+};
+
+const normalizeCorsOrigin = (origin) => {
+  const trimmed = origin.trim();
+  if (!trimmed) return null;
+  const url = new URL(trimmed);
+  if (!["http:", "https:"].includes(url.protocol)) {
+    throw new Error(`SONG_PACK_CORS_ORIGINS must use http or https: ${trimmed}`);
+  }
+  if (url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+    throw new Error(`SONG_PACK_CORS_ORIGINS must contain origins only: ${trimmed}`);
+  }
+  assertLoopbackHost(url.hostname, "SONG_PACK_CORS_ORIGINS");
+  return url.origin;
+};
+
+const allowedCorsOrigins = new Set(
+  (process.env.SONG_PACK_CORS_ORIGINS ?? defaultCorsOrigins)
+    .split(",")
+    .map(normalizeCorsOrigin)
+    .filter(Boolean)
+);
 
 const corsHeadersFor = (request) => {
   const origin = request.headers.origin;
@@ -91,11 +118,23 @@ const filePathFor = (pathname) => {
   const relative = normalized.replace(/^[/\\]+/, "");
   if (relative.split(/[\\/]+/).some((segment) => segment.startsWith("."))) return null;
   const resolved = resolve(join(root, relative));
-  return resolved === root || resolved.startsWith(`${root}${sep}`) ? resolved : null;
+  return isInside(root, resolved) ? resolved : null;
 };
 
 const serveFile = (request, response, filePath) => {
-  const stats = statSync(filePath);
+  let realFilePath;
+  try {
+    realFilePath = realpathSync(filePath);
+  } catch {
+    send(request, response, 404, "Not found");
+    return;
+  }
+  if (!isInside(realRoot, realFilePath)) {
+    send(request, response, 404, "Not found");
+    return;
+  }
+
+  const stats = statSync(realFilePath);
   if (!stats.isFile()) {
     send(request, response, 404, "Not found");
     return;
@@ -135,7 +174,7 @@ const serveFile = (request, response, filePath) => {
       response.end();
       return;
     }
-    createReadStream(filePath, { start, end }).pipe(response);
+    createReadStream(realFilePath, { start, end }).pipe(response);
     return;
   }
 
@@ -147,7 +186,7 @@ const serveFile = (request, response, filePath) => {
     response.end();
     return;
   }
-  createReadStream(filePath).pipe(response);
+  createReadStream(realFilePath).pipe(response);
 };
 
 const server = createServer((request, response) => {

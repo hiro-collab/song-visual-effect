@@ -27,7 +27,9 @@
 - JSONとテキスト取得はサイズ上限を持ち、巨大レスポンスをそのまま処理しません。
 - 同梱音源の自動検出はHEADまたはRange probeだけを使い、確認目的で音源全体を読みません。
 - song-pack server のCORSは既定で fixture player のoriginだけを許可します。
+- song-pack server のCORS許可originは、loopback の `http:` / `https:` originだけに限定します。
 - song-pack server は隠しファイルと未許可拡張子を配信しません。
+- song-pack server は配信直前に実パスを確認し、シンボリックリンクやジャンクションで `song-packs/` 外へ出るファイルを配信しません。
 - dev manager の状態変更APIは、同一origin相当のブラウザリクエストだけを受け付けます。
 - dev manager のログ表示は `textContent` / DOM生成で行い、HTMLとして解釈しません。
 - Launch Manager の管理画面はCSP、frame拒否、権限拒否ヘッダーを付け、同一originのAPIだけに接続します。
