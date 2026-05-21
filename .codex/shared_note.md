@@ -159,3 +159,9 @@ If the user asks for a new song effect, keep the first pass independent and song
 - Use `npm run sync:check` at the start of work and at safe stopping points.
 - Use `npm run sync:ready -- -m "short message"` after a clean commit that other worktrees may merge.
 - See `docs/worktree-sync.md` for the ready/check/merge flow.
+
+## Structure Cleanup Note
+
+- For docs, start at `docs/README.md`; it separates source-of-truth docs from working notes.
+- `examples/fixture-player` is still useful for regression checks, but it is not a template for new song visuals.
+- Launch Manager UI code lives in `scripts/launch-manager/ui.mjs`; API/security/routing stay in `scripts/launch-manager/server.mjs`.

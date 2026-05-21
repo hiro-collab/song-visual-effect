@@ -117,3 +117,10 @@
 - Merged loopback hardening from `codex/download-security`.
 - Dev servers reject non-loopback host binding.
 - Asset loading and security docs were updated to keep local development servers private by default.
+
+## 2026-05-21 Structure Cleanup
+
+- Added `docs/README.md` as the documentation map so agents can distinguish source-of-truth docs from handoff/planning notes.
+- Added `examples/fixture-player/README.md` to make clear that the fixture player is a regression/example app, not a song template.
+- Split Launch Manager server concerns: `scripts/launch-manager/server.mjs` now handles API/security/routing, while `scripts/launch-manager/ui.mjs` owns the HTML/CSS/client JS.
+- Removed the local empty `src/` directory tree from this worktree so old layout artifacts do not mislead future agents.

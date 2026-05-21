@@ -1,6 +1,6 @@
 # AGENTS.md
 
-このリポジトリで作業するCodex/エージェント向けの入口です。詳細をここに詰め込みすぎず、必要な設計情報は `docs/` を読んでください。
+このリポジトリで作業するCodex/エージェント向けの入口です。詳細をここに詰め込みすぎず、必要な設計情報は `docs/` を読んでください。どの文書を正本として読むか迷った場合は、まず `docs/README.md` を確認してください。
 
 ## 作業の基本方針
 
@@ -24,6 +24,7 @@
 
 まず次だけを読む。
 
+- `docs/README.md`: docs内の正本と作業メモの読み分け。
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。
 - `docs/song-visual-independence.md`: 既存fixtureの見た目に引っ張られないためのチェックリスト。
@@ -46,6 +47,7 @@
 必要に応じて次を読む。
 
 - `README.md`: 起動方法と利用方法。
+- `docs/README.md`: docs内の正本、作業メモ、可視化資料の読み分け。
 - `docs/thread-start.md`: 新しいスレッドの開始手順とready通知への対応。
 - `docs/handoff.md`: 現在状態と次にやるべきこと。
 - `docs/architecture.md`: 全体構成と処理の流れ。
@@ -90,3 +92,4 @@
 - `music_src/` は廃止済み。`song-packs/` を曲データ本体として扱う。
 - `docs/handoff.md` と必要に応じて `docs/plans.md` / `docs/known-issues.md` を更新する。
 - UIやフローを変えた場合は `docs/workflows.json` も更新する。
+- 恒久的な仕様変更は作業メモだけに置かず、`docs/README.md` で案内される正本側へ反映する。

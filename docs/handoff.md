@@ -2,7 +2,7 @@
 
 このファイルは、システム改修や既存機能修正を引き継ぐためのメモです。
 
-新しい曲を作る場合は、このファイルを入口にしないでください。既存fixtureの情報に触れて設計が引っ張られる可能性があります。新しい曲作成では、まず `docs/system-overview.md` と `docs/song-authoring.md` だけを読んでください。
+新しい曲を作る場合は、このファイルを入口にしないでください。既存fixtureの情報に触れて設計が引っ張られる可能性があります。docsの読み分けは `docs/README.md`、新しい曲作成では `docs/system-overview.md` と `docs/song-authoring.md` を入口にしてください。
 
 例外的な引き継ぎ:
 
@@ -33,6 +33,8 @@
 - 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
+- docsの読み分けを `docs/README.md` に集約し、`examples/fixture-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
+- Launch ManagerのHTTP API本体と管理画面HTMLを分け、`scripts/launch-manager/server.mjs` と `scripts/launch-manager/ui.mjs` に整理した。
 
 ## 新しいスレッドの開始手順
 
@@ -54,6 +56,7 @@ ready通知は「必ずmerge」ではなく「取り込み候補」です。syst
 - 新しい曲作成の入口は `docs/system-overview.md` と `docs/song-authoring.md`。
 - 新しい曲の視覚実装は `docs/song-visual-independence.md` と `templates/neutral-song-app/` から始め、`examples/fixture-player/renderers/*` や `examples/fixture-player/effects/*` をテンプレートにしない。
 - 既存曲を見るのは、その曲自体の修正、回帰確認、またはユーザーの明示許可がある場合だけ。
+- docsの正本と作業メモの読み分けは `docs/README.md` を優先する。
 
 ## 重要な制約
 
