@@ -52,9 +52,12 @@ npm run dev
 
 ## System-Neutral Docs
 
+docsの読み分けで迷ったら、まず `docs/README.md` を見てください。
+
 新しい曲を作るときは、既存の曲パッケージを読まず、まず次を読んでください。
 
 ```text
+docs/README.md
 docs/system-overview.md
 docs/song-authoring.md
 docs/song-visual-independence.md

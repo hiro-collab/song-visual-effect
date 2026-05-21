@@ -26,6 +26,7 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 
 現在の対策:
 
+- `docs/README.md` に、正本として読むdocsと作業メモの違いを整理した。
 - `docs/system-overview.md` を特定曲に依存しない入口にする。
 - `docs/song-authoring.md` に「既存曲を見ずに作る」ルールを書く。
 - `AGENTS.md` に、新しい曲作成時は既存の `song-packs/*` を読まないと明記する。
@@ -48,6 +49,7 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 
 - 煮ル果実「トラフィック・ジャム」の再実装方針を `docs/traffic-jam-redo-brief.md` に分離した。
 - `docs/song-visual-independence.md` を追加した。
+- `examples/fixture-player/README.md` に、fixture playerが標準UI/標準rendererではないことを明記した。
 - `templates/neutral-song-app/` に空のadapter scaffoldとvisual briefを追加した。
 - 新曲作成時は、既存 `song-packs/*` だけでなく、既存fixture rendererの構図もテンプレート扱いしない。
 - `SoftLightRenderer` 的な表現を使う場合は、意図して使う理由を先に明文化する。
@@ -93,6 +95,7 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 - loopback host以外へのbindを起動時に拒否する。
 - 状態変更APIは同一origin相当のブラウザリクエストだけを受け付ける。
 - ログはHTMLとして解釈せず、テキストとして表示する。
+- HTTP API本体と管理画面HTMLを `scripts/launch-manager/server.mjs` / `scripts/launch-manager/ui.mjs` に分割した。
 
 次の改善:
 

@@ -32,6 +32,7 @@
 system kitを使った動作確認用アプリです。新しい曲のテンプレートではありません。
 
 - `examples/fixture-player/main.ts`: fixture playerの入口。DOM取得、起動、入力登録、transport、fixture adapter、optional toolを接続する。
+- `examples/fixture-player/README.md`: fixture playerが標準テンプレートではないことを明示する注意書き。
 - `examples/fixture-player/styles.css`: fixture playerの見た目。Canvas上の歌詞、操作バー、Lyric Timingパネル、シーケンスバーなど。
 - `examples/fixture-player/dom.ts`: fixture playerのDOM要素を取得する。
 - `examples/fixture-player/adapters/registry.ts`: fixture player内で使う中立的な `builtin:` adapter registry。曲固有adapterはここに増やさない。
@@ -59,7 +60,8 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
 - `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。
-- `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP APIとHTML GUI。
+- `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP API、origin検証、CSPつきHTML応答。
+- `scripts/launch-manager/ui.mjs`: Launch Manager管理画面のHTML、CSS、ブラウザ側JS。
 - `scripts/launch-manager/supervisor.mjs`: managed targetの起動、停止、再起動、状態管理。
 - `scripts/launch-manager/ports.mjs`: 起動前のport衝突確認。
 - `scripts/launch-manager/logs.mjs`: stdout/stderr保存とログ末尾取得。
@@ -78,6 +80,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 
 ## docs
 
+- `docs/README.md`: docs内の正本、作業メモ、可視化資料の読み分け。
 - `docs/thread-start.md`: 新しいCodexスレッドの開始手順。最初に実行する確認、読むファイル、ready通知への対応、merge判断をまとめる。
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。

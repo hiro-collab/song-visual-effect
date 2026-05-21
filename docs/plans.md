@@ -6,6 +6,7 @@
 
 - `docs/workflows.html` / `docs/workflows.json` を必要に応じて更新する。
 - `AGENTS.md` と `docs/handoff.md` を作業後に更新する運用を定着させる。
+- `docs/README.md` をdocs内の読み分け入口として維持する。
 - `docs/system-overview.md` と `docs/song-authoring.md` を、新しい曲作成時の中立入口として維持する。
 - 新しい曲作成では既存の `song-packs/*` を読まない運用を守る。
 - 歌詞タイミングJSONの更新手順を明確にする。
@@ -34,7 +35,7 @@
 次の候補:
 
 - `system/kit/index.ts` で公開API入口を明示した。今後はここを太らせすぎず、必要なhelperだけをexportする。
-- fixture playerのUIやrendererをさらに「例」として隔離する。
+- fixture playerのUIやrendererをさらに「例」として隔離する。`examples/fixture-player/README.md` で標準テンプレートではないことを明示済み。
 - 曲アプリ雛形を作る場合も、既存曲やfixture rendererではなく `templates/neutral-song-app/` の空scaffoldから始める。
 - `docs/song-visual-independence.md` の前作似チェックを新曲実装フローに組み込む。
 
@@ -132,6 +133,7 @@ MVP実装済み。`scripts/dev-manager.mjs` は互換入口として残し、実
 - まずは `npm run dev` でローカル起動管理サーバーを立てる。完了。
 - `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` でworktreeごとにポートをずらせる。完了。
 - 既存 `scripts/dev-manager.mjs` を互換入口として残しつつ、`scripts/launch-manager/` へ分割する。完了。
+- Launch ManagerのHTTP APIと管理画面HTMLを `server.mjs` / `ui.mjs` に分ける。完了。
 - `launch/targets.json` を導入し、targetとsetを宣言的に管理する。完了。
 - GUIでtarget/setの起動、停止、再起動、全停止、PID/port/log/resourceを確認できるようにする。完了。
 - 次段階では、曲ごとの映像サーバーや保存APIをTargetとして追加する。
