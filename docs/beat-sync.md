@@ -49,13 +49,26 @@ const state = beatSync.update();
 - `beat`
 - `nextBeat`
 - `phase` from `0..1`
-- `beatHit`
+- `isNearBeat`
+- `didEnterBeat`
 - `estimatedBpm`
 - `source`
 - `rawTime`, `time`, and `offset`
 
 Use `getBeatSyncState()` directly when a pure function is easier than a
 stateful reader.
+
+## Beat Hit Semantics
+
+The helper separates two different ideas that are easy to accidentally mix:
+
+- `isNearBeat`: true while `time` is within `hitWindow` seconds after the
+  current beat. This can be computed by the pure `getBeatSyncState()` call.
+- `didEnterBeat`: true only on the frame where a stateful reader observes the
+  current `beatIndex` advance from the previous update.
+
+Use `isNearBeat` for glow windows, meters, or forgiving UI. Use
+`didEnterBeat` for one-shot triggers that must fire once per beat.
 
 ## Beat Input
 
@@ -88,7 +101,8 @@ The fixture player mounts a minimal optional monitor from
 - next beat
 - phase
 - estimated BPM
-- hit/listening state
+- `isNearBeat`
+- `didEnterBeat`
 
 The tool is diagnostic only. It does not alter playback, lyrics, visual timing,
 or song renderer behavior.

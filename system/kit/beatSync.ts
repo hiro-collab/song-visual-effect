@@ -31,7 +31,8 @@ export type BeatSyncState = {
   beat: Beat | null;
   nextBeat: Beat | null;
   phase: number;
-  beatHit: boolean;
+  isNearBeat: boolean;
+  didEnterBeat: boolean;
   estimatedBpm: number | null;
   source: BeatSyncSource;
 };
@@ -97,7 +98,8 @@ export const getBeatSyncState = (input: BeatSyncFrameInput): BeatSyncState => {
       beat: null,
       nextBeat: null,
       phase: 0,
-      beatHit: false,
+      isNearBeat: false,
+      didEnterBeat: false,
       estimatedBpm: null,
       source
     };
@@ -119,10 +121,10 @@ export const getBeatSyncState = (input: BeatSyncFrameInput): BeatSyncState => {
     : Math.max(0.001, nextBeat.time);
   const phase = beat ? clamp01((time - beat.time) / interval) : 0;
   const timeSinceBeat = beat ? time - beat.time : Number.POSITIVE_INFINITY;
-  const crossedBeat =
+  const enteredBeat =
     typeof input.previousBeatIndex === "number" &&
     beatIndex >= 0 &&
-    beatIndex !== input.previousBeatIndex;
+    beatIndex > input.previousBeatIndex;
 
   return {
     rawTime,
@@ -132,7 +134,8 @@ export const getBeatSyncState = (input: BeatSyncFrameInput): BeatSyncState => {
     beat,
     nextBeat,
     phase,
-    beatHit: crossedBeat || (timeSinceBeat >= 0 && timeSinceBeat <= hitWindow),
+    isNearBeat: timeSinceBeat >= 0 && timeSinceBeat <= hitWindow,
+    didEnterBeat: enteredBeat,
     estimatedBpm: estimateBeatBpm(beat, nextBeat),
     source
   };

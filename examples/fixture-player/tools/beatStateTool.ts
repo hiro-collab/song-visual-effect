@@ -30,7 +30,8 @@ export class BeatStateTool {
   private next!: HTMLElement;
   private phase!: HTMLElement;
   private bpm!: HTMLElement;
-  private hit!: HTMLElement;
+  private near!: HTMLElement;
+  private enter!: HTMLElement;
 
   constructor(private readonly options: BeatStateToolOptions) {
     const usesFallback = options.musicMap.warnings.includes("beat fallback");
@@ -55,14 +56,16 @@ export class BeatStateTool {
   update() {
     const state = this.reader.update();
     const nextIndex = state.nextBeat ? state.beatIndex + 2 : null;
-    this.panel.classList.toggle("has-hit", state.beatHit);
+    this.panel.classList.toggle("did-enter-beat", state.didEnterBeat);
+    this.panel.classList.toggle("is-near-beat", state.isNearBeat);
     this.panel.classList.toggle("has-fallback-beats", Boolean(state.source.isFallback));
     this.source.textContent = state.source.label;
     this.beat.textContent = formatBeat(state);
     this.next.textContent = nextIndex === null ? "--" : `#${nextIndex}`;
     this.phase.textContent = formatPhase(state.phase);
     this.bpm.textContent = formatBpm(state.estimatedBpm);
-    this.hit.textContent = state.beatHit ? "hit" : "listening";
+    this.near.textContent = state.isNearBeat ? "near" : "--";
+    this.enter.textContent = state.didEnterBeat ? "entered" : "--";
   }
 
   private buildPanel() {
@@ -80,7 +83,8 @@ export class BeatStateTool {
         <div><dt>Next</dt><dd data-slot="next"></dd></div>
         <div><dt>Phase</dt><dd data-slot="phase"></dd></div>
         <div><dt>BPM</dt><dd data-slot="bpm"></dd></div>
-        <div><dt>State</dt><dd data-slot="hit"></dd></div>
+        <div><dt>Near</dt><dd data-slot="near"></dd></div>
+        <div><dt>Enter</dt><dd data-slot="enter"></dd></div>
       </dl>
     `;
     this.source = this.slot("source");
@@ -88,7 +92,8 @@ export class BeatStateTool {
     this.next = this.slot("next");
     this.phase = this.slot("phase");
     this.bpm = this.slot("bpm");
-    this.hit = this.slot("hit");
+    this.near = this.slot("near");
+    this.enter = this.slot("enter");
   }
 
   private slot(name: string) {
