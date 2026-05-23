@@ -129,4 +129,5 @@
 
 - Extended `scripts/worktree-sync.mjs` with `note` and `inbox` commands for commit-free coordination between parallel Codex worktrees.
 - `sync:ready` remains the signal for mergeable commits. `sync:note` is for questions, blockers, done notices, and short system-wide messages.
+- Added explicit note sender labels via `--from <sender-label>` so messages show who sent them and who should read them.
 - Updated AGENTS, thread-start, worktree-sync, worktree-guide, module-map, handoff, README, and workflows JSON so new threads check both `sync:check` and `sync:inbox`.

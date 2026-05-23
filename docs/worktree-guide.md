@@ -54,7 +54,7 @@ npm run sync:merge -- --from codex/download-security
 commitを伴わない質問や確認依頼は note 通知を使います。
 
 ```powershell
-npm run sync:note -- --to traffic-jam-redo --level question -m "CREDITS.mdを新構成で戻せますか"
+npm run sync:note -- --from system --to traffic-jam-redo --level question -m "CREDITS.mdを新構成で戻せますか"
 npm run sync:inbox
 ```
 

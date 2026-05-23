@@ -53,14 +53,16 @@ npm run sync:inbox -- --all
 commit不要の短い連絡は `sync:note` を使います。未コミット変更があっても送れます。
 
 ```powershell
-npm run sync:note -- --to traffic-jam-redo --level question --topic "adapter境界" -m "fixture registryへの曲ID直importを避けられるか確認してください"
+npm run sync:note -- --from system --to traffic-jam-redo --level question --topic "adapter境界" -m "fixture registryへの曲ID直importを避けられるか確認してください"
 ```
+
+`--from` には送信者の担当名を入れます。省略した場合は現在branch名が送信者として記録されます。
 
 `--to` には `all`、branch名、またはbranch末尾の短い名前を使えます。
 
 ```powershell
-npm run sync:note -- --to all --level info -m "system-kit-refactorに共通方針を取り込みました"
-npm run sync:note -- --to mesmerizer-signal-lock --level blocker -m "three依存を共通方針commitに混ぜないでください"
+npm run sync:note -- --from system --to all --level info -m "system-kit-refactorに共通方針を取り込みました"
+npm run sync:note -- --from security --to mesmerizer-signal-lock --level blocker -m "three依存を共通方針commitに混ぜないでください"
 ```
 
 `--level` は `info`、`question`、`blocker`、`done` のいずれかです。

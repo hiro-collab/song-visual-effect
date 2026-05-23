@@ -134,7 +134,7 @@ npm run sync:inbox -- --all
 返答や共有が必要な場合は `sync:note` を使います。未コミット変更がある状態でも送れます。
 
 ```powershell
-npm run sync:note -- --to traffic-jam-redo --level question --topic "adapter境界" -m "registry直importを避けられるか確認してください"
+npm run sync:note -- --from system --to traffic-jam-redo --level question --topic "adapter境界" -m "registry直importを避けられるか確認してください"
 ```
 
 使い分け:
@@ -142,6 +142,8 @@ npm run sync:note -- --to traffic-jam-redo --level question --topic "adapter境�
 - `sync:note`: 質問、ブロッカー、方針共有、確認依頼。commit不要。
 - `sync:ready`: 他worktreeに取り込ませてよいcommitの通知。cleanなworktreeが必要。
 - `sync:merge`: ready通知が指すcommitを取り込む操作。
+
+`--from` を省略すると現在branch名が送信者として表示されます。担当名を明示したい場合は `system`、`beat-sync`、`security`、`mesmerizer` のように短い名前を入れてください。
 
 ## merge後にやること
 

@@ -52,6 +52,9 @@ function parseArgs(args) {
     } else if (arg === "--from") {
       opts.from = args[i + 1] ?? "";
       i += 1;
+    } else if (arg === "--sender") {
+      opts.from = args[i + 1] ?? "";
+      i += 1;
     } else if (arg === "--commit") {
       opts.commit = args[i + 1] ?? "";
       i += 1;
@@ -209,6 +212,7 @@ function commandNote(args) {
     type: "note",
     time: new Date().toISOString(),
     branch,
+    from: (opts.from || branch).trim(),
     commit,
     short: shortSha(commit),
     subject: subject(commit),
@@ -221,7 +225,7 @@ function commandNote(args) {
   };
 
   appendEvent(event);
-  console.log(`Note recorded: ${branch} -> ${event.to}`);
+  console.log(`Note recorded: ${event.from} -> ${event.to}`);
   console.log(`[${event.level}] ${event.message}`);
   if (event.dirty) {
     console.log("Note: this worktree had uncommitted changes when the note was recorded.");
@@ -271,15 +275,15 @@ function isNoteForCurrentBranch(event, currentBranch) {
 function formatNote(event) {
   const topic = event.topic ? ` (${event.topic})` : "";
   const dirty = event.dirty ? " dirty" : "";
+  const from = event.from ?? event.branch ?? "(unknown)";
+  const branch = event.branch && event.branch !== from ? ` / branch ${event.branch}` : "";
   const message = String(event.message ?? "")
     .split(/\r?\n/)
     .map((line) => `  ${line}`)
     .join("\n");
 
   return [
-    `- ${event.time ?? "(unknown time)"} [${event.level ?? "info"}] ${event.branch ?? "(unknown)"} -> ${
-      event.to ?? "all"
-    }${topic}`,
+    `- ${event.time ?? "(unknown time)"} [${event.level ?? "info"}] ${from} -> ${event.to ?? "all"}${topic}${branch}`,
     message,
     `  commit: ${event.short ?? event.commit ?? "(unknown)"}${dirty}`,
   ].join("\n");
@@ -449,8 +453,9 @@ function commandList() {
       );
     } else if (event.type === "note") {
       const topic = event.topic ? ` (${event.topic})` : "";
+      const from = event.from ?? event.branch ?? "(unknown)";
       console.log(
-        `${event.time} note   ${event.branch} -> ${event.to ?? "all"} [${event.level ?? "info"}]${
+        `${event.time} note   ${from} -> ${event.to ?? "all"} [${event.level ?? "info"}]${
           topic
         } ${event.message ?? ""}`.trim(),
       );
@@ -476,7 +481,7 @@ function usage() {
   npm run sync:check
   npm run sync:merge -- --from <branch>
   npm run sync:merge -- --from <branch> --allow-merge-commit
-  npm run sync:note -- --to <branch-or-label> --level info -m "short message"
+  npm run sync:note -- --from <sender-label> --to <branch-or-label> --level info -m "short message"
   npm run sync:inbox
   npm run sync:inbox -- --all
   npm run sync:list

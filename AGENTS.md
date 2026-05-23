@@ -8,7 +8,7 @@
 - 変更が複数ファイルに及ぶ場合は、短い計画を立ててから実装する。
 - 実装は小さいステップに分け、既存挙動を壊さない。
 - 並行 worktree 作業では、作業開始時と区切りごとに `npm run sync:check` と `npm run sync:inbox` を確認する。
-- 他担当への質問、ブロッカー、短い共有事項は `npm run sync:note -- --to <相手> --level <info|question|blocker|done> -m "短い連絡"` で共有する。
+- 他担当への質問、ブロッカー、短い共有事項は `npm run sync:note -- --from <自分の担当> --to <相手> --level <info|question|blocker|done> -m "短い連絡"` で共有する。
 - 他スレッドに取り込ませてよいコミットができたら `npm run sync:ready -- -m "短い説明"` を実行する。
 - 新しいスレッドで作業を始める場合は、`docs/thread-start.md` を読んで作業開始、ready確認、merge判断の流れを揃える。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけを対象にする。PC全体の同名プロセスや他worktreeのtargetを探して止めない。
