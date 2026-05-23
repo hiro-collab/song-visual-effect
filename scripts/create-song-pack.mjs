@@ -5,6 +5,13 @@ import { fileURLToPath } from "node:url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const songPacksRoot = path.join(repoRoot, "song-packs");
+const realSongPacksRoot = fs.realpathSync(songPacksRoot);
+
+const isInside = (parent, child) => {
+  const baseKey = process.platform === "win32" ? parent.toLowerCase() : parent;
+  const targetKey = process.platform === "win32" ? child.toLowerCase() : child;
+  return targetKey === baseKey || targetKey.startsWith(`${baseKey}${path.sep}`);
+};
 
 const parseArgs = (args) => {
   const opts = {};
@@ -41,8 +48,16 @@ const writeFile = (filePath, content, force) => {
   if (!force && fs.existsSync(filePath)) {
     throw new Error(`Refusing to overwrite existing file: ${path.relative(repoRoot, filePath)}`);
   }
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, content, "utf8");
+  const parentPath = path.dirname(filePath);
+  fs.mkdirSync(parentPath, { recursive: true });
+  const realParent = fs.realpathSync(parentPath);
+  if (!isInside(realSongPacksRoot, realParent)) {
+    throw new Error(`Refusing to write outside song-packs: ${path.relative(repoRoot, filePath)}`);
+  }
+  if (fs.existsSync(filePath) && fs.lstatSync(filePath).isSymbolicLink()) {
+    throw new Error(`Refusing to overwrite symbolic link: ${path.relative(repoRoot, filePath)}`);
+  }
+  fs.writeFileSync(filePath, content, { encoding: "utf8", flag: force ? "w" : "wx" });
 };
 
 const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
