@@ -18,11 +18,11 @@
     { "label": "SOLARIA", "short": "SOLARIA", "color": "#ffd0a1", "lane": 1, "offset": 0.94 }
   ],
   "sections": [
-    { "label": "first page", "start": 3.04, "end": 31.0, "intensity": 0.3 },
-    { "label": "voice handoff", "start": 31.0, "end": 56.21, "intensity": 0.52 },
-    { "label": "chorus ledger 1", "start": 56.21, "end": 79.95, "intensity": 0.95 },
-    { "label": "folded middle", "start": 100.0, "end": 124.0, "intensity": 0.44 },
-    { "label": "chorus ledger 2", "start": 147.45, "end": 171.19, "intensity": 1.0 },
-    { "label": "future margin", "start": 190.0, "end": 229.5, "intensity": 0.74 }
+    { "label": "window thaws", "start": 3.04, "end": 31.0, "intensity": 0.35 },
+    { "label": "beside walk", "start": 31.0, "end": 56.21, "intensity": 0.58 },
+    { "label": "light-year chorus 1", "start": 56.21, "end": 79.95, "intensity": 0.98 },
+    { "label": "quiet room", "start": 100.0, "end": 124.0, "intensity": 0.5 },
+    { "label": "light-year chorus 2", "start": 147.45, "end": 171.19, "intensity": 1.0 },
+    { "label": "future afterimage", "start": 190.0, "end": 229.5, "intensity": 0.78 }
   ]
 }
