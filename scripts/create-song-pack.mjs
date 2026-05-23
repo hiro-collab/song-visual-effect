@@ -90,6 +90,7 @@ const main = () => {
     artist,
     ...(Number.isFinite(duration) && duration > 0 ? { duration } : {}),
     credits: "./CREDITS.md",
+    references: "./references.json",
     lyrics: null,
     analysis: {
       markers: "./analysis/markers.json",
@@ -109,6 +110,24 @@ const main = () => {
   };
 
   writeFile(path.join(root, "manifest.json"), json(manifest), force);
+  writeFile(
+    path.join(root, "references.json"),
+    json({
+      schema: "music-effect.references.v1",
+      note: "Store URLs and reference purposes only. Do not copy lyrics, images, screenshots, transcripts, or article bodies here.",
+      items: songUrl
+        ? [
+            {
+              label: "Song source",
+              type: "official",
+              url: songUrl,
+              purpose: "Reference URL only; do not copy lyrics, media, or page text."
+            }
+          ]
+        : []
+    }),
+    force
+  );
   writeFile(path.join(root, "analysis", "markers.json"), json({ estimatedDuration: Number.isFinite(duration) && duration > 0 ? duration : null }), force);
   writeFile(path.join(root, "analysis", "palette.json"), json({ base: [], accent: [], shadow: [] }), force);
   writeFile(path.join(root, "design", "effect.json"), json({ schema: "music-effect.effect-design.v1", notes: [], cues: [] }), force);

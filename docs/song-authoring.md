@@ -66,6 +66,14 @@ npm run song:scaffold -- --id song-id --title "Song Title" --artist "Artist" --s
 
 同一ビルド内で曲owned adapterを始める場合は `--adapter-id song:song-id --with-adapter` を指定できます。ただし、fixture previewで実際に使うには `song-packs/local-adapters.ts` への登録が別途必要です。
 
+MV、公式ページ、歌詞考察などを参照した場合は、本文や画像を保存せず、`references.json` にURLと参照用途だけを記録してください。
+
+```powershell
+npm run song:validate -- --id song-id
+```
+
+このvalidateは `references.json` がURLメタデータだけになっているかを確認します。歌詞本文、記事本文、画像データ、スクリーンショット、base64埋め込みは保存しないでください。
+
 ## 使ってよいシステム補助
 
 曲ごとに必要なものだけ選んでください。
@@ -78,6 +86,7 @@ npm run song:scaffold -- --id song-id --title "Song Title" --artist "Artist" --s
 - tools: 歌詞タイミング編集などのoptional tool。
 - loader: manifestや素材URL解決。
 - visual host: 曲adapter用の追加表示レイヤ、DPR/resize、fixture UIと重ならないsafe area。WebGLなどでcanvasを使う場合は2D contextを作らないレイヤも選べる。
+- content rect helper: Canvas2Dを選んだ曲だけが任意で使える、DPR resize、safe area clip、pointer正規化、文字サイズfitの小さな補助。
 
 これらは文法ではなく部品です。曲側が全部使う必要はありません。
 

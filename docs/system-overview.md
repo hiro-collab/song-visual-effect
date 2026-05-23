@@ -89,6 +89,8 @@ http://127.0.0.1:5172/
 
 中立的な雛形だけを作る場合は `npm run song:scaffold` を使えます。このコマンドは既存曲を読まず、manifest、analysis、design、README、CREDITSの空に近い出発点を作ります。
 
+公式URL、MV、歌詞考察などを参照した場合は、曲パック内の `references.json` にURLと参照用途だけを記録します。歌詞本文、記事本文、画像、スクリーンショットは保存せず、`npm run song:validate -- --id <song-id>` で確認します。
+
 ## 既存曲との関係
 
 既存の `song-packs/*` は、次の用途にだけ使います。

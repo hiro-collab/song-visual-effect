@@ -205,3 +205,20 @@ MVP実装済み。`scripts/dev-manager.mjs` は互換入口として残し、実
 - 取得後の拍数、推定BPM、サビ候補、認識日時の表示は実装済み。
 - `manifest.json` のanalysis欄を生成する補助オプションを検討する。
 - 許可URL、最大サイズ、保存先、ログ出力の条件を変更した場合は `docs/security.md` も更新する。
+
+## P9: preview snapshot確認を自動化する
+
+目的:
+新曲担当が指定時刻の見た目とconsole状態を、手作業だけに頼らず確認できるようにする。
+
+候補:
+
+- `npm run preview:snapshot -- --song <id> --time <sec>` のような入口を追加する。
+- Launch Manager、fixture player、song-pack serverが既に起動している場合は既存URLを使う。
+- 未起動の場合にどこまで自動起動するかは、並行worktreeのport衝突や停止権限と合わせて設計する。
+- スクリーンショット、console warn/error、現在URL、時刻を `.codex/runtime/` などGit管理外へ保存する。
+
+非目的:
+
+- 曲ごとの見た目の良し悪しをsystem側で判定しない。
+- 外部URL adapterを読み込まない。

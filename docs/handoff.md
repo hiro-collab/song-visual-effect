@@ -32,6 +32,8 @@
 - 歌詞なし曲は `manifest.lyrics` と `analysis.timing` がnull/未指定なら lyric-free として扱い、`rough lyrics` warningを出さない。歌詞テキストがあるがtimingがない場合だけ `rough lyrics` を出す。
 - 曲adapter向けに `services.safeArea` と `services.visualHost` を追加した。fixture UIと重なりにくいcontent rect、追加Canvas/DOMレイヤ、DPR/resize、cleanupを曲側が任意で使える。
 - `npm run song:scaffold` で、既存曲を読まずに中立的な曲パック雛形を作れる。
+- `npm run song:validate` で、曲パックの `references.json` がURLと参照用途だけを持ち、歌詞本文、記事本文、画像データ、base64、HTML断片を含まないことを確認できる。
+- Canvas2Dを選んだ曲adapter向けに `system/kit/contentRect.ts` を追加した。DPR resize、safe area clip、pointer正規化、文字fitを任意で使える補助で、曲の見た目は決めない。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 - 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。
@@ -135,6 +137,7 @@ http://127.0.0.1:5173/docs/workflows.html
 - `system/kit/safeFetch.ts`: URL検証、曲パッケージ境界チェック、サイズ上限つきfetch。
 - `system/kit/assets.ts`: manifestと曲データの読み込み。
 - `system/kit/songAdapterContext.ts`: 曲アプリ向けasset reader。
+- `system/kit/contentRect.ts`: Canvas2D向けのcontent rect、DPR、clip、pointer、text fit補助。
 - `examples/fixture-player/main.ts`: 動作確認用fixture playerの入口。
 - `examples/fixture-player/adapters/`: fixture player内adapter registry。曲固有adapterを直接importしない。
 - `song-packs/local-adapters.ts`: ローカル開発用の曲固有adapter登録。

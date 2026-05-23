@@ -98,6 +98,12 @@ docs/song-visual-independence.md
 npm run song:scaffold -- --id song-id --title "Song Title" --artist "Artist" --adapter-id none
 ```
 
+曲パック内の参照URLメモを検証する場合:
+
+```powershell
+npm run song:validate -- --id song-id
+```
+
 ## Included Fixture
 
 この節は動作確認用です。新しい曲を設計するときの入口ではありません。

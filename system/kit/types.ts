@@ -66,6 +66,7 @@ export type SongManifest = {
   artist: string;
   duration?: number;
   credits?: string | null;
+  references?: string | null;
   lyrics?: string | null;
   analysis?: {
     song?: string | null;
