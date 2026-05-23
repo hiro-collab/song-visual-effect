@@ -26,7 +26,7 @@ export {
 } from "./safeFetch";
 export type { SongAdapterContext, SongAssetReader } from "./songAdapterContext";
 export { createSongAdapterContext } from "./songAdapterContext";
-export type { SongApp, SongAppFactory, SongAppFrame, SongAppServices } from "./songApp";
+export type { SongApp, SongAppFactory, SongAppFrame, SongAppServices, SongAppThreeServices } from "./songApp";
 export { Transport } from "./transport";
 export { startFrameLoop } from "./frameLoop";
 export { activeRange, beatAt, emphasisAt, lyricAt, lyricIndexAt } from "./timing";

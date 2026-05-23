@@ -1,5 +1,6 @@
 import type { SongAdapterContext } from "../../../system/kit/songAdapterContext";
 import type { SongApp, SongAppFactory, SongAppServices } from "../../../system/kit/songApp";
+import { LOCAL_SONG_ADAPTERS } from "../../../song-packs/local-adapters";
 import { createFixtureSoftLightApp } from "./fixtureSoftLight";
 
 const BUILTIN_ADAPTERS: Record<string, SongAppFactory> = {
@@ -19,5 +20,8 @@ export const createSongApp = async (context: SongAdapterContext, services: SongA
     return factory(context, services);
   }
 
-  return fallback(context, services, "song-owned adapter loading is outside this fixture player");
+  const localFactory = LOCAL_SONG_ADAPTERS[adapterId];
+  if (localFactory) return localFactory(context, services);
+
+  return fallback(context, services, `local adapter is not registered: ${adapterId}`);
 };
