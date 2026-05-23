@@ -5,6 +5,7 @@
   "artist": "いよわ",
   "duration": 242.5,
   "credits": "credits.md",
+  "references": "references.json",
   "analysis": {
     "song": "analysis/song.json",
     "beat": "analysis/beat.json",
