@@ -93,7 +93,7 @@ export function createSongApp(context) {
 - `song-packs/<song-id>/adapters/web/` への移動を検討する。
 - manifestの `design.cues` のような曲専用cue JSONを、system kitが固定スキーマへ潰さず曲アプリへ渡せるようにする。初期helperは実装済み。
 - adapterには `MusicMap` だけでなく、raw manifest、base URL、任意の曲所有JSONを安全に読むためのhelperを渡す。初期helperは実装済み。
-- 同一ビルド内のfixture adapter registryは `examples/fixture-player` に隔離済み。外部adapter読み込みはまだ無効。
+- 同一ビルド内で曲固有adapterを試す場合、曲adapter本体と登録は `song-packs/` 側に置き、fixture playerのbuiltin registryへ曲IDを直接追加しない。外部adapter読み込みはまだ無効。
 
 ## P3a: 曲専用cueとfixture向けmarkersを分離する
 

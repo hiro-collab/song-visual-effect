@@ -165,7 +165,7 @@
       "label": "曲アプリ/adapter",
       "kind": "adapter",
       "group": "曲側",
-      "file": "song package or song app",
+      "file": "song-packs/<song-id>/adapter.ts / song-packs/local-adapters.ts",
       "x": 38,
       "y": 66,
       "description": "曲側が持つ演出コードです。system kitから必要なcontextやhelperだけを受け取り、曲固有のcue文法を曲側で解釈します。外部adapter読み込みはまだ未設計です。"
@@ -374,7 +374,7 @@
           "to": "songAdapter",
           "action": "fixture adapterを作る",
           "payload": "SongAdapterContext、canvas、ctx",
-          "note": "fixture player内の検証用adapterだけを選びます。未知の曲専用adapterは安全のため実行せず、fallback表示にします。"
+          "note": "builtin adapterはfixture側で選びます。song: adapterはsong-packs/local-adapters.tsへ委譲し、曲ID直書きimportをfixture registryへ置きません。"
         }
       ]
     },

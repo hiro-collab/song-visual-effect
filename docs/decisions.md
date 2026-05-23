@@ -158,3 +158,14 @@ A/Dキーによる歌詞打刻や補正UIは、Lyric TimingモードがOnのと�
 
 影響:
 MVPではmanaged targetだけを扱う。Launch Manager UIは状態の正本を持たず、PC上のLaunch Serverへ操作要求を送るだけにする。曲ごとの映像構成やadapterはLaunch Manager側で決めない。詳細仕様は `docs/launch-manager-spec.md` に置く。
+
+## D013: 曲固有データと曲固有adapterをsystem-wide領域へ置かない
+
+決定:
+曲固有のmanifest、analysis、design、再実装ブリーフ、演出コード、adapter登録は `song-packs/<song-id>/` または `song-packs/local-adapters.ts` に置く。`system/kit`、`examples/fixture-player`、`docs/` 直下には、曲IDを直書きした実装や曲専用ブリーフを増やさない。
+
+理由:
+system kitとfixture playerは曲を束縛しない補助領域であり、特定曲の構成や演出を混ぜると、新しい曲が既存曲の文法へ引っ張られるため。
+
+影響:
+ローカル開発で同一ビルド内の曲adapterを試す場合、曲adapter本体は `song-packs/<song-id>/adapter.ts` に置き、`song-packs/local-adapters.ts` だけに `song:<song-id>` の対応を追加する。fixture playerのbuiltin registryへ曲固有adapterを直接importしない。system-wide docsには必要最小限のポインタだけを残し、曲の設計メモは曲パック側へ置く。

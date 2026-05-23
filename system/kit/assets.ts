@@ -42,6 +42,19 @@ export const resolveSourcePath = (baseUrl: string, path: string | null | undefin
   return resolveWithinBaseUrl(baseUrl, path);
 };
 
+const hasExplicitProtocol = (path: string) => /^[a-z][a-z0-9+.-]*:/i.test(path);
+
+const looksLikeWebAdapterAsset = (path: string) => {
+  if (path.startsWith("http://") || path.startsWith("https://")) return true;
+  if (hasExplicitProtocol(path)) return false;
+  return path.startsWith(".") || path.startsWith("/") || path.includes("/") || path.endsWith(".js") || path.endsWith(".mjs");
+};
+
+const resolveWebAdapterPath = (baseUrl: string, path: string | null | undefined) => {
+  if (!path || !looksLikeWebAdapterAsset(path)) return undefined;
+  return resolveSourcePath(baseUrl, path) ?? undefined;
+};
+
 const isSongManifest = (value: unknown): value is SongManifest => {
   if (!value || typeof value !== "object") return false;
   const manifest = value as Partial<SongManifest>;
@@ -261,7 +274,7 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
       creditsUrl: resolveSourcePath(baseUrl, manifest?.credits) ?? undefined,
       effectDesignUrl: resolveSourcePath(baseUrl, manifest?.design?.effect) ?? undefined,
       designCuesUrl: resolveSourcePath(baseUrl, manifest?.design?.cues) ?? undefined,
-      webAdapterUrl: resolveSourcePath(baseUrl, manifest?.webAdapter) ?? undefined
+      webAdapterUrl: resolveWebAdapterPath(baseUrl, manifest?.webAdapter)
     }
   };
 };

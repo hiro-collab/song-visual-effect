@@ -6,21 +6,11 @@
 ## 基本構成
 
 - `C:\Users\kawai\works\music-effect`
-  - 管理用のルート worktree。
-  - 現在は `main` をチェックアウトしています。
+  - 管理用のルート worktree、または通常作業用のworktree。
   - `_worktrees/` は `.gitignore` 済みなので、ルートの `git status` を汚しません。
-- `C:\Users\kawai\works\music-effect\_worktrees\adapter-cues`
-  - ブランチ: `codex/wip-adapter-cues-traffic-jam`
-  - 直前まで進めていた `design.cues` / Songle 取得ツール改善の退避先です。
-- `C:\Users\kawai\works\music-effect\_worktrees\download-security`
-  - ブランチ: `codex/download-security`
-  - Songle JSON ダウンロード処理のセキュリティ確認・強化用です。
-- `C:\Users\kawai\works\music-effect\_worktrees\traffic-jam-effect`
-  - ブランチ: `codex/traffic-jam-effect`
-  - 曲ごとの演出コード、特に `traffic-jam` 曲パッケージ側の実験用です。
-- `C:\Users\kawai\works\music-effect\_worktrees\launch-manager`
-  - ブランチ: `codex/launch-manager`
-  - 複数サーバーの起動・停止管理を改善する作業用です。
+- `C:\Users\kawai\works\music-effect\_worktrees\<name>`
+  - 並行作業用の追加worktree。
+  - 実際に存在するworktreeとbranchは `git worktree list` で確認します。
 
 ## よく使う確認コマンド
 

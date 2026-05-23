@@ -64,6 +64,7 @@ ready通知は「必ず取り込むもの」ではなく、「取り込み候補
 - system kitに曲固有の見た目や曲専用adapterを入れない。
 - fixture playerは回帰確認用であり、新曲の標準UIや標準rendererではない。
 - 曲固有のcue文法、主役構造、演出判断は曲側が持つ。
+- 曲固有adapterを同一ビルドで試す場合も、直接 `examples/fixture-player/adapters/registry.ts` へ曲IDを追加せず、`song-packs/local-adapters.ts` に登録する。
 
 ## Launch Managerの停止範囲
 
@@ -111,7 +112,7 @@ npm run sync:merge -- --from codex/download-security --allow-merge-commit
 
 取り込まない例:
 
-- 曲固有adapterをsystem kitやfixture registryへ追加する変更。
+- 曲固有adapterをsystem kitやfixture registryへ直接追加する変更。
 - rejected / redo と明示されている曲実装。
 - 既存fixture rendererを新曲テンプレート扱いする変更。
 - 自分の未コミット変更と大きく衝突し、担当範囲の確認が必要な変更。
