@@ -2,6 +2,45 @@ import type { SongAdapterContext } from "./songAdapterContext";
 import type * as ThreeModule from "three";
 import type { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
+export type SongAppContentRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  dpr: number;
+};
+
+export type SongVisualLayer = {
+  element: HTMLElement;
+  canvas?: HTMLCanvasElement;
+  ctx?: CanvasRenderingContext2D | null;
+  safeArea: () => SongAppContentRect;
+  resize: () => SongAppContentRect;
+  dispose: () => void;
+};
+
+export type SongVisualLayerOptions = {
+  id?: string;
+  className?: string;
+  kind?: "canvas" | "div";
+  zIndex?: number;
+  pointerEvents?: "none" | "auto";
+  hideBaseCanvas?: boolean;
+  alpha?: boolean;
+};
+
+export type SongVisualHost = {
+  safeArea: () => SongAppContentRect;
+  resizeLayers: () => void;
+  createLayer: (options?: SongVisualLayerOptions) => SongVisualLayer;
+};
+
 export type SongAppThreeServices = {
   THREE: typeof ThreeModule;
   GLTFLoader: new () => GLTFLoader;
@@ -12,12 +51,16 @@ export type SongAppServices = {
   ctx: CanvasRenderingContext2D;
   three?: SongAppThreeServices;
   loadThree?: () => Promise<SongAppThreeServices>;
+  safeArea?: () => SongAppContentRect;
+  visualHost?: SongVisualHost;
 };
 
 export type SongAppFrame = {
   time: number;
   dt: number;
   userGlow: number;
+  safeArea?: SongAppContentRect;
+  contentRect?: SongAppContentRect;
 };
 
 export type SongApp = {

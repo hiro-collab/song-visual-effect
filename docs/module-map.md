@@ -20,6 +20,7 @@
 - `system/kit/safeFetch.ts`: manifestや曲素材を安全に読むためのURL検証、パッケージ境界チェック、サイズ上限つきfetch。
 - `system/kit/songAdapterContext.ts`: 曲アプリへ渡せる補助context。manifest、base URL、曲パッケージ内asset readerを持つ。
 - `system/kit/songApp.ts`: fixture playerと簡易adapterの最小インターフェース。
+- `system/kit/visualHost.ts`: 曲adapter向けの中立的な表示レイヤ作成、DPR/resize、safe area計算。
 - `system/kit/transport.ts`: 再生、停止、シーク、現在時刻を扱う。
 - `system/kit/frameLoop.ts`: `requestAnimationFrame` によるフレーム更新。
 - `system/kit/timing.ts`: beat、chorus、lyricsなどの時刻検索。
@@ -59,6 +60,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 ## scripts
 
 - `scripts/download-songle-json.ps1`: Songle Widget APIからJSONを取得するPowerShellスクリプト。許可URL、保存先、取得対象、最大サイズを検証し、取得後に曲長、拍数、BPM、サビ候補を要約する。
+- `scripts/create-song-pack.mjs`: 既存曲を読まずに中立的な曲パック雛形を作る補助スクリプト。
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
 - `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。

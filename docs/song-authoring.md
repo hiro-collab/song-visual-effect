@@ -58,6 +58,14 @@
 
 この順番を守ると、既存曲のフォルダ形状に寄りにくくなります。
 
+中立的な曲パックの雛形だけを作る場合は、既存曲を読まずに次のコマンドを使えます。
+
+```powershell
+npm run song:scaffold -- --id song-id --title "Song Title" --artist "Artist" --song-url "https://example.com/song" --adapter-id none
+```
+
+同一ビルド内で曲owned adapterを始める場合は `--adapter-id song:song-id --with-adapter` を指定できます。ただし、fixture previewで実際に使うには `song-packs/local-adapters.ts` への登録が別途必要です。
+
 ## 使ってよいシステム補助
 
 曲ごとに必要なものだけ選んでください。
@@ -69,6 +77,7 @@
 - storage: localStorageや将来の保存API。
 - tools: 歌詞タイミング編集などのoptional tool。
 - loader: manifestや素材URL解決。
+- visual host: 曲adapter用の追加表示レイヤ、DPR/resize、fixture UIと重ならないsafe area。
 
 これらは文法ではなく部品です。曲側が全部使う必要はありません。
 

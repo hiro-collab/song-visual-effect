@@ -6,8 +6,9 @@ import { getAppElements } from "./dom";
 import { Transport } from "../../system/kit/transport";
 import { startFrameLoop } from "../../system/kit/frameLoop";
 import { createSongAdapterContext, type SongAdapterContext } from "../../system/kit/songAdapterContext";
+import { createVisualHost } from "../../system/kit/visualHost";
 import { createSongApp } from "./adapters/registry";
-import type { SongApp } from "../../system/kit/songApp";
+import type { SongApp, SongVisualHost } from "../../system/kit/songApp";
 import { lyricAt } from "../../system/kit/timing";
 import { LyricTimingTool } from "./tools/lyricTimingTool";
 import { BeatStateTool } from "./tools/beatStateTool";
@@ -36,6 +37,7 @@ let timingTool: LyricTimingTool | null = null;
 let beatStateTool: BeatStateTool | null = null;
 let songContext: SongAdapterContext;
 let songApp: SongApp;
+let visualHost: SongVisualHost;
 
 const isBeatStateToolEnabled = () => {
   const value = new URLSearchParams(window.location.search).get("beatState")?.toLowerCase();
@@ -68,7 +70,8 @@ const updateLyrics = (time: number) => {
 const tick = (_now: number, dt: number) => {
   const time = currentTime() % musicMap.duration;
   const userGlow = Number.parseFloat(glowRange.value);
-  songApp.render({ time, dt, userGlow });
+  const safeArea = visualHost.safeArea();
+  songApp.render({ time, dt, userGlow, safeArea, contentRect: safeArea });
   beatStateTool?.update();
   updateLyrics(time);
 
@@ -77,7 +80,10 @@ const tick = (_now: number, dt: number) => {
 };
 
 const setupInput = () => {
-  window.addEventListener("resize", () => songApp.resize());
+  window.addEventListener("resize", () => {
+    visualHost.resizeLayers();
+    songApp.resize();
+  });
   window.addEventListener("pointermove", (event) => songApp.pointerMove?.(event));
   window.addEventListener("pointerleave", () => songApp.pointerLeave?.());
   window.addEventListener("pointerdown", (event) => songApp.pointerDown?.(event));
@@ -134,7 +140,17 @@ const boot = async () => {
     transport = new Transport(audio, setPlayingIcon);
     musicMap = await loadMusicMap();
     songContext = createSongAdapterContext(musicMap);
-    songApp = await createSongApp(songContext, { canvas, ctx, loadThree });
+    visualHost = createVisualHost(canvas, {
+      root: document.querySelector<HTMLElement>("#app") ?? document.body,
+      overlaySelectors: [".topbar", ".controlbar", ".timing-panel:not([hidden])", ".beat-state-panel"]
+    });
+    songApp = await createSongApp(songContext, {
+      canvas,
+      ctx,
+      loadThree,
+      safeArea: visualHost.safeArea,
+      visualHost
+    });
     document.title = `${musicMap.title} - Music Effect`;
     songTitle.textContent = musicMap.title;
     songArtist.textContent = musicMap.artist;

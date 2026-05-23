@@ -84,6 +84,7 @@ Launch Managerの非責務:
 - beat、chorus、lyricsなどの時刻検索。
 - 手動歌詞タイミング調整のデータ処理。
 - fixture playerや曲アプリへ渡す最小限の `SongAdapterContext`。
+- 曲adapter向けのsafe area、追加表示レイヤ、DPR/resize/cleanupを扱う `visualHost`。
 
 `system/kit` の非責務:
 

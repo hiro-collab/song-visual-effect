@@ -92,6 +92,12 @@ docs/song-visual-independence.md
 
 必要に応じて、歌詞、解析JSON、音源、クレジット、Web adapter IDなどを追加します。現行のWeb adapterは同一ビルド内の `builtin:*` / `song:*` IDだけを解決し、URLや相対パスのadapterコードは読み込みません。
 
+既存曲を見ずに中立的な雛形を作る場合:
+
+```powershell
+npm run song:scaffold -- --id song-id --title "Song Title" --artist "Artist" --adapter-id none
+```
+
 ## Included Fixture
 
 この節は動作確認用です。新しい曲を設計するときの入口ではありません。

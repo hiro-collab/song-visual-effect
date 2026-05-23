@@ -18,7 +18,7 @@
       "summary": "多くの曲で使いうる読み込み、時刻、フレーム、手動タイミング調整などのhelper群です。曲の作り方を束縛せず、必要な補助だけを渡します。",
       "role": "素材読み込み、再生時刻、フレーム更新、標準ツールの小さな補助を提供する。",
       "boundary": "標準の演出文法、標準renderer、曲専用adapterをここに固定しない。",
-      "componentIds": ["assets", "transport", "frameLoop", "timingEditor", "storage"]
+      "componentIds": ["assets", "transport", "frameLoop", "visualHost", "timingEditor", "storage"]
     },
     {
       "id": "fixture-player",
@@ -71,7 +71,7 @@
     {
       "id": "system-kit-zone",
       "label": "汎用補助 system kit",
-      "summary": "assets、transport、frame、timingなど、曲が必要なhelperだけ選んで使う領域です。",
+      "summary": "assets、transport、frame、timing、visual hostなど、曲が必要なhelperだけ選んで使う領域です。",
       "x": 41,
       "y": 31,
       "width": 56,
@@ -139,6 +139,16 @@
       "x": 72,
       "y": 14,
       "description": "歌詞、Songle解析JSON、手動調整済みlyrics_timing.json、palette、markers、CREDITSを含む曲側の素材群です。"
+    },
+    {
+      "id": "visualHost",
+      "label": "visual host",
+      "kind": "runtime-helper",
+      "group": "system kit",
+      "file": "system/kit/visualHost.ts",
+      "x": 37,
+      "y": 42,
+      "description": "曲adapterが任意で使えるsafe area、追加Canvas/DOMレイヤ、DPR/resize/cleanup補助です。曲の見た目や描画方式は決めません。"
     },
     {
       "id": "transport",
@@ -631,8 +641,8 @@
           "from": "main",
           "to": "songAdapter",
           "action": "contextを用意",
-          "payload": "MusicMap、raw manifest、base URL、asset reader",
-          "note": "曲アプリは必要な補助だけを使います。"
+          "payload": "MusicMap、raw manifest、base URL、asset reader、safe area、visual host",
+          "note": "曲アプリは必要な補助だけを使います。visual hostは表示レイヤを助けるだけで、Threeや演出構図は曲側が決めます。"
         },
         {
           "from": "songAdapter",
