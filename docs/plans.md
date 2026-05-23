@@ -222,3 +222,19 @@ MVP実装済み。`scripts/dev-manager.mjs` は互換入口として残し、実
 
 - 曲ごとの見た目の良し悪しをsystem側で判定しない。
 - 外部URL adapterを読み込まない。
+
+## P10: optional library/helper候補を評価する
+
+目的:
+複数曲で同じ需要が出たときだけ、system側へ小さいhelperまたは採用基準を追加する。
+
+候補:
+
+- 手描き/筆線: まず依存なしstroke helperを検討し、perfect-freehand / rough.js / paper.js は後から評価する。
+- timeline/easing: GSAP/anime.jsを自走clockとして入れず、`frame.time` 駆動のscrubbable helperを検討する。
+- 2D scene: PixiJS / Konva / p5.js はsystem標準ではなく曲側任意依存候補として扱う。
+- 3D: Three.js starter patternは曲側scene logicを前提に、safeArea-aware renderer sizingやorthographic camera補助だけを検討する。
+
+正本:
+
+- `docs/library-candidates.md`

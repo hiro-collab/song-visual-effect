@@ -97,6 +97,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `docs/launch-manager-spec.md`: 複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様。
 - `docs/launch-manager-spec.html`: Launch Manager仕様をレビューしやすくした単一HTMLページ。
 - `docs/security.md`: ローカル開発サーバー、manifest、曲素材、Songle取得ツールの信頼境界と対策。
+- `docs/library-candidates.md`: 各曲担当から出たライブラリ、ツール、エンジン候補と採用前チェック。
 - `docs/plans.md`: 今後の作業候補。
 - `docs/known-issues.md`: 既知の問題と注意点。
 - `docs/handoff.md`: 次のCodexスレッドへ渡す要約。
