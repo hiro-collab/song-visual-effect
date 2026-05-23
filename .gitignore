@@ -5,6 +5,9 @@ _worktrees/
 # Local launch/test runtime logs may contain machine-specific paths or process output.
 .codex/runtime/
 
+# Local source asset downloads. Commit curated assets and source notes instead.
+_asset_sources/
+
 # Local audio files are for browser playback only.
 # Do not commit licensed music assets into the repository.
 song-packs/*/audio/*
