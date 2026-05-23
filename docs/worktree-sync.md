@@ -52,7 +52,13 @@ npm run sync:brief -- --for system
 npm run sync:check
 ```
 
-まだ自分のブランチに取り込まれていない `ready` 通知が表示されます。
+まだ自分のブランチに取り込まれておらず、自分のworktreeで `ack` していない `ready` 通知が表示されます。
+
+ack済みのreadyも含めて確認したい場合:
+
+```powershell
+npm run sync:check -- --all
+```
 
 ### 2.5 他の担当からの連絡を見る
 
@@ -96,7 +102,7 @@ npm run sync:note -- --from security --to mesmerizer-signal-lock --level blocker
 npm run sync:ack -- --id abc123def0 --from system -m "確認済み。system側の追加対応なし。"
 ```
 
-`ack` は現在のworktree / 担当のbriefから隠すための記録です。他担当のbriefから同じ項目を消すものではありません。`sync:check` は従来どおりready通知を表示するため、取り込み判断の詳細確認にも使えます。
+`ack` は現在のworktree / 担当のbriefとcheckから隠すための記録です。他担当のbrief/checkから同じ項目を消すものではありません。ack済みreadyも見直したい場合は `sync:check -- --all` を使います。
 
 ### 3. 取り込む
 

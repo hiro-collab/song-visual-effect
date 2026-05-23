@@ -455,14 +455,17 @@ function formatReady(event, currentBranch, currentHead) {
   ].join("\n");
 }
 
-function commandCheck() {
+function commandCheck(args = []) {
+  const opts = parseArgs(args);
   const currentBranch = branchName();
   const currentHead = headCommit();
+  const ackedIds = ackedIdsForCurrentBranch(readEvents(), currentBranch, opts);
   const events = [...latestReadyByBranch().values()].filter(
     (event) => event.branch !== currentBranch,
   );
 
   const lines = events
+    .filter((event) => opts.all || !ackedIds.has(eventId(event)))
     .map((event) => formatReady(event, currentBranch, currentHead))
     .filter(Boolean);
 
@@ -670,7 +673,7 @@ try {
   } else if (command === "brief") {
     commandBrief(rest);
   } else if (command === "check") {
-    commandCheck();
+    commandCheck(rest);
   } else if (command === "merge") {
     commandMerge(rest);
   } else if (command === "note") {
