@@ -33,6 +33,7 @@
 - 曲adapter向けに `services.safeArea` と `services.visualHost` を追加した。fixture UIと重なりにくいcontent rect、追加Canvas/DOMレイヤ、DPR/resize、cleanupを曲側が任意で使える。
 - `npm run song:scaffold` で、既存曲を読まずに中立的な曲パック雛形を作れる。
 - `npm run song:validate` で、曲パックの `references.json` がURLと参照用途だけを持ち、歌詞本文、記事本文、画像データ、base64、HTML断片を含まないことを確認できる。
+- `npm run preview:snapshot` で、指定した曲manifestと時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` へ保存できる。
 - Canvas2Dを選んだ曲adapter向けに `system/kit/render/contentRect.ts` を追加した。DPR resize、safe area clip、pointer正規化、文字fitを任意で使える補助で、曲の見た目は決めない。
 - 各曲担当から出たライブラリ/ツール候補は `docs/library-candidates.md` に集約する。system標準依存を増やす前に、曲側任意依存、小さいhelper、time-drivenな再現性、bundle/securityを確認する。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。

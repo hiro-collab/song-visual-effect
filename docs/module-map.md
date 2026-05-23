@@ -52,6 +52,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/create-song-pack.mjs`: 既存曲を読まずに中立的な曲パック雛形を作る補助スクリプト。
 - `scripts/validate-song-pack.mjs`: 曲パックの参照メモがURLメタデータだけになっているかなどを確認する補助スクリプト。
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
+- `scripts/preview-snapshot.mjs`: 指定曲と指定時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` に保存する。
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
 - `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。
 - `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP API、origin検証、CSPつきHTML応答。

@@ -161,6 +161,16 @@ http://127.0.0.1:5173/docs/workflows.html
 
 表示内容は `docs/workflows.json` から読み込まれます。このJSONは、機能追加やバグ修正時にLLMへシステムの流れを説明するための共有資料としても使えます。
 
+## Preview Snapshot
+
+指定した曲と時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvasの簡易状態を `.codex/runtime/preview-snapshots/` へ保存できます。
+
+```powershell
+npm run preview:snapshot -- --song shining-star --time 48
+```
+
+既存のfixture player / song-pack serverが起動していればそれを使います。起動していない場合は一時的にローカルサーバーを起動し、このコマンド自身が起動したものだけ停止します。外部依存は追加せず、ローカルChromeまたはEdgeのDevTools Protocolを使います。
+
 ## Agent Context
 
 Codexや別エージェントに作業を渡すときは、まず `AGENTS.md` を読ませます。
