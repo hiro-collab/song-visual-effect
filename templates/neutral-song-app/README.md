@@ -6,7 +6,7 @@
 
 - これは視覚デザインのテンプレートではありません。
 - 中央発光、放射線、光ネットワーク、粒子、グロー、soft light構図を含めません。
-- 既存の `examples/fixture-player/renderers/` や `examples/fixture-player/effects/` をコピー元にしません。
+- 既存の `examples/fixtures/soft-light-player/renderers/` や `examples/fixtures/soft-light-player/effects/` をコピー元にしません。
 - 曲の主役構造を先に決めるまで、線や光の表現を足さないでください。
 
 使い方:

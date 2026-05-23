@@ -1,10 +1,10 @@
-import type { MusicMap } from "../../../system/kit/types";
 import {
   createBeatSyncReader,
   type BeatSyncReaderOptions,
   type BeatSyncSource,
-  type BeatSyncState
-} from "../../../system/kit/beatSync";
+  type BeatSyncState,
+  type MusicMap
+} from "../../../../system/kit";
 
 type BeatStateToolOptions = {
   musicMap: MusicMap;

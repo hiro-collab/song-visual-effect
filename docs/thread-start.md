@@ -42,8 +42,7 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - `docs/architecture.md`
 - `docs/module-map.md`
 - `docs/decisions.md`
-- `docs/plans.md`
-- `docs/known-issues.md`
+- `docs/archive/working-notes/` は過去メモです。正本に必要な情報がない場合だけ確認します。
 
 新しい曲や曲固有エフェクトを作る場合:
 
@@ -52,14 +51,14 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - `docs/song-visual-independence.md`
 - `templates/neutral-song-app/visual-brief.md`
 
-新しい曲作成では、既存の `song-packs/*`、`examples/fixture-player/renderers/*`、`examples/fixture-player/effects/*` を読まないでください。既存曲やfixture rendererに引っ張られないためです。
+新しい曲作成では、既存の `song-packs/*`、`examples/fixtures/soft-light-player/renderers/*`、`examples/fixtures/soft-light-player/effects/*` を読まないでください。既存曲やfixture rendererに引っ張られないためです。
 
 ## 担当範囲を分類する
 
 作業前に、自分の担当を次のどれかに分類します。
 
 - system kit: `system/kit/*` の補助機能。
-- fixture player: `examples/fixture-player/*` の動作確認用アプリ。
+- fixture: `examples/fixtures/soft-light-player/*` の動作確認用アプリ。
 - song package / song app: 曲ごとの素材、cue、演出コード。
 - launch / dev server: 起動管理、ポート、停止、CORS。
 - docs / workflow: `docs/*`、`AGENTS.md`、`workflows.json`。
@@ -69,7 +68,7 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - system kitに曲固有の見た目や曲専用adapterを入れない。
 - fixture playerは回帰確認用であり、新曲の標準UIや標準rendererではない。
 - 曲固有のcue文法、主役構造、演出判断は曲側が持つ。
-- 曲固有adapterを同一ビルドで試す場合も、直接 `examples/fixture-player/adapters/registry.ts` へ曲IDを追加せず、`song-packs/local-adapters.ts` に登録する。
+- 曲固有adapterを同一ビルドで試す場合も、直接 `examples/fixtures/soft-light-player/adapters/registry.ts` へ曲IDを追加せず、`song-packs/local-adapters.ts` に登録する。
 
 ## Launch Managerの停止範囲
 
@@ -179,8 +178,7 @@ npm run sync:ready -- -m "short message"
 設計や運用に影響する変更をした場合は、次を更新します。
 
 - `docs/handoff.md`
-- `docs/plans.md`
-- `docs/known-issues.md`
+- `docs/archive/working-notes/` は必要時だけ参照する。
 - `docs/workflows.json`
 - 必要なら `.codex/shared_note.md` と `.codex/log.md`
 

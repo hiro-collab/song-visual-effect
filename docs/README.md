@@ -8,7 +8,7 @@
 - `system-overview.md`: 曲に依存しないシステムの考え方。
 - `song-authoring.md`: 新しい曲を作るときの手順と注意。
 - `song-visual-independence.md`: 既存曲やfixtureの見た目に引っ張られないための確認表。
-- `architecture.md`: system kit、fixture player、song-pack server、Launch Managerの関係。
+- `architecture.md`: system kit、fixture、song-pack server、Launch Managerの関係。
 - `module-map.md`: ディレクトリと主要ファイルの役割。
 - `decisions.md`: 設計判断と理由。
 - `security.md`: ローカル開発サーバー、manifest、Songle取得、Launch Managerの信頼境界。
@@ -25,8 +25,8 @@
 読まないもの:
 
 - `song-packs/*`
-- `examples/fixture-player/renderers/*`
-- `examples/fixture-player/effects/*`
+- `examples/fixtures/soft-light-player/renderers/*`
+- `examples/fixtures/soft-light-player/effects/*`
 - 既存曲のmanifest、analysis、design、adapter、演出コード
 
 既存曲やfixtureは実例であって、次の曲の標準構成ではありません。
@@ -47,10 +47,9 @@
 ## 作業メモとして扱うもの
 
 - `handoff.md`: 次スレッドへの現状要約。新しい曲作成の入口にはしない。
-- `plans.md`: 今後の作業候補。決定済み仕様とは限らない。
-- `known-issues.md`: 既知の問題と注意点。方針変更後も古い問題が残ることがある。
+- `archive/working-notes/`: 過去の作業候補、既知問題、詳細メモ。決定済み仕様として読まない。
 
-作業メモに書かれた内容と正本が食い違う場合は、まず正本を優先し、必要なら作業メモ側を更新してください。
+作業メモに書かれた内容と正本が食い違う場合は、正本を優先してください。恒久仕様へ昇格する場合だけ、該当する正本へ要点を移します。
 
 ## 更新ルール
 

@@ -1,6 +1,5 @@
 import type { SongAdapterContext } from "./songAdapterContext";
-import type * as ThreeModule from "three";
-import type { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import type { SongAppThreeServices } from "../render/threeServices";
 
 export type SongAppContentRect = {
   x: number;
@@ -40,11 +39,6 @@ export type SongVisualHost = {
   safeArea: () => SongAppContentRect;
   resizeLayers: () => void;
   createLayer: (options?: SongVisualLayerOptions) => SongVisualLayer;
-};
-
-export type SongAppThreeServices = {
-  THREE: typeof ThreeModule;
-  GLTFLoader: new () => GLTFLoader;
 };
 
 export type SongAppServices = {

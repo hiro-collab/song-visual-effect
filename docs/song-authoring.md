@@ -97,7 +97,7 @@ npm run song:validate -- --id song-id
 - 既存曲のmanifestをコピーしてから作り始める。
 - 既存曲の `analysis/` 構造を標準スキーマだと思い込む。
 - 既存曲のエフェクトを名前だけ変えて流用する。
-- `examples/fixture-player/renderers/` や `examples/fixture-player/effects/` を新曲の視覚テンプレートにする。
+- `examples/fixtures/soft-light-player/renderers/` や `examples/fixtures/soft-light-player/effects/` を新曲の視覚テンプレートにする。
 - soft light rendererの中央発光、放射線、光ネットワーク、粒子、グロー中心の構図を無意識に再利用する。
 - 曲側の自由なJSON構成を、システム側の都合で固定する。
 - Canvas2D前提で設計を始める。

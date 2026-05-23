@@ -23,7 +23,7 @@ system/kit
   timing helpers
   lyric timing data helpers
 
-examples/fixture-player
+examples/fixtures/soft-light-player
   small runnable player for regression checks
   optional lyric timing UI
   fixture renderer
@@ -37,7 +37,7 @@ song package or song app
 
 `system/kit` は曲を知りません。曲名、曲ごとのcue文法、演出思想、描画方式を固定しません。
 
-現在のブラウザ画面は `examples/fixture-player` です。これは動作確認用の小さなプレイヤーであり、すべての曲を従わせる本体ではありません。
+現在のブラウザ画面は `examples/fixtures/soft-light-player` です。これは動作確認用fixtureであり、すべての曲を従わせる本体ではありません。
 
 ## 起動管理
 
@@ -95,9 +95,9 @@ Launch Managerの非責務:
 - 歌詞タイミング編集UIを全曲必須にすること。
 - 曲ごとのWebアプリを必ずこのfixture playerに載せること。
 
-## Fixture Player
+## Fixture
 
-`examples/fixture-player` は、system kitを使った動作確認用アプリです。
+`examples/fixtures/soft-light-player` は、system kitを使った動作確認用アプリです。新しい曲の設計時に読む入口ではありません。
 
 役割:
 
@@ -117,7 +117,7 @@ Launch Managerの非責務:
 
 ```text
 index.html
-  -> examples/fixture-player/main.ts
+  -> examples/fixtures/soft-light-player/main.ts
 ```
 
 ## Song Package

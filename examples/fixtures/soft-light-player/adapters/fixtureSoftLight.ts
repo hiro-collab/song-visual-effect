@@ -1,5 +1,4 @@
-import type { SongAdapterContext } from "../../../system/kit/songAdapterContext";
-import type { SongApp, SongAppServices } from "../../../system/kit/songApp";
+import type { SongAdapterContext, SongApp, SongAppServices } from "../../../../system/kit";
 import { SoftLightRenderer } from "../renderers/softLightRenderer";
 
 export const createFixtureSoftLightApp = (

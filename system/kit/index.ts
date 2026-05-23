@@ -12,8 +12,8 @@ export type {
   PointerState,
   Range,
   SongManifest
-} from "./types";
-export { findBundledAudio, getSongManifestUrl, loadMusicMap, resolveSourcePath } from "./assets";
+} from "./core/types";
+export { findBundledAudio, getSongManifestUrl, loadMusicMap, resolveSourcePath } from "./core/assets";
 export {
   DEFAULT_MAX_JSON_BYTES,
   DEFAULT_MAX_TEXT_BYTES,
@@ -23,34 +23,34 @@ export {
   isWithinBaseUrl,
   resolveHttpUrl,
   resolveWithinBaseUrl
-} from "./safeFetch";
-export type { SongAdapterContext, SongAssetReader } from "./songAdapterContext";
-export { createSongAdapterContext } from "./songAdapterContext";
+} from "./core/safeFetch";
+export type { SongAdapterContext, SongAssetReader } from "./song-app/songAdapterContext";
+export { createSongAdapterContext } from "./song-app/songAdapterContext";
 export type {
   SongApp,
   SongAppContentRect,
   SongAppFactory,
   SongAppFrame,
   SongAppServices,
-  SongAppThreeServices,
   SongVisualHost,
   SongVisualLayer,
   SongVisualLayerOptions
-} from "./songApp";
-export { createVisualHost } from "./visualHost";
-export type { CanvasScene, CanvasSceneOptions, CanvasScenePointer, TextFitOptions, TextFitResult } from "./contentRect";
-export { createCanvasScene, fitTextToRect, resizeCanvasToDisplaySize, withContentRect } from "./contentRect";
-export { Transport } from "./transport";
-export { startFrameLoop } from "./frameLoop";
-export { activeRange, beatAt, emphasisAt, lyricAt, lyricIndexAt } from "./timing";
-export type { BeatSyncFrameInput, BeatSyncReaderOptions, BeatSyncSource, BeatSyncState } from "./beatSync";
+} from "./song-app/songApp";
+export { createVisualHost } from "./render/visualHost";
+export type { CanvasScene, CanvasSceneOptions, CanvasScenePointer, TextFitOptions, TextFitResult } from "./render/contentRect";
+export { createCanvasScene, fitTextToRect, resizeCanvasToDisplaySize, withContentRect } from "./render/contentRect";
+export type { SongAppThreeServices } from "./render/threeServices";
+export { Transport } from "./core/transport";
+export { startFrameLoop } from "./core/frameLoop";
+export { activeRange, beatAt, emphasisAt, lyricAt, lyricIndexAt } from "./timing/timing";
+export type { BeatSyncFrameInput, BeatSyncReaderOptions, BeatSyncSource, BeatSyncState } from "./timing/beatSync";
 export {
   createBeatSyncReader,
   estimateBeatBpm,
   getBeatSyncState,
   normalizeBeatGrid,
   normalizeBeatSyncSource
-} from "./beatSync";
+} from "./timing/beatSync";
 export {
   applyLyricAdjustments,
   buildLyricsFromKeyframes,
@@ -58,6 +58,6 @@ export {
   makeTimingExport,
   normalizeAdjustments,
   normalizeKeyframes
-} from "./manualTiming";
-export { ColorRamp, DEFAULT_PALETTE } from "./palette";
-export { DampValue, clamp, decayPulse, smoothstep } from "./damping";
+} from "./timing/manualTiming";
+export { ColorRamp, DEFAULT_PALETTE } from "./render/palette";
+export { DampValue, clamp, decayPulse, smoothstep } from "./render/damping";

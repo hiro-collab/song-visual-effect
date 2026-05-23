@@ -1,6 +1,5 @@
-import type { SongAdapterContext } from "../../../system/kit/songAdapterContext";
-import type { SongApp, SongAppFactory, SongAppServices } from "../../../system/kit/songApp";
-import { resolveLocalSongAdapter } from "../../../song-packs/local-adapters";
+import type { SongAdapterContext, SongApp, SongAppFactory, SongAppServices } from "../../../../system/kit";
+import { resolveLocalSongAdapter } from "../../../../song-packs/local-adapters";
 import { createFixtureSoftLightApp } from "./fixtureSoftLight";
 
 const BUILTIN_ADAPTERS: Record<string, SongAppFactory> = Object.assign(Object.create(null), {

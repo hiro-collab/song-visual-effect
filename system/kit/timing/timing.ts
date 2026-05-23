@@ -1,5 +1,5 @@
-import type { Beat, LyricCue, MusicMap, Range } from "./types";
-import { clamp, decayPulse, smoothstep } from "./damping";
+import type { Beat, LyricCue, MusicMap, Range } from "../core/types";
+import { clamp, decayPulse, smoothstep } from "../render/damping";
 
 export const activeRange = (time: number, ranges: Range[]) => {
   let value = 0;

@@ -1,17 +1,22 @@
 import "./styles.css";
-import { loadMusicMap, findBundledAudio } from "../../system/kit/assets";
-import type { MusicMap } from "../../system/kit/types";
-import { clamp } from "../../system/kit/damping";
 import { getAppElements } from "./dom";
-import { Transport } from "../../system/kit/transport";
-import { startFrameLoop } from "../../system/kit/frameLoop";
-import { createSongAdapterContext, type SongAdapterContext } from "../../system/kit/songAdapterContext";
-import { createVisualHost } from "../../system/kit/visualHost";
 import { createSongApp } from "./adapters/registry";
-import type { SongApp, SongVisualHost } from "../../system/kit/songApp";
-import { lyricAt } from "../../system/kit/timing";
 import { LyricTimingTool } from "./tools/lyricTimingTool";
 import { BeatStateTool } from "./tools/beatStateTool";
+import {
+  Transport,
+  clamp,
+  createSongAdapterContext,
+  createVisualHost,
+  findBundledAudio,
+  loadMusicMap,
+  lyricAt,
+  startFrameLoop,
+  type MusicMap,
+  type SongAdapterContext,
+  type SongApp,
+  type SongVisualHost
+} from "../../../system/kit";
 
 const elements = getAppElements();
 const {

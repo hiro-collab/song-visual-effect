@@ -1,5 +1,5 @@
 import type { Beat, LyricCue, Markers, MusicMap, Palette, Range, SongManifest } from "./types";
-import { DEFAULT_PALETTE } from "./palette";
+import { DEFAULT_PALETTE } from "../render/palette";
 import {
   DEFAULT_MAX_TEXT_BYTES,
   fetchBoundedJson,

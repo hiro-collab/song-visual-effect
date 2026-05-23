@@ -36,9 +36,9 @@
 
 - `song-packs/*`
 - 既存曲のmanifest、analysis、design、adapter、演出コード
-- `examples/fixture-player/renderers/*`
-- `examples/fixture-player/effects/*`
-- `examples/fixture-player/adapters/fixtureSoftLight.ts`
+- `examples/fixtures/soft-light-player/renderers/*`
+- `examples/fixtures/soft-light-player/effects/*`
+- `examples/fixtures/soft-light-player/adapters/fixtureSoftLight.ts`
 - `README.md` のfixture節
 - `docs/handoff.md` のfixture確認URL
 
@@ -92,6 +92,6 @@
 
 - 音源ファイルはコミットしない。`.gitignore` の除外を維持する。
 - `music_src/` は廃止済み。`song-packs/` を曲データ本体として扱う。
-- `docs/handoff.md` と必要に応じて `docs/plans.md` / `docs/known-issues.md` を更新する。
+- `docs/handoff.md` と必要に応じて正本側のdocsを更新する。古い作業メモは `docs/archive/working-notes/` に置き、新しい恒久仕様の置き場にしない。
 - UIやフローを変えた場合は `docs/workflows.json` も更新する。
 - 恒久的な仕様変更は作業メモだけに置かず、`docs/README.md` で案内される正本側へ反映する。

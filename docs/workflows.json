@@ -105,7 +105,7 @@
       "label": "fixture player",
       "kind": "fixture-player",
       "group": "検証用アプリ",
-      "file": "examples/fixture-player/main.ts",
+      "file": "examples/fixtures/soft-light-player/main.ts",
       "x": 28,
       "y": 38,
       "description": "system kitを使った動作確認用プレイヤーです。起動、入力登録、再生状態、フレーム更新、歌詞表示、fixture adapter接続をまとめます。"
@@ -125,7 +125,7 @@
       "label": "assets.ts",
       "kind": "loader",
       "group": "system kit",
-      "file": "system/kit/assets.ts",
+      "file": "system/kit/core/assets.ts",
       "x": 50,
       "y": 38,
       "description": "manifestを読み、Songle JSON、歌詞、手動タイミング、palette、markersをMusicMapへ変換します。"
@@ -145,7 +145,7 @@
       "label": "visual host",
       "kind": "runtime-helper",
       "group": "system kit",
-      "file": "system/kit/visualHost.ts",
+      "file": "system/kit/render/visualHost.ts",
       "x": 37,
       "y": 42,
       "description": "曲adapterが任意で使えるsafe area、追加Canvas/DOMレイヤ、DPR/resize/cleanup補助です。曲の見た目や描画方式は決めません。"
@@ -155,7 +155,7 @@
       "label": "再生制御",
       "kind": "system-service",
       "group": "system kit",
-      "file": "system/kit/transport.ts",
+      "file": "system/kit/core/transport.ts",
       "x": 72,
       "y": 38,
       "description": "audio要素または内部クロックから現在時刻を作り、再生、停止、シークを制御するhelperです。"
@@ -165,7 +165,7 @@
       "label": "フレームループ",
       "kind": "system-service",
       "group": "system kit",
-      "file": "system/kit/frameLoop.ts",
+      "file": "system/kit/core/frameLoop.ts",
       "x": 28,
       "y": 66,
       "description": "requestAnimationFrame(tick)で毎フレーム更新するhelperです。fixture playerや曲アプリが必要に応じて使います。"
@@ -185,7 +185,7 @@
       "label": "エフェクト群",
       "kind": "visual",
       "group": "演出",
-      "file": "examples/fixture-player/effects",
+      "file": "examples/fixtures/soft-light-player/effects",
       "x": 55,
       "y": 66,
       "description": "fixture player用の粒子、光線ネットワーク、色ramp、ダンピング制御です。新しい曲のテンプレートではありません。"
@@ -195,7 +195,7 @@
       "label": "歌詞タイミング編集",
       "kind": "tool",
       "group": "ツール",
-      "file": "examples/fixture-player/tools/lyricTimingTool.ts / system/kit/manualTiming.ts",
+      "file": "examples/fixtures/soft-light-player/tools/lyricTimingTool.ts / system/kit/timing/manualTiming.ts",
       "x": 72,
       "y": 66,
       "description": "A/Dキー、全体補正、途中から補正、ストーン表示、Export用JSON生成を担当します。音声波形は解析しません。"
@@ -235,7 +235,7 @@
       "label": "Launch仕様",
       "kind": "spec",
       "group": "文脈",
-      "file": "docs/launch-manager-spec.md / docs/launch-manager-spec.html",
+      "file": "docs/launch-manager-spec.md / docs/archive/working-notes/launch-manager-spec.html",
       "x": 10,
       "y": 14,
       "description": "複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様です。HTMLはレビュー用の見取り図です。"
@@ -569,7 +569,7 @@
           "from": "devManager",
           "to": "contextDocs",
           "action": "運用前提を共有する",
-          "payload": "docs/launch-manager-spec.md、docs/plans.md、docs/handoff.md、docs/workflows.json",
+          "payload": "docs/launch-manager-spec.md、docs/archive/working-notes/plans.md、docs/handoff.md、docs/workflows.json",
           "note": "Launch Managerは曲の構成を束縛しない補助ツールとして扱います。"
         }
       ]

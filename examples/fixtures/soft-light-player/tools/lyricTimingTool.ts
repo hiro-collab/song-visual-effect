@@ -1,16 +1,19 @@
 import type { AppElements } from "../dom";
-import type { LyricCue, LyricKeyframe, LyricTimingAdjustments, MusicMap } from "../../../system/kit/types";
-import { clamp } from "../../../system/kit/damping";
-import { lyricIndexAt } from "../../../system/kit/timing";
-import { Transport } from "../../../system/kit/transport";
 import {
+  Transport,
   applyLyricAdjustments,
   buildLyricsFromKeyframes,
   clampTime,
+  clamp,
+  lyricIndexAt,
   makeTimingExport,
   normalizeAdjustments,
-  normalizeKeyframes
-} from "../../../system/kit/manualTiming";
+  normalizeKeyframes,
+  type LyricCue,
+  type LyricKeyframe,
+  type LyricTimingAdjustments,
+  type MusicMap
+} from "../../../../system/kit";
 
 type TimingSnapshot = {
   keyframes: LyricKeyframe[];

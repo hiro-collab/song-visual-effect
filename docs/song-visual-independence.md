@@ -4,7 +4,7 @@
 
 ## 背景
 
-「既存の `song-packs/*` を読まない」だけでは不十分な場合があります。曲パッケージを見なくても、`examples/fixture-player` のsoft light renderer、中央発光、放射線、光ネットワーク、粒子、グロー中心の構図に引っ張られることがあります。
+「既存の `song-packs/*` を読まない」だけでは不十分な場合があります。曲パッケージを見なくても、`examples/fixtures/soft-light-player` のsoft light renderer、中央発光、放射線、光ネットワーク、粒子、グロー中心の構図に引っ張られることがあります。
 
 新しい曲を作るときは、既存曲だけでなく、既存fixture rendererも視覚テンプレートとして扱わないでください。
 
@@ -28,10 +28,10 @@
 新しい曲の初期設計では読まないもの:
 
 - `song-packs/*`
-- `examples/fixture-player/renderers/*`
-- `examples/fixture-player/effects/*`
-- `examples/fixture-player/adapters/fixtureSoftLight.ts`
-- `examples/fixture-player/styles.css`
+- `examples/fixtures/soft-light-player/renderers/*`
+- `examples/fixtures/soft-light-player/effects/*`
+- `examples/fixtures/soft-light-player/adapters/fixtureSoftLight.ts`
+- `examples/fixtures/soft-light-player/styles.css`
 - 既存曲のmanifest、analysis、design、adapter、README
 
 例外:

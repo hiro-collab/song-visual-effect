@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | fixture UIと重ならない描画 | `safeArea` / `contentRect` / `visualHost` | 実装済み |
 | WebGL/Pixi等の追加レイヤ | `visualHost.createLayer({ canvasContext: "none" })` | 実装済み |
-| Canvas2DのDPR/clip/pointer/text fit | `system/kit/contentRect.ts` | 実装済み |
+| Canvas2DのDPR/clip/pointer/text fit | `system/kit/render/contentRect.ts` | 実装済み |
 | 参照URL管理 | `references.json` と `npm run song:validate` | 実装済み |
 | 指定時刻preview検証 | `preview:snapshot` | 設計候補 |
 | 手描き/筆線 | 点列、太さ、色を受け取るstroke helper | 設計候補 |

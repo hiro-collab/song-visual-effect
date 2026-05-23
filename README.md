@@ -68,7 +68,7 @@ docs/song-visual-independence.md
 - 既存の `song-packs/*` はテンプレートではありません。
 - 新しい曲を作るときは、既存曲のmanifest、analysis、design、adapter、演出コードを見ないでください。
 - 既存曲を見るのは、その曲自体を直すとき、回帰確認をするとき、またはユーザーが明示的に許可したときだけです。
-- `examples/fixture-player` のsoft light rendererやeffect群も、新曲の視覚テンプレートとして読まないでください。
+- `examples/fixtures/soft-light-player` のsoft light rendererやeffect群も、新曲の視覚テンプレートとして読まないでください。
 - 曲ごとの構成は自由です。既存曲の構成に合わせる必要はありません。
 
 曲アプリを作る場合は、空に近い出発点として `templates/neutral-song-app/` を使えます。最初のプレビュー後は `docs/song-visual-independence.md` で、構図、色、主役、線/光、カメラ視点が前作に寄りすぎていないか確認してください。
@@ -188,10 +188,8 @@ docs/decisions.md
 ```text
 docs/architecture.md
 docs/module-map.md
-docs/plans.md
-docs/known-issues.md
 docs/handoff.md
 docs/workflows.json
 ```
 
-作業後は `docs/handoff.md` と、必要に応じて `docs/plans.md` / `docs/known-issues.md` / `docs/workflows.json` を更新してください。
+作業後は `docs/handoff.md` と、必要に応じて該当する正本docsや `docs/workflows.json` を更新してください。古い作業候補や既知問題は `docs/archive/working-notes/` に退避してあり、通常の入口にはしません。

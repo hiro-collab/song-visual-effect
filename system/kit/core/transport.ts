@@ -1,4 +1,4 @@
-import { clamp } from "./damping";
+import { clamp } from "../render/damping";
 
 const clampTime = (time: number, duration: number) => Math.min(Math.max(0, time), Math.max(0, duration));
 
