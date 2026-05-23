@@ -2,23 +2,14 @@
   "schema": "music-effect.song-manifest.v1",
   "id": "traffic-jam",
   "title": "トラフィック・ジャム",
-  "artist": "煮ル果実 feat. flower",
-  "duration": 240.4,
-  "credits": "CREDITS.md",
-  "lyrics": null,
+  "artist": "煮ル果実",
+  "duration": 181,
   "analysis": {
-    "song": "analysis/song.json",
-    "beat": "analysis/beat.json",
-    "chord": "analysis/chord.json",
-    "melody": "analysis/melody.json",
-    "chorus": "analysis/chorus.json",
     "markers": "analysis/markers.json",
     "palette": "analysis/palette.json"
   },
-  "audio": null,
   "design": {
-    "effect": "design/effect-direction.md",
-    "cues": "analysis/visual-cues.json"
+    "effect": "design/effect.json"
   },
-  "webAdapter": null
+  "webAdapter": "song:traffic-jam"
 }

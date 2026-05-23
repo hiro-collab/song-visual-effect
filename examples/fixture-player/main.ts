@@ -32,7 +32,7 @@ const {
 
 let musicMap: MusicMap;
 let transport: Transport;
-let timingTool: LyricTimingTool;
+let timingTool: LyricTimingTool | null = null;
 let beatStateTool: BeatStateTool | null = null;
 let songContext: SongAdapterContext;
 let songApp: SongApp;
@@ -50,11 +50,19 @@ const setPlayingIcon = () => {
 
 const currentTime = () => transport.currentTime();
 
+const loadThree = async () => {
+  const [THREE, loaderModule] = await Promise.all([
+    import("three"),
+    import("three/examples/jsm/loaders/GLTFLoader.js")
+  ]);
+  return { THREE, GLTFLoader: loaderModule.GLTFLoader };
+};
+
 const updateLyrics = (time: number) => {
   const lyric = lyricAt(time, musicMap.lyrics);
   lyricCurrent.textContent = lyric.current?.text ?? "";
   lyricNext.textContent = lyric.next?.text ?? "";
-  timingTool.update(time);
+  timingTool?.update(time);
 };
 
 const tick = (_now: number, dt: number) => {
@@ -98,7 +106,7 @@ const setupInput = () => {
       transport.toggle();
       return;
     }
-    timingTool.handleKeydown(event);
+    timingTool?.handleKeydown(event);
   });
 
   audioInput.addEventListener("change", () => {
@@ -114,22 +122,33 @@ const reportBootError = (error: unknown) => {
   console.error(error);
 };
 
+const previewTimeFromUrl = () => {
+  const raw = new URLSearchParams(window.location.search).get("previewTime");
+  if (!raw) return null;
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : null;
+};
+
 const boot = async () => {
   try {
     transport = new Transport(audio, setPlayingIcon);
     musicMap = await loadMusicMap();
     songContext = createSongAdapterContext(musicMap);
-    songApp = await createSongApp(songContext, { canvas, ctx });
+    songApp = await createSongApp(songContext, { canvas, ctx, loadThree });
     document.title = `${musicMap.title} - Music Effect`;
     songTitle.textContent = musicMap.title;
     songArtist.textContent = musicMap.artist;
-    timingTool = new LyricTimingTool({
-      elements,
-      musicMap,
-      transport,
-      onSeek: updateLyrics,
-      resetVisualTiming: () => songApp.resetVisualTiming?.()
-    });
+    const hasLyricTiming = musicMap.lyricLines.length > 0;
+    elements.timingPanel.hidden = !hasLyricTiming;
+    if (hasLyricTiming) {
+      timingTool = new LyricTimingTool({
+        elements,
+        musicMap,
+        transport,
+        onSeek: updateLyrics,
+        resetVisualTiming: () => songApp.resetVisualTiming?.()
+      });
+    }
     songApp.resize();
     setupInput();
     if (isBeatStateToolEnabled()) {
@@ -139,10 +158,15 @@ const boot = async () => {
       });
       beatStateTool.mount(document.querySelector("#app") ?? document.body);
     }
-    timingTool.bindControls();
-    timingTool.initialize();
+    timingTool?.bindControls();
+    timingTool?.initialize();
     const audioPath = await findBundledAudio(musicMap);
     if (audioPath) transport.setAudioPath(audioPath);
+    const previewTime = previewTimeFromUrl();
+    if (previewTime !== null) {
+      transport.seek(previewTime, musicMap.duration);
+      updateLyrics(previewTime);
+    }
     const adapterStatus = songApp.status ? ` / ${songApp.status}` : "";
     dataStatus.textContent = musicMap.warnings.length
       ? `${musicMap.title}: ${musicMap.warnings.join(" / ")}${adapterStatus}`

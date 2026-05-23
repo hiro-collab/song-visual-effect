@@ -19,7 +19,11 @@
     "sync:watch": "node scripts/worktree-sync.mjs watch"
   },
   "devDependencies": {
+    "@types/three": "^0.184.1",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "three": "^0.184.0"
   }
 }
