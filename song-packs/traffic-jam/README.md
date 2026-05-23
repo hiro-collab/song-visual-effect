@@ -9,6 +9,7 @@ projector-oriented 3D traffic scene.
 - Manifest: `manifest.json`
 - Visual adapter: `adapter.ts`
 - Effect timing/design: `design/effect.json`
+- Reimplementation brief: `design/reimplementation-brief.md`
 - Lightweight analysis used by the effect: `analysis/markers.json`,
   `analysis/palette.json`
 - Vehicle model list: `assets/vehicle-proxies.json`
