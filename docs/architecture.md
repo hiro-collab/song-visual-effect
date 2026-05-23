@@ -136,7 +136,7 @@ index.html
 }
 ```
 
-歌詞、解析JSON、音源、クレジット、Web adapterなどは必要な場合だけ追加します。
+歌詞、解析JSON、音源、クレジット、Web adapter IDなどは必要な場合だけ追加します。現行の `webAdapter` は `builtin:*` または `song:*` のIDとして扱い、URLや相対パスのadapterコードは読み込みません。
 
 ## Security Boundary
 
@@ -150,7 +150,7 @@ index.html
 - song-pack serverは、既定でfixture playerのoriginからのCORSだけを許可する。
 - song-pack serverは隠しファイルと未許可拡張子を配信しない。
 - dev managerの起動・停止APIは、同一origin相当のリクエストだけを受け付ける。
-- 外部Web adapterを直接読み込む設計は任意コード実行につながるため、まだ採用しない。
+- 外部Web adapterを直接読み込む設計は任意コード実行につながるため、まだ採用しない。`webAdapter` は同一ビルド内の `builtin:` / `song:` IDだけを解決対象にする。
 
 ## 今後の方向
 

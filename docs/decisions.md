@@ -75,6 +75,9 @@ fixture用の描画判断は `examples/fixture-player` に隔離する。シス�
 決定:
 将来的に別サーバーからWeb adapterを読み込む仕様は許容する。ただしセキュリティが重要なので、最初は同一ビルド内でadapterを分離し、次段階で外部adapter化する。
 
+現行実装:
+manifestの `webAdapter` は同一ビルド内の `builtin:*` または `song:*` IDだけとして扱う。URLや相対パスをadapterコードとして解決する処理は持たない。
+
 理由:
 外部adapterは自由度が高いが、CORS、信頼境界、任意コード実行の問題があるため。まずは構造分離を優先し、安全な読み込み設計を後から決める。
 
@@ -168,4 +171,4 @@ MVPではmanaged targetだけを扱う。Launch Manager UIは状態の正本を�
 system kitとfixture playerは曲を束縛しない補助領域であり、特定曲の構成や演出を混ぜると、新しい曲が既存曲の文法へ引っ張られるため。
 
 影響:
-ローカル開発で同一ビルド内の曲adapterを試す場合、曲adapter本体は `song-packs/<song-id>/adapter.ts` に置き、`song-packs/local-adapters.ts` だけに `song:<song-id>` の対応を追加する。fixture playerのbuiltin registryへ曲固有adapterを直接importしない。system-wide docsには必要最小限のポインタだけを残し、曲の設計メモは曲パック側へ置く。
+ローカル開発で同一ビルド内の曲adapterを試す場合、曲adapter本体は `song-packs/<song-id>/adapter.ts` に置き、`song-packs/local-adapters.ts` だけに `song:<song-id>` の対応を追加する。`song-packs/local-adapters.ts` は `song:` IDだけを扱い、`builtin:` IDやURL/path形式は扱わない。fixture playerのbuiltin registryへ曲固有adapterを直接importしない。system-wide docsには必要最小限のポインタだけを残し、曲の設計メモは曲パック側へ置く。

@@ -28,7 +28,7 @@
 - `docs/workflows.html` / `docs/workflows.json` にワークフロー地図がある。
 - `song-packs/` に曲ごとのパッケージがある。曲固有の設計メモや再実装ブリーフは各曲パック側のREADMEやdesign配下を見る。
 - 曲アプリ向けに `system/kit/songAdapterContext.ts` を追加し、raw manifest、base URL、`readJson()`、`readText()`、`readDesignCues()` を渡せるようにした。system kitは `design.cues` の中身を固定解釈しない。
-- fixture player内のregistryは中立的な `builtin:` adapterだけを直接持つ。ローカル開発用の曲固有 `song:` adapter登録は `song-packs/local-adapters.ts` 側へ置く。外部adapter読み込みはまだ無効。
+- fixture player内のregistryは中立的な `builtin:` adapterだけを直接持つ。ローカル開発用の曲固有 `song:` adapter登録は `song-packs/local-adapters.ts` 側へ置く。`song-packs/local-adapters.ts` は `song:` IDだけを扱い、外部adapter URL/pathの解決は無効。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 - 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。

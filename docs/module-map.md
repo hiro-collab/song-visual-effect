@@ -54,7 +54,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - fixture playerで読む場合は、入口としてmanifest URLを渡す。
 - `song-packs/*/audio/`: ローカル音源配置用。音源ファイルはコミットしない。
 - `song-packs/<song-id>/adapter.ts`: 曲固有のWeb adapterを同一ビルドで試す場合の置き場所。
-- `song-packs/local-adapters.ts`: ローカル開発用に `song:<song-id>` を曲側adapterへ対応づける橋。曲ID直書きの登録はfixture playerやsystem kitではなくここに置く。
+- `song-packs/local-adapters.ts`: ローカル開発用に `song:<song-id>` を曲側adapterへ対応づける橋。`song:` IDだけを扱い、`builtin:` やURL/path形式は扱わない。曲ID直書きの登録はfixture playerやsystem kitではなくここに置く。
 
 ## scripts
 

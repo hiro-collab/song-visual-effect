@@ -90,7 +90,7 @@ docs/song-visual-independence.md
 }
 ```
 
-必要に応じて、歌詞、解析JSON、音源、クレジット、Web adapterなどへのパスを追加します。
+必要に応じて、歌詞、解析JSON、音源、クレジット、Web adapter IDなどを追加します。現行のWeb adapterは同一ビルド内の `builtin:*` / `song:*` IDだけを解決し、URLや相対パスのadapterコードは読み込みません。
 
 ## Included Fixture
 

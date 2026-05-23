@@ -36,7 +36,7 @@
 - Launch Manager のtarget定義は、作業ディレクトリをリポジトリ配下に限定し、commandを単純なコマンド名に限定します。
 - Launch Manager のtarget定義では、`PATH`、`COMSPEC`、`SYSTEMROOT`、`NODE_OPTIONS` などrunner側の重要環境変数を上書きできません。
 - Windows上の `npm` / `npx` target は `cmd.exe /c` を介すため、target引数にshellメタ文字が含まれる場合は起動前に拒否します。
-- 同一ビルド内の曲固有adapterは `song-packs/local-adapters.ts` の静的登録だけを使います。外部URLや任意文字列からの動的importは行いません。
+- 同一ビルド内の曲固有adapterは `song-packs/local-adapters.ts` の `song:` 静的登録だけを使います。`builtin:` はfixture player側、`song:` は曲パック側のIDとして分け、外部URLや任意文字列からの動的importは行いません。
 - Songle取得スクリプトは `SongId`、対象URL、取得target、保存先、サイズ、JSON構文を検証します。
 
 ## 運用ルール
@@ -46,7 +46,7 @@
 - 起動管理サーバー経由で `PLAYER_PORT` を変える場合は、song-pack serverへ対応するCORS許可originを渡します。個別起動では手動で合わせてください。
 - localStorage は作業用キャッシュです。秘密情報や未公開の権利素材情報を保存しないでください。
 - Launch Manager のruntimeログは `.codex/runtime/` に生成されます。Gitでは無視しますが、targetのstdout/stderrに秘密情報を出さないでください。
-- 外部Web adapterを直接読み込む設計は、任意コード実行になるため未許可です。
+- 外部Web adapterを直接読み込む設計は、任意コード実行になるため未許可です。manifestの `webAdapter` にURLや相対パスを書いても、現行実装ではadapterコードとして解決しません。
 - 保存APIを追加する場合は、保存先を曲パッケージ内の限定ファイルに固定し、任意パス書き込みを禁止してください。
 
 ## 残る注意点

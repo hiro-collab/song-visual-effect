@@ -624,8 +624,8 @@
           "from": "manifest",
           "to": "songAdapter",
           "action": "webAdapterを指定",
-          "payload": "曲側で定義したadapter IDやURL",
-          "note": "system kitは曲専用adapterを持ちません。外部adapterはセキュリティ設計後に扱います。"
+          "payload": "同一ビルド内のbuiltin:*またはsong:* adapter ID",
+          "note": "system kitは曲専用adapterを持ちません。外部adapter URL/pathは現行実装では解決せず、セキュリティ設計後に扱います。"
         },
         {
           "from": "main",

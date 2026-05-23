@@ -93,7 +93,6 @@ export type MusicSource = {
   creditsUrl?: string;
   effectDesignUrl?: string;
   designCuesUrl?: string;
-  webAdapterUrl?: string;
 };
 
 export type MusicMap = {
