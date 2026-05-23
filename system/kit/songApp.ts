@@ -29,6 +29,7 @@ export type SongVisualLayerOptions = {
   id?: string;
   className?: string;
   kind?: "canvas" | "div";
+  canvasContext?: "2d" | "none";
   zIndex?: number;
   pointerEvents?: "none" | "auto";
   hideBaseCanvas?: boolean;

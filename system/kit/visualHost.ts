@@ -111,7 +111,10 @@ export const createVisualHost = (baseCanvas: HTMLCanvasElement, options: VisualH
         ? document.createElement("canvas")
         : document.createElement("div");
     const canvas = element instanceof HTMLCanvasElement ? element : undefined;
-    const ctx = canvas ? canvas.getContext("2d", { alpha: layerOptions.alpha ?? true }) : undefined;
+    const ctx =
+      canvas && (layerOptions.canvasContext ?? "2d") === "2d"
+        ? canvas.getContext("2d", { alpha: layerOptions.alpha ?? true })
+        : undefined;
     const previousBaseDisplay = baseCanvas.style.display;
 
     if (layerOptions.id) element.id = layerOptions.id;
