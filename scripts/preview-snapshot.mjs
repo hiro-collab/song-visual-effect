@@ -212,6 +212,18 @@ const spawnManaged = (label, command, args, env, logDir) => {
   return { label, child };
 };
 
+const findViteCli = () => {
+  let current = repoRoot;
+  while (true) {
+    const candidate = join(current, "node_modules", "vite", "bin", "vite.js");
+    if (existsSync(candidate)) return candidate;
+    const parent = resolve(current, "..");
+    if (parent === current) break;
+    current = parent;
+  }
+  throw new Error("Vite CLI was not found. Run npm install before preview:snapshot.");
+};
+
 const killChild = async (managed) => {
   if (!managed || managed.child.killed) return;
   if (managed.child.exitCode !== null) return;
@@ -253,7 +265,7 @@ const ensureServers = async ({ options, config, logDir }) => {
     spawned.push(spawnManaged(
       "fixture-player",
       process.execPath,
-      [join(repoRoot, "node_modules", "vite", "bin", "vite.js"), "--host", "127.0.0.1", "--port", config.playerUrl.port],
+      [findViteCli(), "--host", "127.0.0.1", "--port", config.playerUrl.port],
       {
         PLAYER_PORT: config.playerUrl.port,
         SONG_PACK_PORT: config.songBaseUrl.port
