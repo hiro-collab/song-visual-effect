@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 
 const cwd = process.cwd();
@@ -41,6 +42,7 @@ function parseArgs(args) {
     interval: 20,
     tip: false,
     all: false,
+    open: false,
     limit: 20,
   };
 
@@ -64,6 +66,14 @@ function parseArgs(args) {
       opts.tip = true;
     } else if (arg === "--all") {
       opts.all = true;
+    } else if (arg === "--open") {
+      opts.open = true;
+    } else if (arg === "--id" || arg === "--note" || arg === "--ack-id") {
+      opts.id = args[i + 1] ?? "";
+      i += 1;
+    } else if (arg === "--for" || arg === "--as") {
+      opts.for = args[i + 1] ?? "";
+      i += 1;
     } else if (arg === "--to") {
       opts.to = args[i + 1] ?? "";
       i += 1;
@@ -191,6 +201,46 @@ function messageText(opts) {
   return (opts.message || opts.positionals.join(" ")).trim();
 }
 
+function eventId(event) {
+  if (event.id) return String(event.id);
+  const stable = {
+    type: event.type,
+    time: event.time,
+    branch: event.branch,
+    commit: event.commit,
+    from: event.from,
+    to: event.to,
+    topic: event.topic,
+    level: event.level,
+    message: event.message,
+    source: event.source,
+    intoBranch: event.intoBranch,
+  };
+  return createHash("sha1").update(JSON.stringify(stable)).digest("hex").slice(0, 10);
+}
+
+function currentLabels(currentBranch, opts = {}) {
+  const labels = new Set(["*", "all", currentBranch, branchShortName(currentBranch)]);
+  for (const label of splitTargets(opts.for)) labels.add(label);
+
+  const short = branchShortName(currentBranch);
+  const branch = currentBranch.toLowerCase();
+  const lowerShort = short.toLowerCase();
+  if (lowerShort.includes("system")) labels.add("system");
+  if (lowerShort.includes("security") || branch.includes("download-security")) labels.add("security");
+  if (lowerShort.includes("beat-sync")) labels.add("beat-sync");
+  if (lowerShort.includes("traffic-jam")) {
+    labels.add("traffic-jam");
+    labels.add("traffic-jam-redo");
+  }
+  if (lowerShort.includes("mesmerizer")) {
+    labels.add("mesmerizer");
+    labels.add("mesmerizer-signal-lock");
+  }
+  if (lowerShort.includes("launch-manager")) labels.add("launch-manager");
+  return labels;
+}
+
 function commandNote(args) {
   const opts = parseArgs(args);
   const message = messageText(opts);
@@ -223,9 +273,10 @@ function commandNote(args) {
     dirty: !isClean(),
     worktree: cwd,
   };
+  event.id = eventId(event);
 
   appendEvent(event);
-  console.log(`Note recorded: ${event.from} -> ${event.to}`);
+  console.log(`Note recorded: ${event.from} -> ${event.to} #${event.id}`);
   console.log(`[${event.level}] ${event.message}`);
   if (event.dirty) {
     console.log("Note: this worktree had uncommitted changes when the note was recorded.");
@@ -249,32 +300,45 @@ function commandReady(args) {
     message,
     worktree: cwd,
   };
+  event.id = eventId(event);
 
   appendEvent(event);
-  console.log(`Ready notice recorded: ${branch} ${event.short}`);
+  console.log(`Ready notice recorded: ${branch} ${event.short} #${event.id}`);
   if (message) {
     console.log(`Message: ${message}`);
   }
 }
 
-function isNoteForCurrentBranch(event, currentBranch) {
+function isNoteForCurrentBranch(event, currentBranch, opts = {}) {
   const targets = splitTargets(event.to);
   if (targets.length === 0) return true;
 
-  const currentShort = branchShortName(currentBranch);
+  const labels = currentLabels(currentBranch, opts);
   return targets.some(
     (target) =>
-      target === "*" ||
-      target === "all" ||
-      target === currentBranch ||
-      target === currentShort ||
+      labels.has(target) ||
       currentBranch.endsWith(`/${target}`),
   );
 }
 
-function formatNote(event) {
+function ackedIdsForCurrentBranch(events, currentBranch, opts = {}) {
+  const labels = currentLabels(currentBranch, opts);
+  return new Set(
+    events
+      .filter((event) => event.type === "ack" && event.ackId)
+      .filter((event) => event.branch === currentBranch || labels.has(event.from) || labels.has(branchShortName(event.branch ?? "")))
+      .map((event) => String(event.ackId)),
+  );
+}
+
+function isActionLevel(event) {
+  return event.level === "question" || event.level === "blocker";
+}
+
+function formatNote(event, opts = {}) {
   const topic = event.topic ? ` (${event.topic})` : "";
   const dirty = event.dirty ? " dirty" : "";
+  const acked = opts.acked ? " acked" : "";
   const from = event.from ?? event.branch ?? "(unknown)";
   const branch = event.branch && event.branch !== from ? ` / branch ${event.branch}` : "";
   const message = String(event.message ?? "")
@@ -283,7 +347,7 @@ function formatNote(event) {
     .join("\n");
 
   return [
-    `- ${event.time ?? "(unknown time)"} [${event.level ?? "info"}] ${from} -> ${event.to ?? "all"}${topic}${branch}`,
+    `- ${event.time ?? "(unknown time)"} #${eventId(event)} [${event.level ?? "info"}]${acked} ${from} -> ${event.to ?? "all"}${topic}${branch}`,
     message,
     `  commit: ${event.short ?? event.commit ?? "(unknown)"}${dirty}`,
   ].join("\n");
@@ -292,9 +356,14 @@ function formatNote(event) {
 function commandInbox(args) {
   const opts = parseArgs(args);
   const currentBranch = branchName();
-  const notes = readEvents()
+  const events = readEvents();
+  const ackedIds = ackedIdsForCurrentBranch(events, currentBranch, opts);
+  const levelFilter = opts.level ? new Set(String(opts.level).split(",").map((level) => level.trim()).filter(Boolean)) : null;
+  const notes = events
     .filter((event) => event.type === "note")
-    .filter((event) => opts.all || isNoteForCurrentBranch(event, currentBranch))
+    .filter((event) => opts.all || isNoteForCurrentBranch(event, currentBranch, opts))
+    .filter((event) => !levelFilter || levelFilter.has(event.level ?? "info"))
+    .filter((event) => !opts.open || (isActionLevel(event) && !ackedIds.has(eventId(event))))
     .slice(-opts.limit);
 
   if (notes.length === 0) {
@@ -303,7 +372,50 @@ function commandInbox(args) {
   }
 
   console.log(opts.all ? `Recent notes:` : `Notes for ${currentBranch}:`);
-  console.log(notes.map(formatNote).join("\n"));
+  console.log(notes.map((event) => formatNote(event, { acked: ackedIds.has(eventId(event)) })).join("\n"));
+}
+
+function findEventById(events, id) {
+  return events.find((event) => eventId(event) === id || event.id === id);
+}
+
+function commandAck(args) {
+  const opts = parseArgs(args);
+  const id = (opts.id || opts.positionals[0] || "").trim();
+  if (!id) {
+    console.error("Specify the event id to acknowledge, e.g. npm run sync:ack -- --id abc123.");
+    process.exit(1);
+  }
+
+  const events = readEvents();
+  const target = findEventById(events, id);
+  if (!target) {
+    console.error(`Event not found: ${id}`);
+    process.exit(1);
+  }
+
+  const branch = branchName();
+  const commit = headCommit();
+  const event = {
+    type: "ack",
+    time: new Date().toISOString(),
+    branch,
+    from: (opts.from || branch).trim(),
+    commit,
+    short: shortSha(commit),
+    ackId: eventId(target),
+    ackType: target.type,
+    ackFrom: target.from ?? target.branch ?? "",
+    ackTopic: target.topic ?? "",
+    message: messageText(opts),
+    dirty: !isClean(),
+    worktree: cwd,
+  };
+  event.id = eventId(event);
+
+  appendEvent(event);
+  console.log(`Ack recorded: ${event.from} acknowledged #${event.ackId}`);
+  if (event.message) console.log(`Message: ${event.message}`);
 }
 
 function formatReady(event, currentBranch, currentHead) {
@@ -335,7 +447,7 @@ function formatReady(event, currentBranch, currentHead) {
     : `npm run sync:merge -- --from ${event.branch} --allow-merge-commit`;
 
   return [
-    `- ${event.branch} ${event.short ?? shortSha(commit)} -> ${currentBranch}`,
+    `- ${event.branch} ${event.short ?? shortSha(commit)} #${eventId(event)} -> ${currentBranch}`,
     `  status: ${mode}`,
     `  subject: ${event.subject ?? subject(commit)}`,
     `  time: ${event.time ?? "(unknown)"}`,
@@ -361,6 +473,62 @@ function commandCheck() {
 
   console.log(`Ready updates for ${currentBranch}:`);
   console.log(lines.join("\n"));
+}
+
+function commandBrief(args) {
+  const opts = parseArgs(args);
+  const currentBranch = branchName();
+  const currentHead = headCommit();
+  const events = readEvents();
+  const labels = [...currentLabels(currentBranch, opts)].filter((label) => label !== "*" && label !== "all");
+  const ackedIds = ackedIdsForCurrentBranch(events, currentBranch, opts);
+
+  const readyEvents = [...latestReadyByBranch().values()]
+    .filter((event) => event.branch !== currentBranch)
+    .filter((event) => !ackedIds.has(eventId(event)))
+    .map((event) => formatReady(event, currentBranch, currentHead))
+    .filter(Boolean);
+
+  const targetedNotes = events
+    .filter((event) => event.type === "note")
+    .filter((event) => opts.all || isNoteForCurrentBranch(event, currentBranch, opts));
+  const actionNotes = targetedNotes
+    .filter(isActionLevel)
+    .filter((event) => !ackedIds.has(eventId(event)))
+    .slice(-opts.limit);
+  const recentInfo = targetedNotes
+    .filter((event) => !isActionLevel(event))
+    .slice(-Math.min(opts.limit, 5));
+
+  console.log(`Sync brief for ${currentBranch}`);
+  console.log(`Recipient labels: ${labels.join(", ")}`);
+  console.log("");
+
+  if (actionNotes.length) {
+    console.log("Action notes (question/blocker, unacked):");
+    console.log(actionNotes.map((event) => formatNote(event)).join("\n"));
+    console.log("");
+  } else {
+    console.log("Action notes: none");
+    console.log("");
+  }
+
+  if (readyEvents.length) {
+    console.log("Ready updates not yet merged or acked:");
+    console.log(readyEvents.join("\n"));
+    console.log("");
+  } else {
+    console.log("Ready updates: none");
+    console.log("");
+  }
+
+  if (recentInfo.length) {
+    console.log("Recent info/done notes:");
+    console.log(recentInfo.map((event) => formatNote(event, { acked: ackedIds.has(eventId(event)) })).join("\n"));
+    console.log("");
+  }
+
+  console.log("Tip: use npm run sync:ack -- --id <id> --from <担当名> to hide an item from this brief for your worktree.");
 }
 
 function resolveMergeCommit(opts) {
@@ -459,6 +627,10 @@ function commandList() {
           topic
         } ${event.message ?? ""}`.trim(),
       );
+    } else if (event.type === "ack") {
+      console.log(
+        `${event.time} ack    ${event.from ?? event.branch} -> #${event.ackId} ${event.message ?? ""}`.trim(),
+      );
     }
   }
 }
@@ -467,9 +639,7 @@ async function commandWatch(args) {
   const opts = parseArgs(args);
   for (;;) {
     console.clear();
-    commandCheck();
-    console.log("");
-    commandInbox([]);
+    commandBrief(args);
     console.log(`\nWatching every ${opts.interval}s. Press Ctrl+C to stop.`);
     await new Promise((resolve) => setTimeout(resolve, opts.interval * 1000));
   }
@@ -478,11 +648,14 @@ async function commandWatch(args) {
 function usage() {
   console.log(`Usage:
   npm run sync:ready -- -m "short message"
+  npm run sync:brief
   npm run sync:check
   npm run sync:merge -- --from <branch>
   npm run sync:merge -- --from <branch> --allow-merge-commit
   npm run sync:note -- --from <sender-label> --to <branch-or-label> --level info -m "short message"
+  npm run sync:ack -- --id <event-id> --from <sender-label>
   npm run sync:inbox
+  npm run sync:inbox -- --open
   npm run sync:inbox -- --all
   npm run sync:list
   npm run sync:watch -- --interval 20
@@ -494,12 +667,16 @@ const [command, ...rest] = process.argv.slice(2);
 try {
   if (command === "ready") {
     commandReady(rest);
+  } else if (command === "brief") {
+    commandBrief(rest);
   } else if (command === "check") {
     commandCheck();
   } else if (command === "merge") {
     commandMerge(rest);
   } else if (command === "note") {
     commandNote(rest);
+  } else if (command === "ack") {
+    commandAck(rest);
   } else if (command === "inbox") {
     commandInbox(rest);
   } else if (command === "list") {

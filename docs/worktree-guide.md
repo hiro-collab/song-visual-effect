@@ -17,6 +17,7 @@
 ```powershell
 git worktree list
 git status --short --branch
+npm run sync:brief
 npm run sync:check
 npm run sync:inbox
 ```
@@ -40,6 +41,7 @@ npm run sync:ready -- -m "short explanation"
 他の worktree は次で未取り込みの ready 通知を確認します。
 
 ```powershell
+npm run sync:brief
 npm run sync:check
 ```
 
@@ -59,6 +61,11 @@ npm run sync:inbox
 ```
 
 `sync:note` は未コミット変更があっても送れます。取り込んでよいcommitを知らせる場合は、これまで通り `sync:ready` を使ってください。
+対応済みの連絡は `sync:brief` に表示される `#id` を使って確認済みにできます。
+
+```powershell
+npm run sync:ack -- --id abc123def0 --from system
+```
 
 ## 開発サーバーの注意
 

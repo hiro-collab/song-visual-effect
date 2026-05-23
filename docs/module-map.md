@@ -68,7 +68,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/launch-manager/ports.mjs`: 起動前のport衝突確認。
 - `scripts/launch-manager/logs.mjs`: stdout/stderr保存とログ末尾取得。
 - `scripts/launch-manager/metrics.mjs`: PIDごとのCPU/memory簡易取得。
-- `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知とnote/inbox連絡を扱うローカル同期補助。
+- `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知、brief/ack、note/inbox連絡を扱うローカル同期補助。
 
 ## launch
 
@@ -99,7 +99,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `docs/workflows.json`: LLM共有用のフロー定義。
 - `docs/workflows.html`: `workflows.json` を可視化する単一HTMLページ。
 - `docs/worktree-guide.md`: local worktree構成の使い方。
-- `docs/worktree-sync.md`: 並行worktree間のready/check/merge運用と、commit不要のnote/inbox連絡。
+- `docs/worktree-sync.md`: 並行worktree間のready/check/merge運用と、commit不要のbrief/ack/note/inbox連絡。
 
 ## .codex
 

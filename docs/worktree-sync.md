@@ -6,9 +6,9 @@
 
 複数 worktree で作業していると、ある担当が小さな改善を終えても、他の担当がそれに気づかないまま古い前提で作業し続けることがあります。
 
-このリポジトリでは、各担当が「このコミットは今取り込んでよい」と判断した時点で `ready` 通知を出します。他の担当は `check` で確認し、必要なものだけ `merge` します。ready通知は取り込み候補であり、自動的に取り込む命令ではありません。
+このリポジトリでは、各担当が「このコミットは今取り込んでよい」と判断した時点で `ready` 通知を出します。他の担当は `brief` / `check` で確認し、必要なものだけ `merge` します。ready通知は取り込み候補であり、自動的に取り込む命令ではありません。
 
-commitを伴わない質問、ブロッカー、短い方針共有は `note` 通知として出します。他の担当は `inbox` で確認します。note通知はmerge対象ではありません。
+commitを伴わない質問、ブロッカー、短い方針共有は `note` 通知として出します。他の担当は `brief` / `inbox` で確認します。note通知はmerge対象ではありません。対応済みや担当外と判断した項目は `ack` で自分のbriefから隠せます。
 
 通知は Git の共通ディレクトリ内に保存されるため、ブランチには混ざらず、すべての local worktree から同じ通知板を読めます。
 
@@ -26,6 +26,26 @@ npm run sync:ready -- -m "download script validation is ready"
 
 ### 2. 他の担当の更新を見る
 
+まず、要対応だけをまとめて確認します。
+
+```powershell
+npm run sync:brief
+```
+
+`brief` は次をまとめて表示します。
+
+- 自分宛て、または全員宛ての未対応 `question` / `blocker`。
+- 未merge、かつ自分のworktreeで未ackの `ready`。
+- 最近の `info` / `done`。
+
+担当名の自動判定が合わない場合は `--for` で明示できます。
+
+```powershell
+npm run sync:brief -- --for system
+```
+
+詳細なready通知だけを見る場合は、従来どおり `check` を使います。
+
 各 worktree で、作業開始時や実装の区切りごとに実行します。
 
 ```powershell
@@ -40,6 +60,7 @@ npm run sync:check
 
 ```powershell
 npm run sync:inbox
+npm run sync:inbox -- --open
 ```
 
 すべての連絡を見たい場合:
@@ -67,6 +88,16 @@ npm run sync:note -- --from security --to mesmerizer-signal-lock --level blocker
 
 `--level` は `info`、`question`、`blocker`、`done` のいずれかです。
 
+### 2.7 対応済みにする
+
+`brief` や `inbox` に表示される `#id` を使って、対応済みまたは自分の担当では対応不要と判断した項目を確認済みにできます。
+
+```powershell
+npm run sync:ack -- --id abc123def0 --from system -m "確認済み。system側の追加対応なし。"
+```
+
+`ack` は現在のworktree / 担当のbriefから隠すための記録です。他担当のbriefから同じ項目を消すものではありません。`sync:check` は従来どおりready通知を表示するため、取り込み判断の詳細確認にも使えます。
+
 ### 3. 取り込む
 
 表示されたブランチを取り込む場合は、現在の worktree で実行します。
@@ -93,14 +124,15 @@ npm run sync:merge -- --from codex/download-security --allow-merge-commit
 npm run sync:watch -- --interval 20
 ```
 
-`watch` は `sync:check` と `sync:inbox` の内容を定期表示します。ただし Codex スレッドでは、長時間の watch よりも作業の節目で `npm run sync:check` と `npm run sync:inbox` を実行する運用の方が扱いやすいです。
+`watch` は `sync:brief` の内容を定期表示します。ただし Codex スレッドでは、長時間の watch よりも作業の節目で `npm run sync:brief` を実行する運用の方が扱いやすいです。
 
 ## 運用ルール
 
 - `ready` は「他ブランチに取り込まれてもよい」と判断したコミットにだけ出します。
 - `note` は質問、ブロッカー、方針共有、確認依頼に使います。noteを受け取っても自動mergeしません。
+- `ack` は対応済み、確認済み、または自分の担当では対応不要という記録に使います。
 - `ready` 前には、可能なら `npm run build` など最低限の確認をします。
-- 各スレッドは作業開始時、実装途中の区切り、最終報告前に `sync:check` と `sync:inbox` を見ます。
+- 各スレッドは作業開始時、実装途中の区切り、最終報告前に `sync:brief` を見ます。必要に応じて `sync:check` と `sync:inbox` も見ます。
 - 新しいスレッドは `docs/thread-start.md` を読み、担当範囲とmerge判断の基準を確認します。
 - `sync:merge` は未コミット変更がある worktree では実行できません。
 - 大きな衝突が出たら無理に解消せず、担当範囲を確認します。

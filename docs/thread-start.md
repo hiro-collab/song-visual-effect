@@ -10,6 +10,7 @@
 
 ```powershell
 git status --short --branch
+npm run sync:brief
 npm run sync:check
 npm run sync:inbox
 ```
@@ -24,6 +25,7 @@ npm run sync:inbox
 
 ready通知は「必ず取り込むもの」ではなく、「取り込み候補」です。設計方針に合うか確認してからmergeします。
 note通知は「連絡」です。merge可能なcommitを示すものではないため、必要なら返答や相談だけ行います。
+`sync:brief` は、自分宛ての未対応question/blocker、未merge ready、最近のinfo/doneをまとめて表示します。
 
 ## 次に読むファイル
 
@@ -127,7 +129,9 @@ npm run sync:merge -- --from codex/download-security --allow-merge-commit
 例:
 
 ```powershell
+npm run sync:brief
 npm run sync:inbox
+npm run sync:inbox -- --open
 npm run sync:inbox -- --all
 ```
 
@@ -144,6 +148,14 @@ npm run sync:note -- --from system --to traffic-jam-redo --level question --topi
 - `sync:merge`: ready通知が指すcommitを取り込む操作。
 
 `--from` を省略すると現在branch名が送信者として表示されます。担当名を明示したい場合は `system`、`beat-sync`、`security`、`mesmerizer` のように短い名前を入れてください。
+
+対応済み、または自分の担当では対応不要と判断した連絡は `sync:ack` で確認済みにします。`sync:brief` には各項目の `#id` が表示されます。
+
+```powershell
+npm run sync:ack -- --id abc123def0 --from system -m "確認済み。system側の追加対応なし。"
+```
+
+`sync:ack` は現在のworktreeに対する確認済み記録です。他担当のbriefから勝手に消えるものではありません。
 
 ## merge後にやること
 
@@ -185,6 +197,7 @@ npm run sync:ready -- -m "short message"
 ```powershell
 git status --short --branch
 npm run build
+npm run sync:brief
 npm run sync:check
 npm run sync:inbox
 ```

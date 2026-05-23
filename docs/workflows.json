@@ -258,7 +258,7 @@
       "file": "docs/thread-start.md",
       "x": 46,
       "y": 86,
-      "description": "新しいCodexスレッドが最初に読む導線です。git status、sync:check、sync:inbox、担当分類、ready通知のmerge判断をまとめます。"
+      "description": "新しいCodexスレッドが最初に読む導線です。git status、sync:brief、sync:check、sync:inbox、担当分類、ready通知のmerge判断をまとめます。"
     },
     {
       "id": "songAuthoringDocs",
@@ -295,7 +295,7 @@
     {
       "id": "thread-start",
       "label": "新しいスレッドが作業を始める",
-      "summary": "AGENTS.mdからthread-startへ進み、現在branch、ready通知、note連絡、担当範囲、読むべきdocsを確認してから作業します。",
+      "summary": "AGENTS.mdからthread-startへ進み、現在branch、sync:brief、ready通知、note連絡、担当範囲、読むべきdocsを確認してから作業します。",
       "trigger": "新しいCodexスレッドで作業を始める",
       "steps": [
         {
@@ -309,8 +309,8 @@
           "from": "threadStart",
           "to": "devManager",
           "action": "同期状態を確認",
-          "payload": "git status --short --branch / npm run sync:check / npm run sync:inbox",
-          "note": "ready通知は取り込み候補です。note通知はcommit不要の連絡で、自動mergeの指示ではありません。"
+          "payload": "git status --short --branch / npm run sync:brief / npm run sync:check / npm run sync:inbox",
+          "note": "briefは要対応のquestion/blockerと未merge readyの要約です。ready通知は取り込み候補、note通知はcommit不要の連絡です。"
         },
         {
           "from": "threadStart",

@@ -11,10 +11,12 @@
     "build": "tsc --noEmit && vite build",
     "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1",
     "sync:ready": "node scripts/worktree-sync.mjs ready",
+    "sync:brief": "node scripts/worktree-sync.mjs brief",
     "sync:check": "node scripts/worktree-sync.mjs check",
     "sync:merge": "node scripts/worktree-sync.mjs merge",
     "sync:list": "node scripts/worktree-sync.mjs list",
     "sync:note": "node scripts/worktree-sync.mjs note",
+    "sync:ack": "node scripts/worktree-sync.mjs ack",
     "sync:inbox": "node scripts/worktree-sync.mjs inbox",
     "sync:watch": "node scripts/worktree-sync.mjs watch"
   },
