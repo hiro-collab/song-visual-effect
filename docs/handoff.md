@@ -7,7 +7,7 @@
 例外的な引き継ぎ:
 
 - 煮ル果実「トラフィック・ジャム」の映像エフェクトは、`codex/traffic-jam-effect` の `81876a7 Add traffic jam visual adapter` を採用しません。
-- 別スレッドで作り直す場合は `docs/traffic-jam-redo-brief.md` を読んでください。
+- 別スレッドで作り直す場合は `song-packs/traffic-jam/design/reimplementation-brief.md` を読んでください。
 - `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても取り込まないでください。
 - `codex/live-beat-sync-prototype` は旧 `src/` 構成を含むため、Launch Manager入りの現行構成へ直接mergeしないでください。必要な変更だけ現行構成へ移植してください。
 
@@ -26,9 +26,9 @@
 - 全体/途中からのタイミング補正と、シーケンスバー上のストーン可視化がある。
 - シーケンスバーをクリック/ドラッグして再生位置を移動できる。
 - `docs/workflows.html` / `docs/workflows.json` にワークフロー地図がある。
-- `song-packs/traffic-jam/` に、煮ル果実「トラフィック・ジャム」の実装前設計パックがある。音源と歌詞全文は含めず、Songle公開JSON、最小manifest、演出方針ドキュメントだけを置いている。
+- `song-packs/` に曲ごとのパッケージがある。曲固有の設計メモや再実装ブリーフは各曲パック側のREADMEやdesign配下を見る。
 - 曲アプリ向けに `system/kit/songAdapterContext.ts` を追加し、raw manifest、base URL、`readJson()`、`readText()`、`readDesignCues()` を渡せるようにした。system kitは `design.cues` の中身を固定解釈しない。
-- fixture player内に中立的な `builtin:fixture-soft-light` adapter registryを置いている。外部adapter読み込みはまだ無効。
+- fixture player内のregistryは中立的な `builtin:` adapterだけを直接持つ。ローカル開発用の曲固有 `song:` adapter登録は `song-packs/local-adapters.ts` 側へ置く。外部adapter読み込みはまだ無効。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 - 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。
@@ -132,7 +132,8 @@ http://127.0.0.1:5173/docs/workflows.html
 - `system/kit/assets.ts`: manifestと曲データの読み込み。
 - `system/kit/songAdapterContext.ts`: 曲アプリ向けasset reader。
 - `examples/fixture-player/main.ts`: 動作確認用fixture playerの入口。
-- `examples/fixture-player/adapters/`: fixture player内adapter registry。曲固有adapterはここへ増やさない。
+- `examples/fixture-player/adapters/`: fixture player内adapter registry。曲固有adapterを直接importしない。
+- `song-packs/local-adapters.ts`: ローカル開発用の曲固有adapter登録。
 - `examples/fixture-player/tools/lyricTimingTool.ts`: fixture playerに載せたoptional lyric timing UI。
 - `templates/neutral-song-app/`: 新曲向けの空scaffoldとvisual brief。
 - `docs/security.md`: 信頼境界と運用ルール。
@@ -157,26 +158,11 @@ Launch Managerを変更する場合:
 - 停止対象はLaunch Serverが起動してPIDを持つtargetだけ。PC全体の同名プロセスや他worktreeのtargetを停止対象にしない。
 - `scripts/dev-manager.mjs` は互換入口。実装本体は `scripts/launch-manager/`。
 
-## 新規曲パック: traffic-jam
+## 曲固有メモの置き場所
 
-作業前提:
+曲ごとの設計メモや再実装ブリーフは、system-wide docsではなく各曲パック配下に置きます。
 
-- 既存の `song-packs/*` は読まず、`docs/system-overview.md` と `docs/song-authoring.md` を入口にした。
-- 音源波形解析はしていない。
-- 音源ファイルと歌詞全文は追加していない。
-
-現在の中身:
-
-- `song-packs/traffic-jam/manifest.json`: 最小manifest。Songle JSON、palette、markers、設計文書へのパスを持つ。システム側の曲専用adapter指定は持たない。
-- `song-packs/traffic-jam/design/effect-direction.md`: 暗い世界、鋭い視線、選択的な衝突ブロー、バッシング、間奏freezeを中心にした演出方針。
-- `song-packs/traffic-jam/analysis/`: Songle Widget APIから取得した `song.json`、`beat.json`、`chord.json`、`melody.json`、`chorus.json` と、曲側で作った `visual-cues.json`、`markers.json`、`palette.json`。
-- `song-packs/traffic-jam/CREDITS.md`: 外部リンクとクレジットメモ。
-
-次にやるなら:
-
-- 低ポリ車、信号機、標識、矢印、シルエット程度の簡単な素材方針を決める。
-- Traffic Jam固有の曲アプリを作る場合は、このスレッドのsystem kitとは分けて、曲側の自由な構成として始める。
-- 強いキック/ブロー、責任転嫁が強い歌詞箇所、間奏の入り/戻りを手動マーカーとして追加する。
+`traffic-jam` の内容は `song-packs/traffic-jam/README.md` と `song-packs/traffic-jam/design/reimplementation-brief.md` を見てください。Traffic Jam固有の曲アプリを作る場合は、system kitとは分けて曲側の自由な構成として始めます。
 
 ## 文脈管理の意図
 

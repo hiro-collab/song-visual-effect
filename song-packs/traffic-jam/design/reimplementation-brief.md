@@ -1,6 +1,7 @@
 # Traffic Jam Reimplementation Brief
 
 この文書は、煮ル果実「トラフィック・ジャム」用の映像エフェクトを別スレッドで作り直すための引き継ぎです。
+曲専用の設計メモなので、system-wide docsではなくこの曲パック配下に置きます。
 
 ## 現在の扱い
 
@@ -27,9 +28,10 @@
 3. `docs/song-authoring.md`
 4. `docs/worktree-guide.md`
 5. `docs/worktree-sync.md`
-6. この文書
+6. `song-packs/traffic-jam/design/reimplementation-brief.md`
 
 新規作成時のアンカー回避のため、既存の `song-packs/*` は読まないでください。
+このファイルは `traffic-jam` 自体を作り直すときだけ読む曲側ブリーフです。
 今回破棄する `codex/traffic-jam-effect` 側の `song-packs/traffic-jam/*` も読まないでください。
 
 ## 曲の演出方針

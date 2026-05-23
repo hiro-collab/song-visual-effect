@@ -106,4 +106,4 @@ npm run sync:watch -- --interval 20
 - 大きな衝突が出たら無理に解消せず、担当範囲を確認します。
 - Launch Managerの停止範囲や並行port運用を変えた場合は、`docs/thread-start.md` と `AGENTS.md` を更新し、`sync:ready` で他スレッドに通知します。
 - 曲固有adapter、曲固有renderer、既存fixtureの見た目をsystem kitへ入れる変更は、ready通知があってもそのままmergeしません。
-- `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても、その実装は破棄予定です。取り込まず、`docs/traffic-jam-redo-brief.md` を参照してください。
+- `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても、その実装は破棄予定です。取り込まず、`song-packs/traffic-jam/design/reimplementation-brief.md` を参照してください。

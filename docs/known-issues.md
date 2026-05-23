@@ -47,7 +47,7 @@ Songleに登録されている歌詞タイミングは、曲によって大き�
 
 現在の対策:
 
-- 煮ル果実「トラフィック・ジャム」の再実装方針を `docs/traffic-jam-redo-brief.md` に分離した。
+- その再実装方針は `song-packs/traffic-jam/design/reimplementation-brief.md` に置く。
 - `docs/song-visual-independence.md` を追加した。
 - `examples/fixture-player/README.md` に、fixture playerが標準UI/標準rendererではないことを明記した。
 - `templates/neutral-song-app/` に空のadapter scaffoldとvisual briefを追加した。
