@@ -8,6 +8,8 @@
 
 このリポジトリでは、各担当が「このコミットは今取り込んでよい」と判断した時点で `ready` 通知を出します。他の担当は `check` で確認し、必要なものだけ `merge` します。ready通知は取り込み候補であり、自動的に取り込む命令ではありません。
 
+commitを伴わない質問、ブロッカー、短い方針共有は `note` 通知として出します。他の担当は `inbox` で確認します。note通知はmerge対象ではありません。
+
 通知は Git の共通ディレクトリ内に保存されるため、ブランチには混ざらず、すべての local worktree から同じ通知板を読めます。
 
 ## 使い方
@@ -31,6 +33,37 @@ npm run sync:check
 ```
 
 まだ自分のブランチに取り込まれていない `ready` 通知が表示されます。
+
+### 2.5 他の担当からの連絡を見る
+
+自分宛て、または全員宛ての `note` 通知を確認します。
+
+```powershell
+npm run sync:inbox
+```
+
+すべての連絡を見たい場合:
+
+```powershell
+npm run sync:inbox -- --all
+```
+
+### 2.6 他の担当へ連絡する
+
+commit不要の短い連絡は `sync:note` を使います。未コミット変更があっても送れます。
+
+```powershell
+npm run sync:note -- --to traffic-jam-redo --level question --topic "adapter境界" -m "fixture registryへの曲ID直importを避けられるか確認してください"
+```
+
+`--to` には `all`、branch名、またはbranch末尾の短い名前を使えます。
+
+```powershell
+npm run sync:note -- --to all --level info -m "system-kit-refactorに共通方針を取り込みました"
+npm run sync:note -- --to mesmerizer-signal-lock --level blocker -m "three依存を共通方針commitに混ぜないでください"
+```
+
+`--level` は `info`、`question`、`blocker`、`done` のいずれかです。
 
 ### 3. 取り込む
 
@@ -58,13 +91,14 @@ npm run sync:merge -- --from codex/download-security --allow-merge-commit
 npm run sync:watch -- --interval 20
 ```
 
-ただし Codex スレッドでは、長時間の watch よりも作業の節目で `npm run sync:check` を実行する運用の方が扱いやすいです。
+`watch` は `sync:check` と `sync:inbox` の内容を定期表示します。ただし Codex スレッドでは、長時間の watch よりも作業の節目で `npm run sync:check` と `npm run sync:inbox` を実行する運用の方が扱いやすいです。
 
 ## 運用ルール
 
 - `ready` は「他ブランチに取り込まれてもよい」と判断したコミットにだけ出します。
+- `note` は質問、ブロッカー、方針共有、確認依頼に使います。noteを受け取っても自動mergeしません。
 - `ready` 前には、可能なら `npm run build` など最低限の確認をします。
-- 各スレッドは作業開始時、実装途中の区切り、最終報告前に `sync:check` を見ます。
+- 各スレッドは作業開始時、実装途中の区切り、最終報告前に `sync:check` と `sync:inbox` を見ます。
 - 新しいスレッドは `docs/thread-start.md` を読み、担当範囲とmerge判断の基準を確認します。
 - `sync:merge` は未コミット変更がある worktree では実行できません。
 - 大きな衝突が出たら無理に解消せず、担当範囲を確認します。

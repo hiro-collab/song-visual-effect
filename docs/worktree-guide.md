@@ -18,6 +18,7 @@
 git worktree list
 git status --short --branch
 npm run sync:check
+npm run sync:inbox
 ```
 
 各 worktree で作業するときは、そのディレクトリに移動してから状態を確認します。
@@ -49,6 +50,15 @@ npm run sync:merge -- --from codex/download-security
 ```
 
 詳細は `docs/worktree-sync.md` を見てください。
+
+commitを伴わない質問や確認依頼は note 通知を使います。
+
+```powershell
+npm run sync:note -- --to traffic-jam-redo --level question -m "CREDITS.mdを新構成で戻せますか"
+npm run sync:inbox
+```
+
+`sync:note` は未コミット変更があっても送れます。取り込んでよいcommitを知らせる場合は、これまで通り `sync:ready` を使ってください。
 
 ## 開発サーバーの注意
 

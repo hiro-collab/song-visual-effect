@@ -40,6 +40,8 @@ function parseArgs(args) {
     allowMergeCommit: false,
     interval: 20,
     tip: false,
+    all: false,
+    limit: 20,
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -57,6 +59,20 @@ function parseArgs(args) {
       opts.allowMergeCommit = true;
     } else if (arg === "--tip") {
       opts.tip = true;
+    } else if (arg === "--all") {
+      opts.all = true;
+    } else if (arg === "--to") {
+      opts.to = args[i + 1] ?? "";
+      i += 1;
+    } else if (arg === "--topic") {
+      opts.topic = args[i + 1] ?? "";
+      i += 1;
+    } else if (arg === "--level") {
+      opts.level = args[i + 1] ?? "";
+      i += 1;
+    } else if (arg === "--limit") {
+      opts.limit = Math.max(1, Number(args[i + 1] ?? "20") || 20);
+      i += 1;
     } else if (arg === "--interval") {
       opts.interval = Math.max(5, Number(args[i + 1] ?? "20") || 20);
       i += 1;
@@ -156,13 +172,69 @@ function latestReadyByBranch() {
   return map;
 }
 
+function branchShortName(branch) {
+  const parts = branch.split("/");
+  return parts[parts.length - 1] || branch;
+}
+
+function splitTargets(value) {
+  return String(value || "all")
+    .split(",")
+    .map((target) => target.trim())
+    .filter(Boolean);
+}
+
+function messageText(opts) {
+  return (opts.message || opts.positionals.join(" ")).trim();
+}
+
+function commandNote(args) {
+  const opts = parseArgs(args);
+  const message = messageText(opts);
+  if (!message) {
+    console.error('Specify a message with -m "message" or as positional text.');
+    process.exit(1);
+  }
+
+  const allowedLevels = new Set(["info", "question", "blocker", "done"]);
+  const level = (opts.level || "info").trim();
+  if (!allowedLevels.has(level)) {
+    console.error("Invalid --level. Use one of: info, question, blocker, done.");
+    process.exit(1);
+  }
+
+  const branch = branchName();
+  const commit = headCommit();
+  const event = {
+    type: "note",
+    time: new Date().toISOString(),
+    branch,
+    commit,
+    short: shortSha(commit),
+    subject: subject(commit),
+    message,
+    to: (opts.to || "all").trim(),
+    topic: (opts.topic || "").trim(),
+    level,
+    dirty: !isClean(),
+    worktree: cwd,
+  };
+
+  appendEvent(event);
+  console.log(`Note recorded: ${branch} -> ${event.to}`);
+  console.log(`[${event.level}] ${event.message}`);
+  if (event.dirty) {
+    console.log("Note: this worktree had uncommitted changes when the note was recorded.");
+  }
+}
+
 function commandReady(args) {
   const opts = parseArgs(args);
   ensureClean();
 
   const branch = branchName();
   const commit = headCommit();
-  const message = (opts.message || opts.positionals.join(" ")).trim();
+  const message = messageText(opts);
   const event = {
     type: "ready",
     time: new Date().toISOString(),
@@ -179,6 +251,55 @@ function commandReady(args) {
   if (message) {
     console.log(`Message: ${message}`);
   }
+}
+
+function isNoteForCurrentBranch(event, currentBranch) {
+  const targets = splitTargets(event.to);
+  if (targets.length === 0) return true;
+
+  const currentShort = branchShortName(currentBranch);
+  return targets.some(
+    (target) =>
+      target === "*" ||
+      target === "all" ||
+      target === currentBranch ||
+      target === currentShort ||
+      currentBranch.endsWith(`/${target}`),
+  );
+}
+
+function formatNote(event) {
+  const topic = event.topic ? ` (${event.topic})` : "";
+  const dirty = event.dirty ? " dirty" : "";
+  const message = String(event.message ?? "")
+    .split(/\r?\n/)
+    .map((line) => `  ${line}`)
+    .join("\n");
+
+  return [
+    `- ${event.time ?? "(unknown time)"} [${event.level ?? "info"}] ${event.branch ?? "(unknown)"} -> ${
+      event.to ?? "all"
+    }${topic}`,
+    message,
+    `  commit: ${event.short ?? event.commit ?? "(unknown)"}${dirty}`,
+  ].join("\n");
+}
+
+function commandInbox(args) {
+  const opts = parseArgs(args);
+  const currentBranch = branchName();
+  const notes = readEvents()
+    .filter((event) => event.type === "note")
+    .filter((event) => opts.all || isNoteForCurrentBranch(event, currentBranch))
+    .slice(-opts.limit);
+
+  if (notes.length === 0) {
+    console.log(opts.all ? "No notes recorded yet." : `No notes for ${currentBranch}.`);
+    return;
+  }
+
+  console.log(opts.all ? `Recent notes:` : `Notes for ${currentBranch}:`);
+  console.log(notes.map(formatNote).join("\n"));
 }
 
 function formatReady(event, currentBranch, currentHead) {
@@ -326,6 +447,13 @@ function commandList() {
       console.log(
         `${event.time} merged ${event.source} -> ${event.intoBranch} ${event.commit}`.trim(),
       );
+    } else if (event.type === "note") {
+      const topic = event.topic ? ` (${event.topic})` : "";
+      console.log(
+        `${event.time} note   ${event.branch} -> ${event.to ?? "all"} [${event.level ?? "info"}]${
+          topic
+        } ${event.message ?? ""}`.trim(),
+      );
     }
   }
 }
@@ -335,6 +463,8 @@ async function commandWatch(args) {
   for (;;) {
     console.clear();
     commandCheck();
+    console.log("");
+    commandInbox([]);
     console.log(`\nWatching every ${opts.interval}s. Press Ctrl+C to stop.`);
     await new Promise((resolve) => setTimeout(resolve, opts.interval * 1000));
   }
@@ -346,6 +476,9 @@ function usage() {
   npm run sync:check
   npm run sync:merge -- --from <branch>
   npm run sync:merge -- --from <branch> --allow-merge-commit
+  npm run sync:note -- --to <branch-or-label> --level info -m "short message"
+  npm run sync:inbox
+  npm run sync:inbox -- --all
   npm run sync:list
   npm run sync:watch -- --interval 20
 `);
@@ -360,6 +493,10 @@ try {
     commandCheck();
   } else if (command === "merge") {
     commandMerge(rest);
+  } else if (command === "note") {
+    commandNote(rest);
+  } else if (command === "inbox") {
+    commandInbox(rest);
   } else if (command === "list") {
     commandList();
   } else if (command === "watch") {
