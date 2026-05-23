@@ -7,7 +7,8 @@ const LOCAL_SONG_ADAPTERS: Record<string, SongAppFactory> = Object.assign(Object
   "song:traffic-jam": createTrafficJamApp
 });
 
-export const resolveLocalSongAdapter = (adapterId: string) => {
+export const resolveLocalSongAdapter = (adapterId: unknown) => {
+  if (typeof adapterId !== "string") return null;
   if (!SONG_ADAPTER_ID_PATTERN.test(adapterId)) return null;
   return Object.hasOwn(LOCAL_SONG_ADAPTERS, adapterId) ? LOCAL_SONG_ADAPTERS[adapterId] : null;
 };

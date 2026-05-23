@@ -22,9 +22,7 @@ const mimeTypes = new Map([
   [".jpeg", "image/jpeg"],
   [".webp", "image/webp"],
   [".glb", "model/gltf-binary"],
-  [".gltf", "model/gltf+json; charset=utf-8"],
-  [".js", "text/javascript; charset=utf-8"],
-  [".css", "text/css; charset=utf-8"]
+  [".gltf", "model/gltf+json; charset=utf-8"]
 ]);
 
 const baseSecurityHeaders = {
