@@ -11,5 +11,5 @@
   "design": {
     "effect": "design/effect.json"
   },
-  "webAdapter": "local:traffic-jam"
+  "webAdapter": "song:traffic-jam"
 }

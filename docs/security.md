@@ -36,6 +36,7 @@
 - Launch Manager のtarget定義は、作業ディレクトリをリポジトリ配下に限定し、commandを単純なコマンド名に限定します。
 - Launch Manager のtarget定義では、`PATH`、`COMSPEC`、`SYSTEMROOT`、`NODE_OPTIONS` などrunner側の重要環境変数を上書きできません。
 - Windows上の `npm` / `npx` target は `cmd.exe /c` を介すため、target引数にshellメタ文字が含まれる場合は起動前に拒否します。
+- 同一ビルド内の曲固有adapterは `song-packs/local-adapters.ts` の静的登録だけを使います。外部URLや任意文字列からの動的importは行いません。
 - Songle取得スクリプトは `SongId`、対象URL、取得target、保存先、サイズ、JSON構文を検証します。
 
 ## 運用ルール
