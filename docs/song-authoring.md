@@ -77,7 +77,7 @@ npm run song:scaffold -- --id song-id --title "Song Title" --artist "Artist" --s
 - storage: localStorageや将来の保存API。
 - tools: 歌詞タイミング編集などのoptional tool。
 - loader: manifestや素材URL解決。
-- visual host: 曲adapter用の追加表示レイヤ、DPR/resize、fixture UIと重ならないsafe area。
+- visual host: 曲adapter用の追加表示レイヤ、DPR/resize、fixture UIと重ならないsafe area。WebGLなどでcanvasを使う場合は2D contextを作らないレイヤも選べる。
 
 これらは文法ではなく部品です。曲側が全部使う必要はありません。
 
