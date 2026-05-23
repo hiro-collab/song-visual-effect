@@ -27,6 +27,17 @@ type Viewport = {
   dpr: number;
 };
 
+type LayoutRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
+
 const DEFAULT_VOICE_CARDS: VoiceCard[] = [
   { label: "初音ミク", short: "Miku", color: "#b9d8ff", lane: 1, offset: 0.03 },
   { label: "v flower", short: "flower", color: "#d7c2ff", lane: 3, offset: 0.13 },
@@ -102,9 +113,35 @@ const roundedRectPath = (
   ctx.closePath();
 };
 
-const laneY = (height: number, lane: number, time: number) => {
+const viewportRect = (viewport: Viewport): LayoutRect => ({
+  x: 0,
+  y: 0,
+  width: viewport.width,
+  height: viewport.height,
+  left: 0,
+  top: 0,
+  right: viewport.width,
+  bottom: viewport.height
+});
+
+const contentRectFromFrame = (frame: SongAppFrame, viewport: Viewport): LayoutRect => {
+  const rect = frame.contentRect ?? frame.safeArea;
+  if (!rect || rect.width < 240 || rect.height < 180) return viewportRect(viewport);
+  return {
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: rect.height,
+    left: rect.left,
+    top: rect.top,
+    right: rect.right,
+    bottom: rect.bottom
+  };
+};
+
+const laneY = (rect: LayoutRect, lane: number, time: number) => {
   const lanes = [0.24, 0.34, 0.44, 0.65, 0.76];
-  return height * lanes[lane % lanes.length] + Math.sin(time * 0.34 + lane * 1.7) * height * 0.012;
+  return rect.top + rect.height * lanes[lane % lanes.length] + Math.sin(time * 0.34 + lane * 1.7) * rect.height * 0.012;
 };
 
 const formatTime = (time: number) => {
@@ -158,11 +195,14 @@ const drawBackdrop = (
 const drawDistanceMarks = (
   ctx: CanvasRenderingContext2D,
   viewport: Viewport,
+  content: LayoutRect,
   time: number,
   beatPulse: number,
   chorus: number
 ) => {
-  const { width, height } = viewport;
+  const { width } = viewport;
+  const topY = content.top + content.height * 0.06;
+  const bottomY = content.bottom - content.height * 0.06;
   const spacing = Math.max(44, width / 18);
   const offset = (time * (18 + chorus * 20)) % spacing;
   ctx.save();
@@ -175,12 +215,12 @@ const drawDistanceMarks = (
     const x = i * spacing - offset;
     const topHeight = i % 4 === 0 ? 30 : 15;
     ctx.beginPath();
-    ctx.moveTo(x, height * 0.1);
-    ctx.lineTo(x, height * 0.1 + topHeight);
-    ctx.moveTo(x, height * 0.88);
-    ctx.lineTo(x, height * 0.88 - topHeight * 0.7);
+    ctx.moveTo(x, topY);
+    ctx.lineTo(x, topY + topHeight);
+    ctx.moveTo(x, bottomY);
+    ctx.lineTo(x, bottomY - topHeight * 0.7);
     ctx.stroke();
-    if (i % 4 === 0) ctx.fillText(String(Math.max(0, Math.floor(time + i * 8))).padStart(4, "0"), x + 5, height * 0.1 + 39);
+    if (i % 4 === 0) ctx.fillText(String(Math.max(0, Math.floor(time + i * 8))).padStart(4, "0"), x + 5, topY + 39);
   }
   ctx.restore();
 };
@@ -188,14 +228,15 @@ const drawDistanceMarks = (
 const drawRoutes = (
   ctx: CanvasRenderingContext2D,
   viewport: Viewport,
+  content: LayoutRect,
   time: number,
   chorus: number,
   userInk: number
 ) => {
-  const { width, height } = viewport;
+  const { width } = viewport;
   ctx.save();
   for (let lane = 0; lane < 5; lane += 1) {
-    const y = laneY(height, lane, time);
+    const y = laneY(content, lane, time);
     const slide = Math.sin(time * 0.18 + lane) * width * 0.025;
     ctx.beginPath();
     ctx.moveTo(-80, y + slide * 0.08);
@@ -218,15 +259,20 @@ const drawRoutes = (
 const drawLedger = (
   ctx: CanvasRenderingContext2D,
   viewport: Viewport,
+  content: LayoutRect,
   time: number,
   chorus: number,
   emphasis: number,
   beatPulse: number,
   title: string
 ) => {
-  const { width, height } = viewport;
-  const y = mix(height * 0.56, height * 0.52, chorus);
-  const ledgerHeight = mix(64, 112, chorus);
+  const { width } = viewport;
+  const y = mix(content.top + content.height * 0.58, content.top + content.height * 0.52, chorus);
+  const ledgerHeight = mix(
+    Math.max(52, Math.min(72, content.height * 0.11)),
+    Math.max(82, Math.min(116, content.height * 0.19)),
+    chorus
+  );
   const leftLift = Math.sin(time * 0.18) * 5;
 
   ctx.save();
@@ -254,12 +300,12 @@ const drawLedger = (
 
   ctx.globalAlpha = 0.9;
   ctx.fillStyle = `rgba(244, 239, 228, ${0.46 + chorus * 0.28})`;
-  ctx.font = `${Math.max(22, Math.min(38, width * 0.045))}px 'Yu Gothic UI', 'Yu Gothic', Meiryo, sans-serif`;
+  ctx.font = `${Math.max(22, Math.min(38, content.width * 0.052))}px 'Yu Gothic UI', 'Yu Gothic', Meiryo, sans-serif`;
   ctx.textBaseline = "middle";
-  ctx.fillText(title, width * 0.06, y - ledgerHeight * 0.08);
+  ctx.fillText(title, content.left + content.width * 0.04, y - ledgerHeight * 0.08);
   ctx.font = "12px 'Yu Gothic UI', 'Yu Gothic', Meiryo, sans-serif";
   ctx.fillStyle = `rgba(185, 216, 255, ${0.55 + beatPulse * 0.25})`;
-  ctx.fillText(`archive ${formatTime(time)}`, width * 0.065, y + ledgerHeight * 0.22);
+  ctx.fillText(`archive ${formatTime(time)}`, content.left + content.width * 0.044, y + ledgerHeight * 0.22);
   ctx.restore();
 };
 
@@ -329,24 +375,25 @@ const drawCard = (
 const drawCards = (
   ctx: CanvasRenderingContext2D,
   viewport: Viewport,
+  content: LayoutRect,
   cards: VoiceCard[],
   frame: SongAppFrame,
   chorus: number,
   beatPulse: number,
   pointer: { x: number; y: number; active: boolean }
 ) => {
-  const { width, height } = viewport;
-  const cardWidth = Math.max(122, Math.min(188, width * 0.16));
-  const cardHeight = Math.max(54, Math.min(74, height * 0.095));
+  const { width } = viewport;
+  const cardWidth = Math.max(118, Math.min(188, content.width * 0.17));
+  const cardHeight = Math.max(52, Math.min(74, content.height * 0.13));
   const currentIndex = Math.floor(wrap01(frame.time / 29) * cards.length);
   const pointerPull = pointer.active ? 1 : 0;
 
   cards.forEach((card, index) => {
     const travel = wrap01(card.offset + frame.time / (58 + (index % 5) * 6));
     const freeX = width * (1.1 - travel * 1.26);
-    const freeY = laneY(height, card.lane, frame.time) + Math.sin(frame.time * 0.8 + index) * 10;
-    const orderedX = width * (0.1 + (index / Math.max(1, cards.length - 1)) * 0.8);
-    const orderedY = height * (0.52 + ((index % 5) - 2) * 0.028);
+    const freeY = laneY(content, card.lane, frame.time) + Math.sin(frame.time * 0.8 + index) * 10;
+    const orderedX = content.left + content.width * (0.08 + (index / Math.max(1, cards.length - 1)) * 0.84);
+    const orderedY = content.top + content.height * (0.52 + ((index % 5) - 2) * 0.034);
     const x = mix(freeX, orderedX, chorus * 0.78) + (pointer.x - 0.5) * 18 * pointerPull;
     const y = mix(freeY, orderedY, chorus * 0.82) + (pointer.y - 0.5) * 12 * pointerPull;
     const pulse = ((index + currentIndex) % 4 === 0 ? beatPulse : beatPulse * 0.35) + (index === currentIndex ? 0.2 : 0);
@@ -358,30 +405,35 @@ const drawCards = (
 const drawClosingMargin = (
   ctx: CanvasRenderingContext2D,
   viewport: Viewport,
+  content: LayoutRect,
   cards: VoiceCard[],
   time: number,
   duration: number,
   chorus: number
 ) => {
-  const { width, height } = viewport;
+  const { width } = viewport;
   const progress = clamp(time / duration);
   const current = cards[Math.floor(progress * cards.length * 2) % cards.length];
+  const left = content.left + content.width * 0.035;
+  const labelY = content.bottom - 42;
+  const nameY = content.bottom - 18;
+  const railY = content.bottom - 29;
 
   ctx.save();
   ctx.fillStyle = "rgba(244, 239, 228, 0.72)";
   ctx.font = "12px 'Yu Gothic UI', 'Yu Gothic', Meiryo, sans-serif";
   ctx.textBaseline = "alphabetic";
-  ctx.fillText("current voice card", width * 0.055, height - 44);
+  ctx.fillText("current voice card", left, labelY);
   ctx.fillStyle = current ? withAlpha(current.color, 0.9) : "rgba(255, 224, 138, 0.9)";
   ctx.font = "18px 'Yu Gothic UI', 'Yu Gothic', Meiryo, sans-serif";
-  ctx.fillText(current?.label ?? "voice", width * 0.055, height - 20);
+  ctx.fillText(current?.label ?? "voice", left, nameY);
 
   ctx.globalAlpha = 0.2 + chorus * 0.34;
   ctx.strokeStyle = "#ffe08a";
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(width * 0.24, height - 31);
-  ctx.lineTo(width * (0.24 + progress * 0.68), height - 31);
+  ctx.moveTo(content.left + content.width * 0.23, railY);
+  ctx.lineTo(Math.min(width - 16, content.left + content.width * (0.23 + progress * 0.69)), railY);
   ctx.stroke();
   ctx.restore();
 };
@@ -414,6 +466,7 @@ export const createSongApp = async (
   const render = (frame: SongAppFrame) => {
     const duration = Math.max(1, context.musicMap.duration);
     const time = frame.time % duration;
+    const content = contentRectFromFrame(frame, viewport);
     const beat = beatAt(time, context.musicMap.beats);
     const beatPulse = beat.pulse;
     const chorus = activeRange(time, context.musicMap.chorus);
@@ -426,11 +479,11 @@ export const createSongApp = async (
     ctx.clearRect(0, 0, viewport.width, viewport.height);
 
     drawBackdrop(ctx, viewport, time, chorus, Math.max(section, marker), userInk);
-    drawDistanceMarks(ctx, viewport, time, beatPulse, chorus);
-    drawRoutes(ctx, viewport, time, chorus, userInk);
-    drawLedger(ctx, viewport, time, chorus, Math.max(section, marker), beatPulse, context.manifest.title);
-    drawCards(ctx, viewport, cards, frame, chorus, beatPulse, pointer);
-    drawClosingMargin(ctx, viewport, cards, time, duration, chorus);
+    drawDistanceMarks(ctx, viewport, content, time, beatPulse, chorus);
+    drawRoutes(ctx, viewport, content, time, chorus, userInk);
+    drawLedger(ctx, viewport, content, time, chorus, Math.max(section, marker), beatPulse, context.manifest.title);
+    drawCards(ctx, viewport, content, cards, frame, chorus, beatPulse, pointer);
+    drawClosingMargin(ctx, viewport, content, cards, time, duration, chorus);
     ctx.restore();
   };
 
