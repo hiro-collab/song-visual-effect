@@ -38,6 +38,8 @@ export type {
   SongVisualLayerOptions
 } from "./songApp";
 export { createVisualHost } from "./visualHost";
+export type { CanvasScene, CanvasSceneOptions, CanvasScenePointer, TextFitOptions, TextFitResult } from "./contentRect";
+export { createCanvasScene, fitTextToRect, resizeCanvasToDisplaySize, withContentRect } from "./contentRect";
 export { Transport } from "./transport";
 export { startFrameLoop } from "./frameLoop";
 export { activeRange, beatAt, emphasisAt, lyricAt, lyricIndexAt } from "./timing";

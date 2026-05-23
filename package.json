@@ -11,6 +11,7 @@
     "build": "tsc --noEmit && vite build",
     "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1",
     "song:scaffold": "node scripts/create-song-pack.mjs",
+    "song:validate": "node scripts/validate-song-pack.mjs",
     "sync:ready": "node scripts/worktree-sync.mjs ready",
     "sync:brief": "node scripts/worktree-sync.mjs brief",
     "sync:check": "node scripts/worktree-sync.mjs check",
