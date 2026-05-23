@@ -11,6 +11,7 @@
 ```powershell
 git status --short --branch
 npm run sync:check
+npm run sync:inbox
 ```
 
 確認すること:
@@ -18,9 +19,11 @@ npm run sync:check
 - 自分がどのworktreeとbranchにいるか。
 - 未コミット変更があるか。
 - 他スレッドからready通知が来ているか。
+- 他スレッドから質問、ブロッカー、短い連絡が来ているか。
 - そのready通知が、今回の担当範囲に関係するか。
 
 ready通知は「必ず取り込むもの」ではなく、「取り込み候補」です。設計方針に合うか確認してからmergeします。
+note通知は「連絡」です。merge可能なcommitを示すものではないため、必要なら返答や相談だけ行います。
 
 ## 次に読むファイル
 
@@ -117,6 +120,31 @@ npm run sync:merge -- --from codex/download-security --allow-merge-commit
 - 既存fixture rendererを新曲テンプレート扱いする変更。
 - 自分の未コミット変更と大きく衝突し、担当範囲の確認が必要な変更。
 
+## note通知への対応
+
+`npm run sync:inbox` で自分宛ての連絡を確認します。
+
+例:
+
+```powershell
+npm run sync:inbox
+npm run sync:inbox -- --all
+```
+
+返答や共有が必要な場合は `sync:note` を使います。未コミット変更がある状態でも送れます。
+
+```powershell
+npm run sync:note -- --from system --to traffic-jam-redo --level question --topic "adapter境界" -m "registry直importを避けられるか確認してください"
+```
+
+使い分け:
+
+- `sync:note`: 質問、ブロッカー、方針共有、確認依頼。commit不要。
+- `sync:ready`: 他worktreeに取り込ませてよいcommitの通知。cleanなworktreeが必要。
+- `sync:merge`: ready通知が指すcommitを取り込む操作。
+
+`--from` を省略すると現在branch名が送信者として表示されます。担当名を明示したい場合は `system`、`beat-sync`、`security`、`mesmerizer` のように短い名前を入れてください。
+
 ## merge後にやること
 
 mergeしたら、最低限これを実行します。
@@ -158,6 +186,7 @@ npm run sync:ready -- -m "short message"
 git status --short --branch
 npm run build
 npm run sync:check
+npm run sync:inbox
 ```
 
 未コミット変更を残す場合は、理由と次にやることを `docs/handoff.md` または `.codex/log.md` に残します。

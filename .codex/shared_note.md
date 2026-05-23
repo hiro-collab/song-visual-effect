@@ -156,9 +156,10 @@ If the user asks for a new song effect, keep the first pass independent and song
   - `_worktrees/launch-manager`: `codex/launch-manager`
 - See `docs/worktree-guide.md` before starting parallel Codex threads.
 - New threads should read `docs/thread-start.md` before deciding whether to merge ready notices.
-- Use `npm run sync:check` at the start of work and at safe stopping points.
+- Use `npm run sync:check` and `npm run sync:inbox` at the start of work and at safe stopping points.
 - Use `npm run sync:ready -- -m "short message"` after a clean commit that other worktrees may merge.
-- See `docs/worktree-sync.md` for the ready/check/merge flow.
+- Use `npm run sync:note -- --from <sender-label> --to <branch-or-label> --level <info|question|blocker|done> -m "message"` for questions, blockers, and short coordination notes that do not correspond to a mergeable commit.
+- See `docs/worktree-sync.md` for the ready/check/merge and note/inbox flow.
 
 ## Structure Cleanup Note
 

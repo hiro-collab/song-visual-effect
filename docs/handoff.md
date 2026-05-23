@@ -35,6 +35,7 @@
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
 - docsの読み分けを `docs/README.md` に集約し、`examples/fixture-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
 - Launch ManagerのHTTP API本体と管理画面HTMLを分け、`scripts/launch-manager/server.mjs` と `scripts/launch-manager/ui.mjs` に整理した。
+- 並行worktree間のcommit不要の連絡として、`npm run sync:note` と `npm run sync:inbox` を追加した。`sync:ready` はmerge可能commit、`sync:note` は質問やブロッカー共有として使い分ける。
 
 ## 新しいスレッドの開始手順
 
@@ -45,9 +46,10 @@
 ```powershell
 git status --short --branch
 npm run sync:check
+npm run sync:inbox
 ```
 
-ready通知は「必ずmerge」ではなく「取り込み候補」です。system kitに曲固有adapterや既存fixtureの見た目を入れる変更は、そのまま取り込まないでください。
+ready通知は「必ずmerge」ではなく「取り込み候補」です。note通知はcommit不要の連絡です。system kitに曲固有adapterや既存fixtureの見た目を入れる変更は、そのまま取り込まないでください。
 
 重要:
 

@@ -124,3 +124,10 @@
 - Added `examples/fixture-player/README.md` to make clear that the fixture player is a regression/example app, not a song template.
 - Split Launch Manager server concerns: `scripts/launch-manager/server.mjs` now handles API/security/routing, while `scripts/launch-manager/ui.mjs` owns the HTML/CSS/client JS.
 - Removed the local empty `src/` directory tree from this worktree so old layout artifacts do not mislead future agents.
+
+## 2026-05-23 Worktree Contact Notes
+
+- Extended `scripts/worktree-sync.mjs` with `note` and `inbox` commands for commit-free coordination between parallel Codex worktrees.
+- `sync:ready` remains the signal for mergeable commits. `sync:note` is for questions, blockers, done notices, and short system-wide messages.
+- Added explicit note sender labels via `--from <sender-label>` so messages show who sent them and who should read them.
+- Updated AGENTS, thread-start, worktree-sync, worktree-guide, module-map, handoff, README, and workflows JSON so new threads check both `sync:check` and `sync:inbox`.

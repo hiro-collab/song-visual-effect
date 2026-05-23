@@ -159,7 +159,7 @@ Codexや別エージェントに作業を渡すときは、まず `AGENTS.md` �
 docs/thread-start.md
 ```
 
-ここに、作業開始時の `git status` / `sync:check`、ready通知の扱い、mergeしてよい変更と止めるべき変更の判断基準を書いています。
+ここに、作業開始時の `git status` / `sync:check` / `sync:inbox`、ready通知の扱い、note連絡、mergeしてよい変更と止めるべき変更の判断基準を書いています。
 
 新しい曲を作る場合は、既存曲の中身を読ませず、次だけを入口にしてください。
 

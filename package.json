@@ -14,6 +14,8 @@
     "sync:check": "node scripts/worktree-sync.mjs check",
     "sync:merge": "node scripts/worktree-sync.mjs merge",
     "sync:list": "node scripts/worktree-sync.mjs list",
+    "sync:note": "node scripts/worktree-sync.mjs note",
+    "sync:inbox": "node scripts/worktree-sync.mjs inbox",
     "sync:watch": "node scripts/worktree-sync.mjs watch"
   },
   "devDependencies": {
