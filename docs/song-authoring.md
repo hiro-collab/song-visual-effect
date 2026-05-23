@@ -74,6 +74,8 @@ npm run song:validate -- --id song-id
 
 このvalidateは `references.json` がURLメタデータだけになっているかを確認します。歌詞本文、記事本文、画像データ、スクリーンショット、base64埋め込みは保存しないでください。
 
+外部ライブラリや描画エンジンを追加したくなった場合は、まず `docs/library-candidates.md` の採用前チェックを見てください。system標準へ入れるのではなく、曲側の任意adapterや小さなhelperで済むかを先に検討します。
+
 ## 使ってよいシステム補助
 
 曲ごとに必要なものだけ選んでください。
