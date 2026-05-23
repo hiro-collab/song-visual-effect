@@ -26,7 +26,18 @@ export {
 } from "./safeFetch";
 export type { SongAdapterContext, SongAssetReader } from "./songAdapterContext";
 export { createSongAdapterContext } from "./songAdapterContext";
-export type { SongApp, SongAppFactory, SongAppFrame, SongAppServices, SongAppThreeServices } from "./songApp";
+export type {
+  SongApp,
+  SongAppContentRect,
+  SongAppFactory,
+  SongAppFrame,
+  SongAppServices,
+  SongAppThreeServices,
+  SongVisualHost,
+  SongVisualLayer,
+  SongVisualLayerOptions
+} from "./songApp";
+export { createVisualHost } from "./visualHost";
 export { Transport } from "./transport";
 export { startFrameLoop } from "./frameLoop";
 export { activeRange, beatAt, emphasisAt, lyricAt, lyricIndexAt } from "./timing";

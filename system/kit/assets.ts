@@ -240,7 +240,7 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
 
   if (!beatJson || beats.length < 8) warnings.push("beat fallback");
   if (!chorusJson || chorus.length === 0) warnings.push("chorus fallback");
-  if (lyricLines.length && !timedLyrics.length) warnings.push("rough lyrics");
+  if (!timedLyrics.length && lyricLines.length) warnings.push("rough lyrics");
 
   return {
     title,

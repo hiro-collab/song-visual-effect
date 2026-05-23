@@ -87,6 +87,8 @@ http://127.0.0.1:5172/
 
 必要に応じて、歌詞、解析JSON、音源、クレジット、Web adapter IDなどを足します。これらのパスやJSON構造は、曲の都合に合わせて設計して構いません。現行のWeb adapterは同一ビルド内の `builtin:*` / `song:*` IDだけを解決し、URLや相対パスのadapterコードは読み込みません。
 
+中立的な雛形だけを作る場合は `npm run song:scaffold` を使えます。このコマンドは既存曲を読まず、manifest、analysis、design、README、CREDITSの空に近い出発点を作ります。
+
 ## 既存曲との関係
 
 既存の `song-packs/*` は、次の用途にだけ使います。
