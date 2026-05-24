@@ -21,6 +21,7 @@
     "sync:note": "node scripts/worktree-sync.mjs note",
     "sync:ack": "node scripts/worktree-sync.mjs ack",
     "sync:inbox": "node scripts/worktree-sync.mjs inbox",
+    "sync:onboard": "node scripts/worktree-sync.mjs onboard",
     "sync:watch": "node scripts/worktree-sync.mjs watch"
   },
   "devDependencies": {

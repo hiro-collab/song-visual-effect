@@ -9,13 +9,14 @@
 - 実装は小さいステップに分け、既存挙動を壊さない。
 - 新しい作業や新しい曲の作業を始めるときは、現在の統合基準である `codex/system-kit-refactor` を土台にする。現時点の代表worktreeは `_worktrees/system-main`。
 - プロジェクトルート直下のworktreeが常に最新基準とは限らない。作業開始時に `git status --short --branch` と `git worktree list` で自分のbranchを確認する。
-- 並行 worktree 作業では、作業開始時と区切りごとに `npm run sync:brief` を確認する。必要なら詳細として `npm run sync:check` と `npm run sync:inbox` も見る。
+- 並行 worktree 作業では、作業開始時に `npm run sync:onboard -- --for <自分の担当>` を実行する。区切りごとに `npm run sync:brief` を確認し、必要なら詳細として `npm run sync:check` と `npm run sync:inbox` も見る。
 - 他担当への質問、ブロッカー、短い共有事項は `npm run sync:note -- --from <自分の担当> --to <相手> --level <info|question|blocker|done> -m "短い連絡"` で共有する。
 - 各曲担当から届いた共通ノウハウ候補は、すぐ正本docsへ入れず、まず `docs/knowledge-review.md` の分類で `common` / `conditional` / `song-owned` / `reject` に審議する。
 - 曲担当は作業中にもノウハウ候補を共有し、最終報告前に棚卸しする。候補がある場合は `knowledge-candidate`、ない場合は `knowledge-candidate: none` を明記する。
 - 対応済み、または自分の担当では対応不要と判断した連絡は `npm run sync:ack -- --id <id> --from <自分の担当>` で確認済みにする。
 - 他スレッドに取り込ませてよいコミットができたら `npm run sync:ready -- -m "短い説明"` を実行する。
 - 新しいスレッドで作業を始める場合は、`docs/thread-start.md` を読んで作業開始、ready確認、merge判断の流れを揃える。
+- 導入や同期手順だけを短く確認したい場合は、`docs/sync-onboarding.md` を読む。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけを対象にする。PC全体の同名プロセスや他worktreeのtargetを探して止めない。
 - 不明点は断定せず、「推測」と明記する。
 - 音源ファイルを解析しない。AI学習に使わない。

@@ -1607,6 +1607,100 @@ export const createMesmerizerSignalLockApp = async (
     hazePlanes.push(haze);
   }
 
+  const lockLayer = new THREE.Group();
+  lockLayer.visible = false;
+  lockLayer.position.set(0, 4.15, -4.86);
+  const lockRingMaterials: THREE.MeshBasicMaterial[] = [];
+  for (let ring = 0; ring < 5; ring += 1) {
+    const material = new THREE.MeshBasicMaterial({
+      color: color(ring % 2 === 0 ? cues.palette.screen : cues.palette.ink),
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const inner = 0.36 + ring * 0.33;
+    const outer = inner + 0.035 + ring * 0.01;
+    const mesh = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 96), material);
+    mesh.position.z = ring * 0.018;
+    lockLayer.add(mesh);
+    lockRingMaterials.push(material);
+  }
+  scene.add(lockLayer);
+
+  const controlCurtain = new THREE.Group();
+  controlCurtain.visible = false;
+  controlCurtain.position.set(0, 3.78, -4.52);
+  const controlPanelMaterials: THREE.MeshBasicMaterial[] = [];
+  const controlScanBars: THREE.Mesh[] = [];
+  const makeCurtainMaterial = (hex: string, opacity = 0) => {
+    const material = new THREE.MeshBasicMaterial({
+      color: color(hex),
+      transparent: true,
+      opacity,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    controlPanelMaterials.push(material);
+    return material;
+  };
+  const controlBackdrop = new THREE.Mesh(new THREE.PlaneGeometry(10.8, 4.85), makeCurtainMaterial(cues.palette.ink));
+  controlCurtain.add(controlBackdrop);
+  for (let index = 0; index < 12; index += 1) {
+    const material = makeCurtainMaterial(index % 3 === 0 ? cues.palette.cyan : index % 3 === 1 ? cues.palette.pink : cues.palette.acid);
+    const bar = new THREE.Mesh(new THREE.PlaneGeometry(8.9, 0.055), material);
+    bar.position.set(0, -2.0 + index * 0.36, 0.02 + index * 0.003);
+    controlCurtain.add(bar);
+    controlScanBars.push(bar);
+  }
+  const controlCursorMaterial = makeCurtainMaterial(cues.palette.screen);
+  const controlCursor = new THREE.Mesh(new THREE.PlaneGeometry(0.065, 4.45), controlCursorMaterial);
+  controlCursor.position.z = 0.12;
+  controlCurtain.add(controlCursor);
+  scene.add(controlCurtain);
+
+  const afterimageLayer = new THREE.Group();
+  afterimageLayer.visible = false;
+  afterimageLayer.position.set(0, 3.6, -4.18);
+  const afterimageMaterials: THREE.MeshBasicMaterial[] = [];
+  for (let index = 0; index < 5; index += 1) {
+    const material = new THREE.MeshBasicMaterial({
+      color: color(index % 2 === 0 ? cues.palette.screen : index % 3 === 0 ? cues.palette.cyan : cues.palette.pink),
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(8.4 - index * 0.72, 0.54 + index * 0.12), material);
+    plane.position.set((index - 2) * 0.18, 1.1 - index * 0.5, index * 0.018);
+    plane.rotation.z = (index - 2) * 0.035;
+    afterimageLayer.add(plane);
+    afterimageMaterials.push(material);
+  }
+  scene.add(afterimageLayer);
+
+  const chorusFrame = new THREE.Group();
+  chorusFrame.visible = false;
+  chorusFrame.position.set(0, 3.72, -4.42);
+  const chorusFrameMaterials: THREE.MeshBasicMaterial[] = [];
+  for (let index = 0; index < 8; index += 1) {
+    const material = new THREE.MeshBasicMaterial({
+      color: color([cues.palette.cyan, cues.palette.pink, cues.palette.acid, cues.palette.amber][index % 4]),
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const ribbon = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 4.4), material);
+    const side = index < 4 ? -1 : 1;
+    const lane = index % 4;
+    ribbon.position.set(side * (4.1 + lane * 0.38), -0.14 + lane * 0.16, lane * 0.024);
+    ribbon.rotation.z = side * (0.32 + lane * 0.09);
+    chorusFrame.add(ribbon);
+    chorusFrameMaterials.push(material);
+  }
+  scene.add(chorusFrame);
+
   let width = 1;
   let height = 1;
   let dpr = 1;
@@ -1861,6 +1955,63 @@ export const createMesmerizerSignalLockApp = async (
       material.opacity = 0.02 + sceneControls.energy * 0.028 + sceneControls.tension * 0.018 + pulse * 0.014 + userGlow * 0.012;
       haze.position.x = Math.sin(time * (0.16 + index * 0.035) + index) * (0.24 + sceneControls.energy * 0.2);
       haze.rotation.z = (index - 1.5) * 0.035 + Math.sin(time * 0.16 + index) * 0.025;
+    });
+
+    const lockLayerAmount = clampBetween(
+      composition.lock * (0.38 + composition.display * 0.46) + (composition.mode === "peak" ? 0.14 : 0) + pulse * 0.08,
+      0,
+      1
+    );
+    lockLayer.visible = lockLayerAmount > 0.03;
+    lockLayer.position.set(0, 4.14 + composition.lock * 0.18 + pulse * 0.025, -4.82 + composition.lock * 0.08);
+    lockLayer.scale.setScalar(composition.screenScale * (0.92 + composition.lock * 0.34 + pulse * 0.035));
+    lockLayer.rotation.z = time * (0.055 + sceneControls.motion * 0.035) + pulse * 0.04;
+    lockRingMaterials.forEach((material, index) => {
+      material.opacity = lockLayerAmount * (0.2 + index * 0.035 + pulse * (0.08 + sceneControls.motion * 0.05));
+    });
+
+    const controlLayerAmount = clampBetween(composition.control * (0.54 + interludeAmount * 0.42 + pulse * 0.08), 0, 1);
+    controlCurtain.visible = controlLayerAmount > 0.035;
+    controlCurtain.position.set(0, 3.72 + composition.control * 0.12 + pulse * 0.035, -4.48);
+    controlCurtain.scale.set(
+      0.88 + composition.display * 0.28 + composition.control * 0.12,
+      0.82 + composition.display * 0.18 + pulse * 0.018,
+      1
+    );
+    controlPanelMaterials.forEach((material, index) => {
+      const base = index === 0 ? 0.18 : index === controlPanelMaterials.length - 1 ? 0.58 : 0.28;
+      material.opacity = controlLayerAmount * (base + pulse * 0.12 + sceneControls.tension * 0.08);
+    });
+    controlScanBars.forEach((bar, index) => {
+      const laneHit = (index + beat.index) % 3 === 0 ? 1 : 0;
+      bar.position.x = Math.sin(time * (1.7 + sceneControls.motion * 1.4) + index * 0.42) * (0.18 + composition.control * 0.42);
+      bar.scale.x = 0.62 + composition.control * 0.34 + laneHit * pulse * 0.3;
+      bar.scale.y = 1 + laneHit * pulse * 1.8;
+    });
+    controlCursor.position.x = (((time * (2.1 + sceneControls.motion * 1.7) + beat.index * 0.19) % 1) - 0.5) * 8.6;
+    controlCursor.scale.y = 0.9 + pulse * (0.2 + sceneControls.tension * 0.2);
+
+    const afterimageAmount = clampBetween(composition.empty * (0.62 + sceneControls.release * 0.4) + outroAmount * 0.12, 0, 1);
+    afterimageLayer.visible = afterimageAmount > 0.035;
+    afterimageLayer.position.set(Math.sin(time * 0.22) * 0.12, 3.62 + afterimageAmount * 0.12, -4.16);
+    afterimageLayer.scale.setScalar(0.9 + composition.wide * 0.12 + afterimageAmount * 0.22);
+    afterimageMaterials.forEach((material, index) => {
+      material.opacity = afterimageAmount * (0.13 + index * 0.035 + pulse * 0.035);
+    });
+
+    const chorusFrameAmount = clampBetween(
+      (composition.mode === "chorus" || composition.mode === "peak" ? 0.48 + composition.stage * 0.42 : 0) +
+        (composition.mode === "reveal" ? 0.22 : 0) +
+        pulse * 0.08,
+      0,
+      1
+    );
+    chorusFrame.visible = chorusFrameAmount > 0.035;
+    chorusFrame.position.y = 3.66 + pulse * (0.05 + sceneControls.energy * 0.05);
+    chorusFrame.scale.setScalar(0.94 + composition.wide * 0.16 + pulse * 0.035);
+    chorusFrame.rotation.z = Math.sin(time * 0.18) * 0.018;
+    chorusFrameMaterials.forEach((material, index) => {
+      material.opacity = chorusFrameAmount * (0.24 + (index % 2) * 0.08 + pulse * (0.16 + sceneControls.motion * 0.08));
     });
 
     const parallaxX = pointer.active ? (pointer.x - 0.5) * 1.8 : Math.sin(time * (0.13 + sceneControls.motion * 0.08)) * (0.2 + composition.wide * 0.28);
