@@ -635,7 +635,7 @@
       "id": "song-smoke-check",
       "label": "曲パックの機械的smoke確認",
       "summary": "song:validateとpreview:snapshotを組み合わせ、提出前に壊れている状態だけを落とします。曲の解釈、構図、色、演出品質は判定しません。",
-      "trigger": "npm run song:smoke -- --id <song-id>",
+      "trigger": "npm run song:smoke -- --id <song-id> / npm run song:smoke:all -- --ids <a,b>",
       "steps": [
         {
           "from": "threadStart",
@@ -664,6 +664,13 @@
           "action": "人間レビューへ渡す",
           "payload": "summary.json、snapshot.png、consoleログ",
           "note": "見た目の完成度、曲解釈、構図、色、盛り上がりは人間が判断します。"
+        },
+        {
+          "from": "threadStart",
+          "to": "previewSnapshot",
+          "action": "複数曲を順に確認",
+          "payload": "song:smoke:all、--ids、--exclude、--max、--dry-run",
+          "note": "中央検証では最初にdry-runで対象を確認し、必要なら曲数を絞って実行します。"
         }
       ]
     },

@@ -54,6 +54,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
 - `scripts/preview-snapshot.mjs`: 指定曲と指定時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` に保存する。
 - `scripts/smoke-song-pack.mjs`: `song:validate` と `preview:snapshot` を組み合わせ、ページ起動、manifest読み込み、adapter例外、fatal console error、表示可能canvas、明らかな空画面だけを確認する。
+- `scripts/smoke-all-song-packs.mjs`: 複数の曲パックへ `song:smoke` を順に実行する中央確認用の入口。対象は `--ids`、`--exclude`、`--max` で絞れる。
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
 - `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。
 - `scripts/launch-manager/auto-ports.mjs`: worktreeごとのLaunch Manager/player/song-pack port自動割当と `.codex/runtime/ports.json` 記録。

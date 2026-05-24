@@ -179,9 +179,10 @@ npm run preview:snapshot -- --song shining-star --time 48
 
 ```powershell
 npm run song:smoke -- --id song-id
+npm run song:smoke:all -- --dry-run
 ```
 
-この確認は、ページ起動、manifest読み込み、adapter例外、fatalなconsole error、表示可能canvas、明らかな空画面だけを見ます。曲の解釈、構図、色、演出の良さは判定しません。
+`song:smoke:all` は複数曲をまとめて確認する入口です。最初は `--dry-run` や `--ids monitoring,igaku` で対象を絞ってください。この確認は、ページ起動、manifest読み込み、adapter例外、fatalなconsole error、表示可能canvas、明らかな空画面だけを見ます。曲の解釈、構図、色、演出の良さは判定しません。
 
 ## Agent Context
 

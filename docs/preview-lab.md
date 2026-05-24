@@ -37,6 +37,7 @@ Launch Managerはworktreeごとに空きポートを自動割当します。実�
 ## 確認すること
 
 - 取り込み前に `npm run song:smoke -- --id <song-id>` が通るか。
+- 複数曲をまとめて見る前に `npm run song:smoke:all -- --dry-run` で対象曲一覧を確認し、必要なら `--ids` や `--max` で小さく実行する。
 - 曲メニューに取り込んだ曲が出るか。
 - `選択曲を再生` で必要なtargetが起動するか。
 - player URLの `song=` が、同じworktreeのsong-pack serverを向いているか。
