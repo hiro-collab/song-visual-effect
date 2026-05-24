@@ -669,6 +669,7 @@ function commandOnboard(args) {
   console.log("  npm run sync:check");
   console.log("  npm run sync:inbox -- --open");
   console.log('  npm run sync:note -- --from <you> --to system --level question --topic knowledge-candidate -m "candidate: ... scope: ... source: ... risk: ... suggested home: ..."');
+  console.log('  npm run sync:note -- --from <you> --to system --level info --topic visual-authoring-feedback -m "song: ...; apply: ...; no-apply: ...; need-system-help: ...; checks: ..."');
   console.log('  npm run sync:ready -- -m "what is ready, checks run, assets/deps, knowledge-candidates"');
   console.log("");
   console.log("Current brief:");

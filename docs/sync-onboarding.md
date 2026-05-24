@@ -90,6 +90,16 @@ npm run sync:note -- --from <担当> --to system --level question --topic knowle
 system担当が `common` / `conditional` / `song-owned` / `reject` に分類します。
 曲固有の構図、色、値、モチーフ、台詞、歌詞由来表現は、共通ルールへ昇格させないでください。
 
+## 共有ノウハウを自分の映像へ戻す
+
+system担当から `--topic visual-authoring-feedback` のnoteが来た場合は、自分の曲パックだけを見て、反映するか、反映しないか、system支援が必要かを返します。
+
+```powershell
+npm run sync:note -- --from <担当> --to system --level info --topic visual-authoring-feedback -m "song: <song-id>; apply: ...; no-apply: ...; need-system-help: ...; checks: ..."
+```
+
+詳しくは `docs/visual-authoring-feedback.md` を読んでください。
+
 ## 取り込み担当
 
 複数曲を中央へ取り込む場合は、ブランチ全体のmergeにこだわらず、必要なら曲パックだけの手動取り込みにします。
