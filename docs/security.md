@@ -34,6 +34,7 @@
 - dev manager の状態変更APIは、同一origin相当のブラウザリクエストだけを受け付けます。
 - dev manager のログ表示は `textContent` / DOM生成で行い、HTMLとして解釈しません。
 - Launch Manager の管理画面はCSP、frame拒否、権限拒否ヘッダーを付け、同一originのAPIだけに接続します。
+- Launch Manager のsync message viewerは `codex-sync/events.jsonl` の末尾だけを読み、イベント由来のcommit/ref文字列をgit引数に使う前に形式検証します。
 - Launch Manager のtarget定義は、作業ディレクトリをリポジトリ配下に限定し、commandを単純なコマンド名に限定します。
 - Launch Manager のtarget定義では、`PATH`、`COMSPEC`、`SYSTEMROOT`、`NODE_OPTIONS` などrunner側の重要環境変数を上書きできません。
 - Windows上の `npm` / `npx` target は `cmd.exe /c` を介すため、target引数にshellメタ文字が含まれる場合は起動前に拒否します。

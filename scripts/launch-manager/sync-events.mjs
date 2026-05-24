@@ -5,6 +5,9 @@ import path from "node:path";
 
 const defaultLimit = 160;
 const maxLimit = 400;
+const maxEventsBytes = 2 * 1024 * 1024;
+const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/i;
+const REF_NAME_PATTERN = /^(?!-)(?!.*(?:\.\.|@\{|[\\\x00-\x1f\x7f]))[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$/;
 
 const git = (root, args) =>
   execFileSync("git", args, {
@@ -28,6 +31,19 @@ const gitMaybe = (root, args) => {
 const cleanText = (value, max = 2000) => {
   const text = String(value ?? "").replace(/\0/g, "");
   return text.length > max ? `${text.slice(0, max - 1)}...` : text;
+};
+
+const isSafeCommit = (value) => COMMIT_PATTERN.test(String(value ?? ""));
+
+const isSafeRefName = (value) => {
+  const ref = String(value ?? "");
+  return (
+    REF_NAME_PATTERN.test(ref) &&
+    !ref.includes("//") &&
+    !ref.endsWith("/") &&
+    !ref.endsWith(".") &&
+    ref.split("/").every((part) => part && part !== "." && part !== ".." && !part.endsWith(".lock"))
+  );
 };
 
 const eventId = (event) => {
@@ -57,7 +73,8 @@ const branchName = (root) => {
 const headCommit = (root) => git(root, ["rev-parse", "HEAD"]);
 
 const branchTip = (root, branch) => {
-  const result = gitMaybe(root, ["rev-parse", "--verify", `${branch}^{commit}`]);
+  if (!isSafeRefName(branch)) return "";
+  const result = gitMaybe(root, ["rev-parse", "--verify", "--end-of-options", `${branch}^{commit}`]);
   return result.ok ? result.stdout : "";
 };
 
@@ -68,11 +85,27 @@ const commonSyncDir = (root) => {
 
 const eventsPath = (root) => path.join(commonSyncDir(root), "events.jsonl");
 
+const readUtf8Tail = (file, maxBytes) => {
+  const stat = fs.statSync(file);
+  if (stat.size <= maxBytes) return fs.readFileSync(file, "utf8");
+
+  const start = stat.size - maxBytes;
+  const buffer = Buffer.alloc(maxBytes);
+  const fd = fs.openSync(file, "r");
+  try {
+    fs.readSync(fd, buffer, 0, maxBytes, start);
+  } finally {
+    fs.closeSync(fd);
+  }
+  const text = buffer.toString("utf8");
+  const firstNewline = text.indexOf("\n");
+  return firstNewline === -1 ? "" : text.slice(firstNewline + 1);
+};
+
 const readEvents = (root) => {
   const file = eventsPath(root);
   if (!fs.existsSync(file)) return [];
-  return fs
-    .readFileSync(file, "utf8")
+  return readUtf8Tail(file, maxEventsBytes)
     .split(/\r?\n/)
     .filter(Boolean)
     .flatMap((line) => {
@@ -84,9 +117,11 @@ const readEvents = (root) => {
     });
 };
 
-const isAncestor = (root, older, newer) => gitMaybe(root, ["merge-base", "--is-ancestor", older, newer]).ok;
+const isAncestor = (root, older, newer) =>
+  isSafeCommit(older) && isSafeCommit(newer) && gitMaybe(root, ["merge-base", "--is-ancestor", older, newer]).ok;
 
-const commitExists = (root, commit) => gitMaybe(root, ["cat-file", "-e", `${commit}^{commit}`]).ok;
+const commitExists = (root, commit) =>
+  isSafeCommit(commit) && gitMaybe(root, ["cat-file", "-e", `${commit}^{commit}`]).ok;
 
 const branchShortName = (branch) => {
   const parts = String(branch || "").split("/");
@@ -188,6 +223,7 @@ const latestReadyByBranch = (events) => {
 
 const describeReady = ({ root, event, currentBranch, currentHead, acked }) => {
   const exists = event.commit ? commitExists(root, event.commit) : false;
+  const branch = isSafeRefName(event.branch) ? event.branch : "";
   let status = "announced commit is not available locally";
   let included = false;
   let fastForward = false;
@@ -198,14 +234,14 @@ const describeReady = ({ root, event, currentBranch, currentHead, acked }) => {
     status = included ? "already included" : fastForward ? "fast-forward possible" : "merge commit may be needed";
   }
 
-  const tip = event.branch ? branchTip(root, event.branch) : "";
+  const tip = branch ? branchTip(root, branch) : "";
   const hasNewerTip = Boolean(tip && event.commit && tip !== event.commit);
-  const pending = exists && !included && !acked && event.branch !== currentBranch;
+  const pending = Boolean(branch) && exists && !included && !acked && branch !== currentBranch;
   const mergeHint = !pending
     ? ""
     : fastForward
-      ? `npm run sync:merge -- --from ${event.branch}`
-      : `npm run sync:merge -- --from ${event.branch} --allow-merge-commit`;
+      ? `npm run sync:merge -- --from ${branch}`
+      : `npm run sync:merge -- --from ${branch} --allow-merge-commit`;
 
   return {
     status,
