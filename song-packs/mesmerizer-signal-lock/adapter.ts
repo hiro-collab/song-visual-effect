@@ -1561,6 +1561,11 @@ export const createMesmerizerSignalLockApp = async (
     new THREE.MeshBasicMaterial({ color: color(cues.palette.acid), transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false }),
     new THREE.MeshBasicMaterial({ color: color(cues.palette.amber), transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
   ];
+  const beamHeight = 6.5;
+  const beamGeometry = new THREE.ConeGeometry(0.76, beamHeight, 32, 1, true);
+  beamGeometry.translate(0, -beamHeight / 2, 0);
+  const beamLocalAxis = new THREE.Vector3(0, -1, 0);
+  const beamDirection = new THREE.Vector3();
   const beams: THREE.Mesh[] = [];
   for (let i = 0; i < 4; i += 1) {
     const target = new THREE.Object3D();
@@ -1584,9 +1589,8 @@ export const createMesmerizerSignalLockApp = async (
     scene.add(head);
     movingHeads.push(head);
 
-    const beam = new THREE.Mesh(new THREE.ConeGeometry(0.76, 6.5, 32, 1, true), beamMaterials[i]);
-    beam.position.set(spot.position.x, 2.95, spot.position.z + 0.75);
-    beam.rotation.z = (i - 1.5) * 0.09;
+    const beam = new THREE.Mesh(beamGeometry, beamMaterials[i]);
+    beam.position.copy(spot.position);
     scene.add(beam);
     beams.push(beam);
   }
@@ -1941,13 +1945,18 @@ export const createMesmerizerSignalLockApp = async (
       head.rotation.y = (spotTargets[index].position.x - spot.position.x) * 0.055;
       head.rotation.x = 0.08 + (spotTargets[index].position.z - spot.position.z) * -0.03;
       const beam = beams[index];
-      beam.position.x = spot.position.x * 0.72 + spotTargets[index].position.x * 0.28;
-      beam.position.z = spot.position.z * 0.7 + spotTargets[index].position.z * 0.3;
-      beam.rotation.z = (spotTargets[index].position.x - spot.position.x) * -0.08;
-      beam.rotation.x = (spotTargets[index].position.z - spot.position.z) * 0.05;
+      beamDirection.copy(spotTargets[index].position).sub(spot.position);
+      const rawBeamLength = beamDirection.length();
+      const beamLength = clampBetween(rawBeamLength, 2.5, 8.2);
+      if (rawBeamLength > 0.001) {
+        beamDirection.multiplyScalar(1 / rawBeamLength);
+        beam.position.copy(spot.position);
+        beam.quaternion.setFromUnitVectors(beamLocalAxis, beamDirection);
+      }
       const material = beam.material as THREE.MeshBasicMaterial;
       material.opacity = 0.06 + sceneControls.energy * 0.18 + sceneControls.tension * 0.04 + pulse * (0.1 + sceneControls.motion * 0.12) + userGlow * 0.05 - sceneControls.release * 0.06;
-      beam.scale.setScalar(1 + sceneControls.energy * 0.36 + rebuildAmount * 0.1 + pulse * 0.16);
+      const beamWidth = 1 + sceneControls.energy * 0.22 + rebuildAmount * 0.08 + pulse * 0.12;
+      beam.scale.set(beamWidth, beamLength / beamHeight, beamWidth);
     });
 
     hazePlanes.forEach((haze, index) => {
