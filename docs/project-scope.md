@@ -87,6 +87,8 @@ TouchDesigner、Unity、OSC、WebSocket、HTTP、JSON file pollingなど、連�
 
 共通化する場合も、重い統一ランタイムではなく、薄いcontrol eventの型やbridgeのサンプルとして扱います。曲映像は、必要なら曲パック側で専用adapterや連携メモを持ちます。イベント全体で共通の連携方法を使う場合は、show-profile側にまとめます。
 
+外部入力やLAN操作を使う場合は、曲パックまたはshow-profile側に任意の `capabilities`、README、`security-notes.md`、`operation-notes.md` で責任範囲を書けます。これらは発想を縛る規格ではなく、公開範囲、操作担当、tokenなどの認可、停止手順を見落とさないためのメモです。詳しい共通方針は `docs/security.md` を参照してください。
+
 ## タイミング補正
 
 タイミング補正は、曲パック側の調整値とshow-profile側の現場補正を分けて考えます。

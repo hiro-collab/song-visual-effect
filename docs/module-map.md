@@ -56,10 +56,10 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/smoke-song-pack.mjs`: `song:validate` と `preview:snapshot` を組み合わせ、ページ起動、manifest読み込み、adapter例外、fatal console error、表示可能canvas、明らかな空画面だけを確認する。
 - `scripts/smoke-all-song-packs.mjs`: 複数の曲パックへ `song:smoke` を順に実行する中央確認用の入口。対象は `--ids`、`--exclude`、`--max` で絞れる。
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
-- `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。
+- `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証、Launch ManagerのLAN公開opt-in判定。
 - `scripts/launch-manager/auto-ports.mjs`: worktreeごとのLaunch Manager/player/song-pack port自動割当と `.codex/runtime/ports.json` 記録。
-- `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP API、origin検証、CSPつきHTML応答。`/api/status` と `/api/sync-events` を返す。
-- `scripts/launch-manager/ui.mjs`: Launch Manager管理画面のHTML、CSS、ブラウザ側JS。曲選択、状態マップ、target操作、担当メッセージ閲覧を持つ。
+- `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP API、origin検証、LAN公開時control token検証、CSPつきHTML応答。`/api/status` と `/api/sync-events` を返す。
+- `scripts/launch-manager/ui.mjs`: Launch Manager管理画面のHTML、CSS、ブラウザ側JS。曲選択、LAN公開警告、状態マップ、target操作、担当メッセージ閲覧を持つ。
 - `scripts/launch-manager/sync-events.mjs`: Git共通ディレクトリの `codex-sync/events.jsonl` を読み、ready/note/ackをLaunch Manager GUI向けに整形する読み取り専用helper。
 - `scripts/launch-manager/supervisor.mjs`: managed targetの起動、停止、再起動、状態管理。
 - `scripts/launch-manager/ports.mjs`: port空き確認、衝突確認、候補探索。

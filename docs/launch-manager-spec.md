@@ -264,6 +264,7 @@ MVP:
 
 - `GET /api/status`。target状態に加え、曲JSONメニュー用の `songCatalog` を返す。
 - `GET /api/status` は、存在する場合だけ `showProfiles` も返す。show-profileはローカル `show-profiles/*/show.json` の最小メタデータとsetlistだけを読む。
+- `GET /api/status` は `networkExposure` も返す。UIはLAN公開中やcontrol token要求を表示する。
 - `GET /api/sync-events`。Git共通ディレクトリの `codex-sync/events.jsonl` からready/note/ackを読み、担当別・要対応別に整形して返す。
 - `POST /api/targets/:id/start`
 - `POST /api/targets/:id/stop`
@@ -281,8 +282,9 @@ MVP:
 
 MVP:
 
-- bind先は `127.0.0.1` のみ。
-- POST APIはsame-originだけ許可する。
+- bind先は既定で `127.0.0.1`。LAN公開は `LAUNCH_MANAGER_ALLOW_LAN=1` を明示した時だけ許可する。
+- POST APIはsame-originだけ許可する。LAN公開時は `LAUNCH_MANAGER_CONTROL_TOKEN` が設定されていない限り状態変更APIを拒否し、設定されている場合は `X-Control-Token` または `Authorization: Bearer` で確認する。
+- LAN公開中はGUIに警告を出す。
 - 任意コマンド入力UIは作らない。
 - worktree-sync通知GUIは読み取り専用にし、ack、note、mergeなどの書き込み操作は既存CLIに残す。
 - target定義はローカルファイルだけ。
@@ -292,8 +294,7 @@ MVP:
 
 将来スマホ操作:
 
-- 明示オプションを指定した時だけLAN公開する。
-- PINまたは一時トークンを必須にする。
+- 現在のLAN公開opt-inとcontrol tokenは最低限の誤操作防止です。観客入力、インターネット公開、本番VJ卓などでは別途認証、ネットワーク分離、操作権限、ログ、停止手順を設計します。
 - 操作可能時間を制限する。
 - 緊急停止ボタンを大きくする。
 
@@ -306,7 +307,7 @@ MVP:
 - CPU/memory履歴グラフ。
 - WebSocket/SSEのリアルタイム通知。
 - 任意コマンド入力GUI。
-- LAN公開とスマホ専用UI。
+- 本格的なLAN操作卓とスマホ専用UI。
 - 曲ごとの映像設計やadapter実装。
 
 ## 実装準備

@@ -70,16 +70,16 @@ fixture用の描画判断は `examples/fixtures/soft-light-player` に隔離す�
 理由:
 歌詞がない曲、歌詞表示を使わない演出、別のタイミング構造を使う曲もありうるため。
 
-## D004d: 外部Web adapterは許容するが段階導入する
+## D004d: 外部Web adapterは共通フレームワークで自動実行しない
 
 決定:
-将来的に別サーバーからWeb adapterを読み込む仕様は許容する。ただしセキュリティが重要なので、最初は同一ビルド内でadapterを分離し、次段階で外部adapter化する。
+共通フレームワークは、外部URLからWeb adapter、演出コード、実行JSを自動で取得、dynamic import、iframe表示、遷移実行しない。外部URLは出典やライセンス確認の参照メモとしては許容するが、実行対象として扱わない。
 
 現行実装:
 manifestの `webAdapter` は同一ビルド内の `builtin:*` または `song:*` IDだけとして扱う。URLや相対パスをadapterコードとして解決する処理は持たない。
 
 理由:
-外部adapterは自由度が高いが、CORS、信頼境界、任意コード実行の問題があるため。まずは構造分離を優先し、安全な読み込み設計を後から決める。
+外部adapterは任意コード実行、CORS、信頼境界、保存APIとの関係を一段重くするため。外部ツールや外部入力との連携は曲側・show側で自由に設計できるが、共通フレームワークは誤って外部コードを実行する入口を持たない。
 
 ## D004e: 起動管理サーバーを検討する
 
@@ -157,7 +157,7 @@ A/Dキーによる歌詞打刻や補正UIは、Lyric TimingモードがOnのと�
 起動管理は、まずPC上に1つのLaunch Serverを立て、`launch/targets.json` に書かれたLaunch TargetとLaunch Setを起動、停止、監視する構成にする。
 
 理由:
-複数の曲用映像サーバー、fixture player、song-pack server、保存APIなどを同時に扱う必要がある一方、最初から複数Launch Server調停、delegated mode、自動port再割当、LAN公開、スマホ専用UIまで入れると構成が重くなり、使われなくなる可能性が高いため。
+複数の曲用映像サーバー、fixture player、song-pack server、保存APIなどを同時に扱う必要がある一方、最初から複数Launch Server調停、delegated mode、自動port再割当、本格的なLAN操作卓、スマホ専用UIまで入れると構成が重くなり、使われなくなる可能性が高いため。
 
 影響:
 MVPではmanaged targetだけを扱う。Launch Manager UIは状態の正本を持たず、PC上のLaunch Serverへ操作要求を送るだけにする。曲ごとの映像構成やadapterはLaunch Manager側で決めない。詳細仕様は `docs/launch-manager-spec.md` に置く。
@@ -193,7 +193,7 @@ system側は薄い補助に留める。TouchDesignerやUnityとの連携は、�
 13曲連続イベントのように、曲ごとの自由とイベント全体の共通運用を両立する必要があるため。ただし、イベントごとの運用方法は多様なので、曲パックやsystemに強制する規格にはしない。
 
 影響:
-Launch Managerはshow-profileがあればセットリスト表示などを補助してよいが、show-profileが無くても曲パック単体は動く。未知の項目は無視してよい。
+Launch Managerはshow-profileがあればセットリスト表示などを補助してよいが、show-profileが無くても曲パック単体は動く。未知の項目は無視してよい。曲パックとshow-profileは任意で `capabilities` を持てるが、これは機能を有効化する設定ではなく、外部入力、LAN操作、外部ツール連携などを人間に伝えるための記入例ベースのメモとして扱う。
 
 ## D016: Launch Managerは検証補助を主役にする
 

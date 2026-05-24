@@ -5,7 +5,15 @@ const escapeHtml = (value) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-export const managerHtml = ({ title, nonce }) => `<!doctype html>
+export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback", lan: false, controlTokenRequired: false } }) => {
+  const initialExposure = networkExposure ?? { mode: "loopback", lan: false, controlTokenRequired: false };
+  const initialWarningText =
+    initialExposure.warning ||
+    (initialExposure.controlTokenRequired ? "状態変更APIにcontrol tokenが設定されています。操作するにはtokenを入力してください。" : "");
+  const initialWarningHidden = initialExposure.lan || initialExposure.controlTokenRequired ? "" : " hidden";
+  const initialTokenHidden = initialExposure.controlTokenRequired ? "" : " hidden";
+
+  return `<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="utf-8">
@@ -144,6 +152,23 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       .message.is-ok { color: var(--ok); }
       .message.is-warn { color: var(--warn); }
       .message.is-error { color: var(--bad); }
+      .network-warning {
+        display: grid;
+        gap: 10px;
+        border: 1px solid rgba(255, 208, 125, 0.58);
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        background: rgba(255, 208, 125, 0.08);
+        color: var(--warn);
+      }
+      .network-warning[hidden] { display: none; }
+      .network-warning strong { color: var(--text); }
+      .network-warning p { color: var(--warn); }
+      .token-field {
+        max-width: 420px;
+      }
+      .token-field[hidden] { display: none; }
       .runtime-strip {
         display: flex;
         gap: 10px;
@@ -663,6 +688,15 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         <p id="updated-at">status loading...</p>
       </header>
 
+      <section id="network-warning" class="network-warning" aria-live="polite"${initialWarningHidden}>
+        <strong id="network-warning-title">${initialExposure.lan ? "LAN公開中" : "Control token required"}</strong>
+        <p id="network-warning-text">${escapeHtml(initialWarningText)}</p>
+        <label id="control-token-label" class="token-field"${initialTokenHidden}>
+          Control token
+          <input id="control-token" type="password" autocomplete="off" spellcheck="false" placeholder="操作用token">
+        </label>
+      </section>
+
       <section class="song-launcher" aria-label="Song launcher">
         <h2>曲を選んで再生</h2>
         <p>URLを手で組み立てず、ここから曲パッケージの manifest.json を選んで開きます。</p>
@@ -802,10 +836,16 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       const selectedSongStorageKey = "music-effect.launch-manager.selectedSong";
       const selectedShowStorageKey = "music-effect.launch-manager.selectedShow";
       const selectedSetlistStorageKey = "music-effect.launch-manager.selectedSetlist";
+      const controlTokenStorageKey = "music-effect.launch-manager.controlToken";
       const call = async (url, options = {}) => {
+        const requestOptions = { ...options, headers: { ...(options.headers || {}) } };
+        if (String(requestOptions.method || "GET").toUpperCase() === "POST") {
+          const token = byId("control-token")?.value?.trim() || "";
+          if (token) requestOptions.headers["X-Control-Token"] = token;
+        }
         let response;
         try {
-          response = await fetch(url, options);
+          response = await fetch(url, requestOptions);
         } catch {
           throw new Error("Launch Managerに接続できません。サーバーが止まっている可能性があります。npm run dev の端末と、この画面のURL/portを確認してから再読み込みしてください。");
         }
@@ -829,6 +869,26 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       const statusText = (target) => {
         const health = target.health && target.health !== "none" ? " / " + healthLabel(target.health) : "";
         return statusLabel(target.status) + health;
+      };
+      const renderNetworkExposure = (exposure = {}) => {
+        const visible = Boolean(exposure.lan || exposure.controlTokenRequired);
+        const box = byId("network-warning");
+        const titleNode = byId("network-warning-title");
+        const textNode = byId("network-warning-text");
+        const tokenLabel = byId("control-token-label");
+        const tokenInput = byId("control-token");
+        box.hidden = !visible;
+        tokenLabel.hidden = !exposure.controlTokenRequired;
+        if (!visible) return;
+
+        titleNode.textContent = exposure.lan ? "LAN公開中" : "Control token required";
+        textNode.textContent =
+          exposure.warning ||
+          "状態変更APIにcontrol tokenが設定されています。操作するにはtokenを入力してください。";
+        tokenInput.disabled = Boolean(exposure.controlTokenRequired && !exposure.controlTokenConfigured);
+        tokenInput.placeholder = exposure.controlTokenConfigured
+          ? "操作用token"
+          : "LAUNCH_MANAGER_CONTROL_TOKEN が未設定です";
       };
       const roleLabel = (kind) => ({
         "web-app": "再生用ブラウザ画面",
@@ -1546,6 +1606,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         renderSongCatalog(status.songCatalog);
         renderShowProfiles(status.showProfiles);
         renderSystemMap(status);
+        renderNetworkExposure(status.networkExposure);
         byId("updated-at").textContent = "更新: " + new Date(status.updatedAt).toLocaleTimeString();
         byId("runtime").textContent =
           "worktree: " + status.root +
@@ -1607,6 +1668,10 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         rememberShowSelection();
         renderSelectedShow();
       });
+      byId("control-token").value = sessionStorage.getItem(controlTokenStorageKey) || "";
+      byId("control-token").addEventListener("input", () => {
+        sessionStorage.setItem(controlTokenStorageKey, byId("control-token").value);
+      });
       byId("select-setlist-song").addEventListener("click", () => {
         const item = selectedSetlistItem();
         if (!item) {
@@ -1628,3 +1693,4 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
     </script>
   </body>
 </html>`;
+};

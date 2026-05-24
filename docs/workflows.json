@@ -215,7 +215,7 @@
       "file": "song-packs/<song-id>/adapter.ts / song-packs/local-adapters.ts",
       "x": 38,
       "y": 66,
-      "description": "曲側が持つ演出コードです。system kitから必要なcontextやhelperだけを受け取り、曲固有のcue文法を曲側で解釈します。外部adapter読み込みはまだ未設計です。"
+      "description": "曲側が持つ演出コードです。system kitから必要なcontextやhelperだけを受け取り、曲固有のcue文法を曲側で解釈します。外部adapter URL/pathは共通フレームワークの実行対象にしません。"
     },
     {
       "id": "effects",
@@ -685,7 +685,7 @@
           "to": "launchManagerSpec",
           "action": "仕様を読む",
           "payload": "docs/launch-manager-spec.md",
-          "note": "MVPではmanaged targetだけ。複数Launch Server、attached/delegated、LAN公開は含めません。"
+          "note": "MVPではmanaged targetだけ。複数Launch Server、attached/delegated、本格的なLAN運用は含めません。LAN公開は必要時だけ明示opt-inと警告表示つきで扱います。"
         },
         {
           "from": "launchManagerSpec",
@@ -806,7 +806,7 @@
           "to": "songAdapter",
           "action": "webAdapterを指定",
           "payload": "同一ビルド内のbuiltin:*またはsong:* adapter ID",
-          "note": "system kitは曲専用adapterを持ちません。外部adapter URL/pathは現行実装では解決せず、セキュリティ設計後に扱います。"
+          "note": "system kitは曲専用adapterを持ちません。外部adapter URL/pathは共通フレームワークでは解決せず、URLは参照メモとして扱います。"
         },
         {
           "from": "main",

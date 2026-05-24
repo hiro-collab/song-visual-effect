@@ -1,9 +1,9 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyLaunchPortsToEnv, resolvePortsFromEnv, writePortsFile } from "./auto-ports.mjs";
-import { assertLoopbackHost, loadLaunchConfig } from "./config.mjs";
+import { loadLaunchConfig, resolveLaunchManagerExposure } from "./config.mjs";
 import { LaunchSupervisor } from "./supervisor.mjs";
 import { listShowProfiles } from "./shows.mjs";
 import { listSongCatalog } from "./songs.mjs";
@@ -48,6 +48,17 @@ const sendText = (response, status, body) => {
   });
   response.end(body);
 };
+
+const publicNetworkExposure = (exposure) => ({
+  host: exposure.host,
+  mode: exposure.mode,
+  loopback: exposure.loopback,
+  lan: exposure.lan,
+  controlTokenRequired: exposure.controlTokenRequired,
+  controlTokenConfigured: exposure.controlTokenConfigured,
+  postApiEnabled: exposure.postApiEnabled,
+  warning: exposure.warning
+});
 
 const safeSongCatalog = async (config) => {
   try {
@@ -101,11 +112,67 @@ const safeSyncEvents = (config) => {
   }
 };
 
-const isTrustedBrowserOrigin = (request, allowedOrigins) => {
+const originMatchesRequestHost = (origin, requestHost) => {
+  if (!origin || !requestHost) return false;
+  try {
+    const url = new URL(origin);
+    return (url.protocol === "http:" || url.protocol === "https:") && url.host === requestHost;
+  } catch {
+    return false;
+  }
+};
+
+const isTrustedBrowserOrigin = (request, allowedOrigins, { allowRequestHostOrigin = false } = {}) => {
   const origin = request.headers.origin;
-  if (origin && !allowedOrigins.has(origin)) return false;
+  if (origin && !allowedOrigins.has(origin)) {
+    if (!allowRequestHostOrigin || !originMatchesRequestHost(origin, request.headers.host)) return false;
+  }
   const fetchSite = request.headers["sec-fetch-site"];
   return !fetchSite || fetchSite === "same-origin" || fetchSite === "none";
+};
+
+export const readControlToken = (request) => {
+  const header = request.headers["x-control-token"] ?? request.headers["x-launch-manager-token"];
+  if (Array.isArray(header)) return header[0] ?? "";
+  if (typeof header === "string" && header.trim()) return header.trim();
+
+  const authorization = request.headers.authorization;
+  if (typeof authorization !== "string") return "";
+  const match = /^Bearer\s+(.+)$/i.exec(authorization.trim());
+  return match ? match[1].trim() : "";
+};
+
+export const isValidControlToken = (actual, expected) => {
+  if (!expected) return true;
+  if (!actual || typeof actual !== "string") return false;
+  const actualBuffer = Buffer.from(actual);
+  const expectedBuffer = Buffer.from(expected);
+  return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer);
+};
+
+const authorizePost = (request, exposure) => {
+  if (!exposure.controlTokenRequired) return null;
+  if (!exposure.controlTokenConfigured) {
+    return {
+      status: 403,
+      body: {
+        ok: false,
+        error: "LAN公開中の状態変更APIには LAUNCH_MANAGER_CONTROL_TOKEN が必要です。",
+        code: "control_token_not_configured"
+      }
+    };
+  }
+  if (!isValidControlToken(readControlToken(request), exposure.controlToken)) {
+    return {
+      status: 403,
+      body: {
+        ok: false,
+        error: "Control token is required for this Launch Manager operation.",
+        code: "control_token_required"
+      }
+    };
+  }
+  return null;
 };
 
 const routePost = async (url, supervisor) => {
@@ -139,9 +206,11 @@ export const startLaunchManager = async ({
   root = process.cwd(),
   host = process.env.DEV_MANAGER_HOST ?? process.env.LAUNCH_MANAGER_HOST ?? "127.0.0.1",
   port = null,
-  title = "Music Effect Launch Manager"
+  title = "Music Effect Launch Manager",
+  controlToken = process.env.LAUNCH_MANAGER_CONTROL_TOKEN ?? process.env.DEV_MANAGER_CONTROL_TOKEN
 } = {}) => {
-  assertLoopbackHost(host, "Launch Manager host");
+  const networkExposure = resolveLaunchManagerExposure({ host, controlToken });
+  host = networkExposure.host;
   const resolvedRoot = resolve(root);
   const launchPorts = await resolvePortsFromEnv({ root: resolvedRoot, host, explicitManagerPort: port });
   applyLaunchPortsToEnv(launchPorts);
@@ -175,7 +244,8 @@ export const startLaunchManager = async ({
         sendJson(response, 200, {
           ...(await supervisor.snapshot()),
           songCatalog: await safeSongCatalog(config),
-          showProfiles: await safeShowProfiles(config)
+          showProfiles: await safeShowProfiles(config),
+          networkExposure: publicNetworkExposure(networkExposure)
         });
         return;
       }
@@ -184,8 +254,13 @@ export const startLaunchManager = async ({
         return;
       }
       if (request.method === "POST" && url.pathname.startsWith("/api/")) {
-        if (!isTrustedBrowserOrigin(request, allowedOrigins)) {
+        if (!isTrustedBrowserOrigin(request, allowedOrigins, { allowRequestHostOrigin: networkExposure.lan })) {
           sendJson(response, 403, { ok: false, error: "Forbidden origin." });
+          return;
+        }
+        const tokenError = authorizePost(request, networkExposure);
+        if (tokenError) {
+          sendJson(response, tokenError.status, tokenError.body);
           return;
         }
         sendJson(response, 200, await routePost(url, supervisor));
@@ -201,7 +276,7 @@ export const startLaunchManager = async ({
         ...htmlSecurityHeaders(nonce),
         "Content-Type": "text/html; charset=utf-8"
       });
-      response.end(managerHtml({ title, nonce }));
+      response.end(managerHtml({ title, nonce, networkExposure: publicNetworkExposure(networkExposure) }));
     } catch (error) {
       sendJson(response, 500, { ok: false, error: error.message });
     }
@@ -225,6 +300,12 @@ export const startLaunchManager = async ({
     url
   });
   console.log(`${title}: ${url}`);
+  if (networkExposure.lan) {
+    console.warn(networkExposure.warning);
+    if (!networkExposure.controlTokenConfigured) {
+      console.warn("POST control API is read-only-disabled until LAUNCH_MANAGER_CONTROL_TOKEN is set.");
+    }
+  }
   console.log(`Ports: manager ${launchPorts.manager}, player ${launchPorts.player}, song packs ${launchPorts.songPack}`);
   console.log(`Launch targets: ${config.configPath}`);
   return { server, supervisor, config, url };

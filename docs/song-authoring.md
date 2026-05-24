@@ -119,6 +119,26 @@ npm run song:validate -- --id song-id
 
 このvalidateは `references.json` がURLメタデータだけになっているかに加え、song-pack全体に symlink/junction、`.env`、秘密鍵系ファイル、音源ファイル、埋め込みdata URI、`<script>` / `<img>` / `<iframe>`、秘密情報らしきトークンが混ざっていないかを確認します。歌詞本文、記事本文、画像データ、スクリーンショット、base64埋め込みは保存しないでください。
 
+## capabilities と外部連携メモ
+
+曲パックは任意で `manifest.json` に `capabilities` を置けます。これは機能を有効化する設定ではなく、曲映像が持つ外部入力や運用上の性質を人間に伝えるメモです。
+
+記入例:
+
+```json
+{
+  "capabilities": ["touchdesigner", "osc", "lan-control"]
+}
+```
+
+これは語彙の固定リストではありません。`websocket`、`midi`、`dmx`、`serial`、`audience-input` などを使ってもよいですし、曲に合う独自語を使って構いません。記入例に引っ張られて連携方式を決めないでください。
+
+通信、外部入力、外部ツール連携がある場合は、READMEまたは任意の `security-notes.md` に短く書くことを推奨します。たとえば、何とつながるか、誰が操作する想定か、LANへ公開するか、tokenや別の認可を使うか、イベント終了後に何を止めるか、などです。
+
+`npm run song:validate` は `capabilities` の説明不足をwarningにしません。言語や書式が曲ごとに違ってよいからです。代わりに、外部入力や通信を持つ曲側システムでは、必要に応じて接続状態、公開状態、認可状態、rate limit、debounce、異常時の停止方法を曲側UIや運用メモで見えるようにしてください。
+
+外部URLは、出典、ライセンス、参照用途を人間が確認するためのメモとして扱います。adapterや演出コードを外部URLから自動で読み込む仕組みは使わず、同一ビルド内で試す曲固有adapterは `song-packs/<song-id>/adapter.ts` と `song-packs/local-adapters.ts` に置いてください。
+
 ## 曲パック提出物チェックリスト
 
 曲担当が「この映像を中央環境で確認してよい」と渡すときは、最低限、次を曲パック側へ置きます。これは曲の文法や演出構成を固定するためではなく、別担当が安全に再生確認、権利確認、統合確認を始められるようにするための入口です。
@@ -129,12 +149,14 @@ npm run song:validate -- --id song-id
 - `CREDITS.md` または `manifest.credits`: 出典、ライセンス、利用条件、音源や歌詞を同梱していない理由を記録します。
 - `verification.md`、またはREADME内の確認結果: どのコマンド、どのURL、どの時刻で確認したかを短く残します。
 - `references.json`: 調査URLを使った場合だけ。本文、歌詞全文、画像、スクリーンショットは入れず、URLメタデータだけにします。
+- `security-notes.md`: 通信、外部入力、LAN公開、外部ツール連携が複雑な場合だけ。README内に同等の説明があれば必須ではありません。
 
 READMEの推奨見出し:
 
 - 概要
 - 再生方法 / How to use
 - 入力・外部連携メモ
+- セキュリティ・公開範囲メモ
 - 調整方法
 - 確認結果
 - 既知の問題

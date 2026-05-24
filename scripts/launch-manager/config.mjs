@@ -7,6 +7,7 @@ const COMMAND_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
 const SHELL_META_PATTERN = /[&|<>^%!"]/;
 const TEMPLATE_PATTERN = /\$\{([A-Z0-9_]+)(?::-(.*?))?\}/g;
 const PROTECTED_ENV_NAMES = new Set(["COMSPEC", "NODE_OPTIONS", "PATH", "PATHEXT", "SYSTEMROOT"]);
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 
 export const LAUNCH_TIMING_DEFAULTS = Object.freeze({
   defaultStartupTimeoutMs: 45000,
@@ -40,9 +41,45 @@ const isInside = (parent, child) => {
 };
 
 export const assertLoopbackHost = (value, label) => {
-  if (!["127.0.0.1", "localhost", "::1"].includes(value)) {
+  if (!isLoopbackHost(value)) {
     throw new Error(`${label} must be a loopback host. Refusing to bind to ${value}.`);
   }
+};
+
+export const isLoopbackHost = (value) => LOOPBACK_HOSTS.has(String(value ?? "").toLowerCase());
+
+const isTruthyEnv = (value) => ["1", "true", "yes", "on", "lan"].includes(String(value ?? "").trim().toLowerCase());
+
+export const resolveLaunchManagerExposure = ({
+  host,
+  env = process.env,
+  controlToken = env.LAUNCH_MANAGER_CONTROL_TOKEN ?? env.DEV_MANAGER_CONTROL_TOKEN
+} = {}) => {
+  const resolvedHost = asString(host, "Launch Manager host");
+  const loopback = isLoopbackHost(resolvedHost);
+  const allowLan = isTruthyEnv(env.LAUNCH_MANAGER_ALLOW_LAN ?? env.DEV_MANAGER_ALLOW_LAN);
+  if (!loopback && !allowLan) {
+    throw new Error(
+      `Launch Manager host must be loopback by default. Refusing to bind to ${resolvedHost}. ` +
+        "Set LAUNCH_MANAGER_ALLOW_LAN=1 only on a trusted LAN after reading docs/security.md."
+    );
+  }
+
+  const token = controlToken === undefined || controlToken === null ? "" : asString(controlToken, "LAUNCH_MANAGER_CONTROL_TOKEN");
+  const mode = loopback ? "loopback" : "lan";
+  return {
+    host: resolvedHost,
+    mode,
+    loopback,
+    lan: !loopback,
+    controlToken: token,
+    controlTokenRequired: !loopback || Boolean(token),
+    controlTokenConfigured: Boolean(token),
+    postApiEnabled: loopback || Boolean(token),
+    warning: loopback
+      ? ""
+      : "LAN公開中です。同じネットワーク上の端末からLaunch Managerへアクセスできる可能性があります。信頼できるネットワークでのみ使用し、イベント後は停止してください。"
+  };
 };
 
 const validateId = (value, label) => {

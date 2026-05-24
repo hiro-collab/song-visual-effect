@@ -48,6 +48,7 @@
 - Windowsでは `start-music-effect.cmd` をダブルクリックするとLaunch Managerを起動できる。同じworktreeで既に起動中なら管理画面を開くだけで、別worktreeが起動中でも誤接続せず、このworktree用の空きポートを自動で使う。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeでは自動ポート割当を使い、GUI下部の `worktree` / `ports` / `config` / `runtime` とtarget portを確認してから操作する。
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
+- 追加セキュリティレビューで、Launch ManagerのLAN公開を `LAUNCH_MANAGER_ALLOW_LAN=1` の明示opt-inにし、LAN公開時の警告バナーとcontrol token検証を追加した。曲パック/show-profileの任意 `capabilities` と `security-notes.md` 方針は `docs/security.md` を正本にする。
 - docsの読み分けを `docs/README.md` に集約し、`examples/fixtures/soft-light-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
 - 古い作業候補、既知問題、beat sync詳細、旧レビューHTMLは `docs/archive/working-notes/` に退避した。通常の作業入口では正本docsを優先する。
 - `system/kit` は `core/`、`timing/`、`render/`、`song-app/` に分けた。曲アプリは基本的に `system/kit/index.ts` の公開APIから必要なhelperだけをimportする。
@@ -90,8 +91,8 @@ ready通知は「必ずmerge」ではなく「取り込み候補」です。note
 - 音源ファイルはコミットしない。
 - 描画方式をCanvas2Dに固定しない。
 - 歌詞タイミング編集はoptional toolとして扱う。
-- 外部Web adapterは将来許容するが、まずは同一ビルド内でadapter分離する。
-- ローカル開発サーバーは外部ネットワークへ公開しない。
+- 外部Web adapter URL/pathは共通フレームワークでは自動実行しない。外部URLは参照メモとして扱う。
+- ローカル開発サーバーは既定で外部ネットワークへ公開しない。Launch ManagerをLAN公開する場合は明示opt-in、警告表示、control token方針を守る。
 - 秘密情報を曲パッケージ、docs、ログ、プロンプトへ置かない。
 
 ## 起動方法
@@ -182,7 +183,7 @@ Launch Managerを変更する場合:
 
 - まず `docs/launch-manager-spec.md` を読む。
 - 最初はmanaged targetだけを扱う。
-- 複数Launch Server調停、attached/delegated、自動port再割当、LAN公開、スマホ専用UIはMVPに含めない。
+- 複数Launch Server調停、attached/delegated、自動port再割当、本格的なLAN運用、スマホ専用UIはMVPに含めない。Launch ManagerのLAN公開は明示opt-inと警告表示つきの補助に留める。
 - GUIから任意コマンドを入力させない。起動可能なものはローカルの `launch/targets.json` に書かれたTargetだけ。
 - 停止対象はLaunch Serverが起動してPIDを持つtargetだけ。PC全体の同名プロセスや他worktreeのtargetを停止対象にしない。
 - `scripts/dev-manager.mjs` は互換入口。実装本体は `scripts/launch-manager/`。

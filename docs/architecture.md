@@ -71,7 +71,7 @@ Launch Managerの非責務:
 - 曲ごとの映像設計を決めること。
 - 曲ごとのJSON文法やadapter構成を固定すること。
 - 任意コマンドをGUIから入力させること。
-- 複数Launch Server調停、attached/delegated、LAN公開をMVPに含めること。
+- 複数Launch Server調停、attached/delegated、本格的なLAN運用をMVPに含めること。Launch ManagerのLAN公開は明示opt-inと警告表示つきの補助に留めます。
 
 ## System Kit
 
@@ -143,7 +143,7 @@ index.html
 
 ## Security Boundary
 
-このシステムはローカル開発向けです。既定では各サーバーを `127.0.0.1` にbindし、外部ネットワークへ公開しません。詳しい運用ルールは `docs/security.md` を参照してください。
+このシステムはローカル開発向けです。既定では各サーバーを `127.0.0.1` にbindし、外部ネットワークへ公開しません。LAN公開が必要な場合は `docs/security.md` のopt-in手順、警告表示、control token方針を確認してください。
 
 重要な境界:
 
@@ -153,7 +153,7 @@ index.html
 - song-pack serverは、既定でfixture playerのoriginからのCORSだけを許可する。
 - song-pack serverは隠しファイルと未許可拡張子を配信しない。
 - dev managerの起動・停止APIは、同一origin相当のリクエストだけを受け付ける。
-- 外部Web adapterを直接読み込む設計は任意コード実行につながるため、まだ採用しない。`webAdapter` は同一ビルド内の `builtin:` / `song:` IDだけを解決対象にする。
+- 外部Web adapterを直接読み込む設計は任意コード実行につながるため、共通フレームワークには入れない。`webAdapter` は同一ビルド内の `builtin:` / `song:` IDだけを解決対象にする。
 
 ## 今後の方向
 
@@ -168,4 +168,4 @@ system/kit
   does not own the song
 ```
 
-外部Web adapterを扱う場合は、CORS、信頼境界、任意コード実行、保存APIとの関係を別途設計してから導入します。
+外部URLは出典やライセンス確認の参照メモとして扱います。adapterや演出コードを外部URLから自動実行する仕組みは共通フレームワークには入れず、外部入力や別ランタイム連携が必要な場合は曲パック、bridge、show-profile側で責任範囲を明記します。

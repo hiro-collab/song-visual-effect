@@ -148,11 +148,12 @@ http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-s
 
 ## Security Safety
 
-- 開発サーバーはloopback hostだけで使い、外部ネットワークへ公開しないでください。
+- 開発サーバーは既定でloopback hostだけで使います。Launch ManagerをLAN公開する場合は `docs/security.md` のopt-in手順、警告表示、control token方針を確認してください。
 - APIキー、秘密鍵、トークンを曲パッケージ、docs、プロンプト、ログに置かないでください。
 - manifest内の曲素材パスは、既定でその曲パッケージ配下だけを読みます。
 - fixture playerのoriginを個別起動で変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
 - `npm run dev` や `start-music-effect.cmd` で起動する場合は、Launch Managerがplayer portに合わせたCORS許可originをsong-pack serverへ渡します。
+- 曲パックやshow-profileで外部入力、LAN操作、TouchDesigner/OSC/MIDIなどを使う場合は、任意の `capabilities` とREADMEまたは `security-notes.md` に責任範囲を短く残すことを推奨します。
 - 詳細は `docs/security.md` を参照してください。
 
 ## Workflow Map
