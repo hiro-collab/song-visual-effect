@@ -28,6 +28,25 @@ npm run sync:note -- --from song-example --to system --level question --topic kn
 - `risk`: 曲固有の見た目に引っ張る危険がある部分。
 - `suggested home`: `docs/song-authoring.md`、`docs/library-candidates.md`、曲パック側 `design/` など。
 
+## 曲担当が確認するタイミング
+
+曲担当は、次のタイミングで連絡板を確認します。
+
+- 作業開始時: system-mainのready、セキュリティ、起動方法、Songle取得まわりの更新を確認する。
+- 実装の区切り: 自分の作業に影響するsystem更新が来ていないか確認する。
+- 共通ノウハウ候補を送った後: system担当の分類結果を確認する。
+- 最終報告前: 自分の候補が `common` として昇格したか、`song-owned` として曲側へ戻されたか確認する。
+
+確認コマンド:
+
+```powershell
+npm run sync:brief
+npm run sync:check
+npm run sync:inbox
+```
+
+`song-owned` と判断された内容は、曲パック側の `design/` や `visual-brief.md` に残します。system側の正本docsには移しません。
+
 ## 審議の分類
 
 system担当は、候補を小さな主張に分解してから分類します。

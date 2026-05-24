@@ -31,8 +31,33 @@
 3. `docs/song-authoring.md`
 4. `docs/song-visual-independence.md`
 5. 必要に応じて `docs/decisions.md`
+6. 共通ノウハウ候補を共有する場合だけ `docs/knowledge-review.md`
 
 既存曲のフォルダは読まないでください。
+
+## 曲担当の連絡確認フロー
+
+曲担当は、作業開始時、実装の区切り、最終報告前に次を確認します。
+
+```powershell
+npm run sync:brief
+npm run sync:check
+npm run sync:inbox
+```
+
+確認すること:
+
+- `codex/system-kit-refactor` からのreadyが来ているか。
+- 自分の曲作業に関係するセキュリティ、Launch Manager、Songle取得、検証ツールの連絡があるか。
+- 自分が共有したノウハウ候補に対して、system担当から分類結果が返っているか。
+
+曲制作中に「これは他の曲でも使えそう」と思った場合は、すぐ正本docsを編集せず、まず `sync:note` でsystem担当へ候補として送ります。
+
+```powershell
+npm run sync:note -- --from song-example --to system --level question --topic knowledge-candidate -m "candidate: 区間ごとの画面構成を先に決める。scope: many songs. source: song-example. risk: 固定数値や特定構図は含めない。suggested home: docs/song-authoring.md"
+```
+
+system担当は `docs/knowledge-review.md` に沿って、`common` / `conditional` / `song-owned` / `reject` に分類します。曲担当は分類結果を確認し、`song-owned` と判断された内容は自分の曲パック側の `design/` に残してください。`common` と判断されたものだけがsystem側の正本docsへ昇格します。
 
 ## 最初に決めること
 

@@ -58,6 +58,7 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - `docs/song-authoring.md`
 - `docs/song-visual-independence.md`
 - `templates/neutral-song-app/visual-brief.md`
+- 共通ノウハウ候補を共有する場合だけ `docs/knowledge-review.md`
 
 新しい曲作成では、既存の `song-packs/*`、`examples/fixtures/soft-light-player/renderers/*`、`examples/fixtures/soft-light-player/effects/*` を読まないでください。既存曲やfixture rendererに引っ張られないためです。
 
