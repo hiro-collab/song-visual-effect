@@ -226,7 +226,7 @@ Launch Managerへ追加する機能は、制作、検証、当日確認に寄せ
 一方の映像を出しながら、もう一方の映像を準備し、TouchDesigner、OBS、Unity、自作VJツールなど外部側で合成やクロスフェードを行う運用が想定されるため。映像時間、歌詞補正、ライブ操作を将来入れる場合も、Deckごとに状態を分ける方が混乱しにくい。
 
 影響:
-Launch ManagerはDeckごとの起動、停止、曲選択、URL copy/open、status表示を補助する。Song Data Serverは共有でよい。複数Deckを同時起動している場合も、Deck停止は対象Deckのmanaged PIDだけを止め、Deck全停止はDeck playerだけを列挙して止める。Music Effect標準はクロスフェード、音声ミックス、program/previewの最終切替を背負わない。現在の単一player flowはDeck A互換として扱い、詳細仕様は `docs/deck-playback.md` に置く。
+Launch ManagerはDeckごとの起動、停止、曲選択、URL copy/open、status表示を補助する。MVPのDeck曲変更はselected manifestとoutput URLの更新に留め、既に開いているDeck playerへ曲差し替え命令は送らない。Song Data Serverは共有でよい。複数Deckを同時起動している場合も、Deck停止は対象Deckのmanaged PIDだけを止め、Deck全停止はDeck playerだけを列挙して止める。Music Effect標準はクロスフェード、音声ミックス、program/previewの最終切替を背負わない。現在の単一player flowはDeck A互換として扱い、詳細仕様は `docs/deck-playback.md` に置く。
 
 ## D019: 映像用時間軸はraw timeを外部入力として受け取る薄いhelperにする
 

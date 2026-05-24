@@ -813,6 +813,13 @@
           "note": "TouchDesigner、OBS、Unity、自作ツールなどが各URLを別入力として読み込み、合成、クロスフェード、program outputを担当します。"
         },
         {
+          "from": "devManager",
+          "to": "deckPlaybackSpec",
+          "action": "曲変更はURL更新に留める",
+          "payload": "selected manifest、output URL、copy/open",
+          "note": "MVPでは既に開いているDeck playerへload-song命令を送りません。利用者がopen/copyしたURLをブラウザや外部ツール側で読み直します。"
+        },
+        {
           "from": "deckPlaybackSpec",
           "to": "contextDocs",
           "action": "責務境界を守る",

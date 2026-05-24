@@ -53,6 +53,8 @@ http://127.0.0.1:<deck-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/m
 
 TouchDesignerのWeb Browser TOP、OBSのブラウザソース、UnityのWebView、自作ブラウザ表示などは、このURLを個別に読み込みます。
 
+MVPでは、Deckの曲変更は「Launch Manager内の選択曲とoutput URLを更新する」操作です。既に開いているDeck player画面や外部ツール内のWebViewへ、Launch Managerから直接曲差し替え命令は送りません。曲を切り替える場合は、更新されたDeck URLを `open` するか、`copy` して外部ツール側で読み直します。
+
 ## 標準サポート範囲
 
 標準で扱うDeck数は2つです。
@@ -150,6 +152,15 @@ Song Data Server
 
 標準の「選択曲を再生」は、既存互換としてDeck Aを使う形から始めてよいです。Deck Bの実装が入った後は、Deckごとに曲選択とopen/copyを持ちます。
 
+MVPの曲変更ルール:
+
+- Deckの曲dropdownを変えると、そのDeckのselected manifestとoutput URLを更新する。
+- `open` は、その時点のoutput URLをブラウザで開く。
+- `copy` は、その時点のoutput URLをクリップボードへコピーする。
+- 既に開いているDeck player画面へ、同一ページ内で曲を差し替えるAPI呼び出しは行わない。
+- 既に外部ツールがDeck URLを読み込んでいる場合、外部ツール側の再読み込みやURL差し替えは利用者が行う。
+- 曲変更時にDeck-local stateをどう引き継ぐかはMVPでは扱わない。URLを読み直すことで、基本的に新しい曲の初期状態から始める。
+
 ## 起動と停止
 
 ### 起動
@@ -225,6 +236,8 @@ Deck AとDeck Bが同じ曲を開いていても、これらの状態は混ぜ�
 
 Deckごとの操作APIを追加する場合、Launch Manager全体ではなくDeckを宛先にします。
 
+これはMVPには含めません。特に `load-song` は、既に開いているDeck playerへ曲差し替え命令を送るための将来APIとして予約します。実装する場合は、前の曲のadapter state、audio state、lyrics state、visual sequencer snapshot、localStorage key、エラー表示をどうリセットまたは移行するかを別途仕様化してから入れます。
+
 例:
 
 ```text
@@ -292,7 +305,8 @@ Deck URLを外部ツールへ渡す場合も、次を守ります。
 3. Deck Aだけで既存挙動を保つ。
 4. Deck Bを追加し、別player portで起動できるようにする。
 5. UIでDeckごとの曲選択、open、copy、start、stopを分ける。
-6. Deck A/Bの個別停止、Deck全停止、Launch Manager全停止の停止保証テストを追加する。
-7. 必要になったらDeck-local visual sequencer stateとcontrol APIを追加する。
+6. Deckの曲変更はURL更新とopen/copyに留め、既存Deck画面への曲差し替えAPIは入れない。
+7. Deck A/Bの個別停止、Deck全停止、Launch Manager全停止の停止保証テストを追加する。
+8. 必要になったらDeck-local visual sequencer stateとcontrol APIを追加する。
 
 この順に進めることで、既存の動作確認を壊さずにライブ/VJ運用へ拡張します。

@@ -258,6 +258,7 @@ MVP画面:
 
 - 上部: 曲JSON選択。`song-packs/<song-id>/manifest.json` を選び、必要なtargetを起動して再生画面を開く。
 - Deck表示: Deck A/Bを使う実装では、Deckごとに曲JSON選択、URL copy/open、start/stop/restart、statusを表示する。標準の「選択曲を再生」はDeck A互換として扱ってよい。
+- Deck曲変更: MVPでは、Deckごとの曲JSON選択はselected manifestとoutput URLを更新するだけにする。既に開いているDeck playerへ曲差し替え命令は送らない。利用者は `open` または `copy` したURLを外部ツール側で読み直す。
 - show-profile / セットリスト: `show-profiles/<show-id>/show.json` がある場合だけ、イベントや検証会用の曲順を表示する。項目を曲JSON選択へ反映できるが、曲パックの文法や外部連携方式は決めない。
 - 状態マップ: Launch Manager、各target、選択中の曲JSONをノードとして表示する。起動中ノードと関連線は発光し、サーバーが増えても連携関係を見渡せるようにする。
 - 担当メッセージ: `sync:ready`、`sync:note`、`sync:ack` の履歴を、要対応、担当、種別で絞り込み表示する。書き込みやack操作はCLIの `sync:*` に残し、GUIは読み取り専用にする。
@@ -288,6 +289,8 @@ MVP:
 - `POST /api/sets/:id/start`
 - `POST /api/sets/:id/stop`
 - `POST /api/stop-all`
+
+MVPのDeck APIは、Deck URL生成、target起動、target停止、status表示に留めます。既に開いているDeck playerへ曲を差し替える `POST /api/decks/:deckId/load-song` は将来拡張として扱い、MVPには含めません。
 
 ログは最初は `/api/status` に末尾を含めてもよいです。必要になったら次を追加します。
 
@@ -324,6 +327,7 @@ MVP:
 - WebSocket/SSEのリアルタイム通知。
 - 任意コマンド入力GUI。
 - 本格的なLAN操作卓とスマホ専用UI。
+- 既に開いているDeck player画面への曲差し替えAPI。
 - Deck A/B間のクロスフェード、音声ミックス、program/previewの最終切替。
 - 曲ごとの映像設計やadapter実装。
 
@@ -358,5 +362,6 @@ launch/
 - 起動中targetのPID、port、stdout/stderr、CPU/memoryが見える。
 - GUIタブを閉じてもtargetは止まらない。
 - Launch Server終了時にtargetが停止する。
+- Deckごとの曲変更がoutput URL更新に留まり、既存Deck playerへ暗黙の曲差し替え命令を送らない。
 - Deck A/Bを別portで同時起動し、Deck A停止、Deck B停止、Deck全停止、Launch Server全停止の範囲が仕様通りである。
 - 停止後に対象PIDが残っている場合、UI/APIが停止成功ではなく失敗として示す。
