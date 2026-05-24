@@ -1,5 +1,7 @@
 // @ts-nocheck
 
+import { createCanvasScene } from "../../system/kit";
+
 const DEFAULT_DESIGN = {
   assets: {
     vehicleProxies: "assets/vehicle-proxies.json"
@@ -81,6 +83,14 @@ const rgba = (name, alpha = 1) => `rgba(${THEME[name].join(",")},${alpha})`;
 const rgb = (name) => `rgb(${THEME[name].join(",")})`;
 const depthFactor = (z) => clamp((z - 11) / 22);
 const depthAlpha = (z, alpha, strength = 0.38) => alpha * (1 - depthFactor(z) * strength);
+const contentRectOf = (state) => state.contentRect ?? {
+  left: 0,
+  top: 0,
+  width: state.width,
+  height: state.height,
+  right: state.width,
+  bottom: state.height
+};
 const localPoint = (center, yaw, x, y, z) => {
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
@@ -1600,11 +1610,16 @@ const drawEvidenceFreeze = (ctx, camera, state, evidence, time, dt, intensity, i
   }
 
   ctx.save();
+  const contentRect = contentRectOf(state);
   ctx.fillStyle = rgba("gold", 0.88);
   ctx.font = "12px ui-monospace, Consolas, monospace";
-  ctx.fillText("EVIDENCE FREEZE", state.width * 0.1, state.height * 0.12);
+  ctx.fillText("EVIDENCE FREEZE", contentRect.left + contentRect.width * 0.1, contentRect.top + contentRect.height * 0.12);
   ctx.fillStyle = align > 0.28 ? rgba("rust", 0.92) : rgba("paper", 0.82);
-  ctx.fillText(align > 0.28 ? "RE-ORDERING" : "TIME HELD", state.width * 0.1, state.height * 0.88);
+  ctx.fillText(
+    align > 0.28 ? "RE-ORDERING" : "TIME HELD",
+    contentRect.left + contentRect.width * 0.1,
+    contentRect.top + contentRect.height * 0.88
+  );
   ctx.restore();
 
   drawWindowFrame(ctx, state, time, align > 0.3);
@@ -1624,31 +1639,36 @@ export const createSongApp = async (context, services) => {
     height: 0,
     dpr: 1,
     pointer: { x: 0.5, y: 0.5, active: false, down: false },
+    scene: null,
+    contentRect: null,
     lastBeat: -1,
     shock: 0,
     manualHit: 0
   };
 
-  const resize = () => {
-    const rect = canvas.getBoundingClientRect();
-    state.dpr = Math.min(window.devicePixelRatio || 1, 2);
-    state.width = Math.max(1, rect.width);
-    state.height = Math.max(1, rect.height);
-    canvas.width = Math.round(state.width * state.dpr);
-    canvas.height = Math.round(state.height * state.dpr);
+  const resize = (frame = {}) => {
+    const scene = createCanvasScene(frame, services, { clip: false });
+    state.scene = scene;
+    state.contentRect = scene.contentRect;
+    state.dpr = scene.dpr;
+    state.width = Math.max(1, scene.viewport.width);
+    state.height = Math.max(1, scene.viewport.height);
     ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
     vehicleLayer?.resize(state.width, state.height, state.dpr);
+    return scene;
   };
 
   const updatePointer = (event) => {
-    const rect = canvas.getBoundingClientRect();
-    state.pointer.x = clamp((event.clientX - rect.left) / rect.width);
-    state.pointer.y = clamp((event.clientY - rect.top) / rect.height);
+    const scene = state.scene ?? resize();
+    const pointer = scene.pointerFromEvent(event);
+    state.pointer.x = pointer.u;
+    state.pointer.y = pointer.v;
     state.pointer.active = true;
   };
 
-  const render = ({ time, dt, userGlow }) => {
-    if (!state.width || !state.height) resize();
+  const render = (frame) => {
+    const { time, dt, userGlow } = frame;
+    resize(frame);
     ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
     const intensity = userGlow ?? 1;
     const beats = musicMap.beats ?? [];
