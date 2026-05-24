@@ -117,7 +117,7 @@ MV、公式ページ、歌詞考察などを参照した場合は、本文や画
 npm run song:validate -- --id song-id
 ```
 
-このvalidateは `references.json` がURLメタデータだけになっているかを確認します。歌詞本文、記事本文、画像データ、スクリーンショット、base64埋め込みは保存しないでください。
+このvalidateは `references.json` がURLメタデータだけになっているかに加え、song-pack全体に symlink/junction、`.env`、秘密鍵系ファイル、音源ファイル、埋め込みdata URI、`<script>` / `<img>` / `<iframe>`、秘密情報らしきトークンが混ざっていないかを確認します。歌詞本文、記事本文、画像データ、スクリーンショット、base64埋め込みは保存しないでください。
 
 外部ライブラリや描画エンジンを追加したくなった場合は、まず `docs/library-candidates.md` の採用前チェックを見てください。system標準へ入れるのではなく、曲側の任意adapterや小さなhelperで済むかを先に検討します。
 
