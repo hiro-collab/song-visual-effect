@@ -56,8 +56,9 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
 - `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。
 - `scripts/launch-manager/auto-ports.mjs`: worktreeごとのLaunch Manager/player/song-pack port自動割当と `.codex/runtime/ports.json` 記録。
-- `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP API、origin検証、CSPつきHTML応答。
-- `scripts/launch-manager/ui.mjs`: Launch Manager管理画面のHTML、CSS、ブラウザ側JS。
+- `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP API、origin検証、CSPつきHTML応答。`/api/status` と `/api/sync-events` を返す。
+- `scripts/launch-manager/ui.mjs`: Launch Manager管理画面のHTML、CSS、ブラウザ側JS。曲選択、状態マップ、target操作、担当メッセージ閲覧を持つ。
+- `scripts/launch-manager/sync-events.mjs`: Git共通ディレクトリの `codex-sync/events.jsonl` を読み、ready/note/ackをLaunch Manager GUI向けに整形する読み取り専用helper。
 - `scripts/launch-manager/supervisor.mjs`: managed targetの起動、停止、再起動、状態管理。
 - `scripts/launch-manager/ports.mjs`: port空き確認、衝突確認、候補探索。
 - `scripts/launch-manager/logs.mjs`: stdout/stderr保存とログ末尾取得。

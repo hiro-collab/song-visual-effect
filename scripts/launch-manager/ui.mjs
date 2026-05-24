@@ -52,7 +52,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; }
       h2 { margin: 0; font-size: 18px; }
       p { margin: 0; color: var(--muted); line-height: 1.7; }
-      .toolbar, .target-actions, .links, .song-actions, .flow-steps, .map-legend {
+      .toolbar, .target-actions, .links, .song-actions, .flow-steps, .map-legend, .sync-tabs, .sync-controls, .sync-summary, .participant-stats {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
@@ -109,6 +109,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       .song-meta {
         margin-top: 12px;
         color: var(--text);
+        overflow-wrap: anywhere;
       }
       .message {
         min-height: 24px;
@@ -127,10 +128,161 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         font-size: 13px;
       }
       .runtime-pill {
+        max-width: 100%;
         border: 1px solid var(--line);
         border-radius: 999px;
         padding: 5px 9px;
         background: rgba(0, 0, 0, 0.15);
+        overflow-wrap: anywhere;
+      }
+      .sync-board {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        padding: 16px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
+          var(--panel);
+      }
+      .sync-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+      .sync-head h2 {
+        margin-bottom: 4px;
+        font-size: 20px;
+      }
+      .sync-summary {
+        justify-content: flex-end;
+        min-width: 280px;
+      }
+      .sync-pill {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 5px 9px;
+        background: rgba(0, 0, 0, 0.15);
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .sync-pill.is-open { color: var(--warn); border-color: rgba(255, 208, 125, 0.5); }
+      .sync-controls {
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .sync-tabs {
+        align-items: stretch;
+      }
+      .sync-tab.is-active {
+        border-color: rgba(159, 212, 255, 0.72);
+        background: rgba(159, 212, 255, 0.12);
+        color: var(--info);
+      }
+      .sync-filter {
+        grid-template-columns: auto minmax(180px, 1fr);
+        align-items: center;
+        gap: 8px;
+      }
+      .sync-layout {
+        display: grid;
+        grid-template-columns: minmax(220px, 0.32fr) minmax(0, 1fr);
+        gap: 12px;
+      }
+      .participant-list {
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+      .participant-row {
+        display: block;
+        width: 100%;
+        min-height: 0;
+        padding: 10px;
+        text-align: left;
+      }
+      .participant-row.is-active {
+        border-color: rgba(255, 217, 138, 0.7);
+        background: rgba(255, 217, 138, 0.1);
+      }
+      .participant-name {
+        display: block;
+        color: var(--text);
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+      .participant-stats {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .sync-feed {
+        display: grid;
+        gap: 10px;
+        align-content: start;
+      }
+      .sync-event {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.14);
+      }
+      .sync-event.is-open {
+        border-color: rgba(255, 208, 125, 0.58);
+        background: rgba(255, 208, 125, 0.07);
+      }
+      .sync-event-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      }
+      .sync-event-title {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        min-width: 0;
+      }
+      .sync-event-title strong {
+        overflow-wrap: anywhere;
+      }
+      .sync-badge {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .sync-badge.is-ready { color: var(--ok); border-color: rgba(147, 230, 177, 0.45); }
+      .sync-badge.is-question, .sync-badge.is-blocker { color: var(--warn); border-color: rgba(255, 208, 125, 0.5); }
+      .sync-badge.is-ack { color: var(--info); border-color: rgba(159, 212, 255, 0.45); }
+      .sync-event time {
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .sync-message {
+        color: var(--text);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .sync-event-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .sync-empty {
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        color: var(--muted);
+        text-align: center;
       }
       .system-map {
         border: 1px solid rgba(159, 212, 255, 0.26);
@@ -445,6 +597,17 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       @media (max-width: 760px) {
         header { display: block; }
         .song-form { grid-template-columns: 1fr; }
+        .sync-head { display: block; }
+        .sync-summary { justify-content: flex-start; min-width: 0; margin-top: 10px; }
+        .sync-controls { display: grid; }
+        .sync-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .sync-tab { min-width: 0; }
+        .sync-filter { grid-template-columns: 1fr; }
+        .sync-layout { grid-template-columns: 1fr; }
+        .flow-steps { display: grid; grid-template-columns: 1fr; }
+        .step { width: 100%; align-items: flex-start; }
+        .song-actions { display: grid; }
+        .runtime-strip { display: grid; }
         .target-summary { grid-template-columns: 1fr; }
         .status-heading { display: block; }
         .map-head { display: block; }
@@ -506,6 +669,36 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         </div>
       </section>
 
+      <section class="sync-board" aria-label="Worktree sync messages">
+        <div class="sync-head">
+          <div>
+            <h2>担当メッセージ</h2>
+            <p>各worktreeのready、質問、ブロッカー、確認済みをまとめて見ます。</p>
+          </div>
+          <div id="sync-summary" class="sync-summary"></div>
+        </div>
+        <div class="sync-controls">
+          <div class="sync-tabs" role="tablist" aria-label="メッセージ種別">
+            <button type="button" class="sync-tab is-active" data-sync-view="open">要対応</button>
+            <button type="button" class="sync-tab" data-sync-view="all">すべて</button>
+            <button type="button" class="sync-tab" data-sync-view="note">連絡</button>
+            <button type="button" class="sync-tab" data-sync-view="ready">ready</button>
+            <button type="button" class="sync-tab" data-sync-view="ack">ack</button>
+          </div>
+          <label class="sync-filter">
+            担当
+            <select id="sync-participant" aria-label="担当で絞り込み">
+              <option value="">すべて</option>
+            </select>
+          </label>
+          <button id="sync-refresh" type="button">メッセージ更新</button>
+        </div>
+        <div class="sync-layout">
+          <div id="sync-participants" class="participant-list" aria-label="担当一覧"></div>
+          <div id="sync-feed" class="sync-feed" aria-live="polite"></div>
+        </div>
+      </section>
+
       <details class="manual-panel">
         <summary>詳細操作</summary>
         <section class="toolbar" aria-label="Launch set controls">
@@ -529,7 +722,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       <p id="runtime" class="footer"></p>
     </main>
     <script nonce="${escapeHtml(nonce)}">
-      const state = { status: null, busy: false, stopAllArmed: false, stopAllTimer: null };
+      const state = { status: null, sync: null, syncView: "open", syncParticipant: "", busy: false, stopAllArmed: false, stopAllTimer: null };
       const svgNs = "http://www.w3.org/2000/svg";
       const byId = (id) => document.getElementById(id);
       const make = (tag, className, text) => {
@@ -599,6 +792,129 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       const truncate = (value, max) => {
         const text = String(value || "");
         return text.length > max ? text.slice(0, max - 1) + "..." : text;
+      };
+      const syncTypeLabel = (event) => ({
+        ready: "ready",
+        note: event.level === "question" ? "質問" : event.level === "blocker" ? "ブロッカー" : "連絡",
+        ack: "ack"
+      })[event.type] || event.type;
+      const syncBadgeClass = (event) => {
+        if (event.type === "ready") return "is-ready";
+        if (event.type === "ack") return "is-ack";
+        return event.level === "question" ? "is-question" : event.level === "blocker" ? "is-blocker" : "";
+      };
+      const syncViewMatches = (event) => {
+        if (state.syncView === "open") return event.openForCurrent;
+        if (state.syncView === "all") return true;
+        return event.type === state.syncView;
+      };
+      const syncParticipantMatches = (event) => !state.syncParticipant || event.actor === state.syncParticipant;
+      const renderSyncSummary = (sync) => {
+        const root = byId("sync-summary");
+        const summary = sync?.summary || {};
+        const pills = [
+          make("span", "sync-pill is-open", "要対応 " + (summary.openItems || 0)),
+          make("span", "sync-pill", "担当 " + (summary.participants || 0)),
+          make("span", "sync-pill", "表示 " + (summary.shownEvents || 0) + " / " + (summary.totalEvents || 0))
+        ];
+        if (sync?.currentBranch) pills.push(make("span", "sync-pill", sync.currentBranch));
+        root.replaceChildren(...pills);
+      };
+      const setSyncView = (view) => {
+        state.syncView = view;
+        document.querySelectorAll("[data-sync-view]").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.syncView === state.syncView);
+        });
+        if (state.sync) renderSyncBoard(state.sync);
+      };
+      const renderSyncParticipants = (sync) => {
+        const select = byId("sync-participant");
+        const names = (sync.participants || []).map((participant) => participant.name);
+        if (state.syncParticipant && !names.includes(state.syncParticipant)) state.syncParticipant = "";
+        select.replaceChildren(make("option", "", "すべて"));
+        select.firstChild.value = "";
+        for (const participant of sync.participants || []) {
+          const option = make("option", "", participant.name);
+          option.value = participant.name;
+          select.append(option);
+        }
+        select.value = state.syncParticipant;
+
+        const list = byId("sync-participants");
+        const rows = (sync.participants || []).slice(0, 12).map((participant) => {
+          const row = make("button", "participant-row" + (participant.name === state.syncParticipant ? " is-active" : ""));
+          row.type = "button";
+          row.append(make("span", "participant-name", participant.name));
+          row.append(make("span", "participant-stats", "連絡 " + participant.notes + " / ready " + participant.ready + " / open " + participant.open));
+          row.addEventListener("click", () => {
+            state.syncParticipant = participant.name === state.syncParticipant ? "" : participant.name;
+            renderSyncBoard(sync);
+          });
+          return row;
+        });
+        list.replaceChildren(...rows);
+      };
+      const renderSyncEvent = (event) => {
+        const article = make("article", "sync-event is-" + event.type + (event.openForCurrent ? " is-open" : ""));
+        const head = make("div", "sync-event-head");
+        const title = make("div", "sync-event-title");
+        title.append(make("span", "sync-badge " + syncBadgeClass(event), syncTypeLabel(event)));
+        title.append(make("strong", "", event.actor + " -> " + event.target));
+        if (event.topic) title.append(make("span", "sync-badge", event.topic));
+        const time = make("time", "", formatDate(event.time));
+        time.dateTime = event.time || "";
+        head.append(title, time);
+        article.append(head);
+
+        const bodyText = event.message || event.subject || event.status || "";
+        article.append(make("p", "sync-message", bodyText || "message is empty."));
+
+        const meta = make("div", "sync-event-meta");
+        if (event.branch) meta.append(make("span", "", event.branch));
+        if (event.short) meta.append(make("code", "", event.short));
+        if (event.status) meta.append(make("span", "", event.status));
+        if (event.hasNewerTip) meta.append(make("span", "", "source has newer commits"));
+        if (event.ackedByCurrent) meta.append(make("span", "", "acked"));
+        if (event.ackId) meta.append(make("span", "", "ack " + event.ackType + " #" + event.ackId));
+        article.append(meta);
+
+        if (event.mergeHint) {
+          const hint = make("p", "sync-event-meta");
+          hint.append(make("span", "", "merge:"));
+          hint.append(make("code", "", event.mergeHint));
+          article.append(hint);
+        }
+        return article;
+      };
+      const renderSyncFeed = (sync) => {
+        const feed = byId("sync-feed");
+        if (sync.error) {
+          feed.replaceChildren(make("div", "sync-empty", sync.error));
+          return;
+        }
+        const events = (sync.recentEvents || []).filter((event) => syncViewMatches(event) && syncParticipantMatches(event));
+        if (!events.length) {
+          feed.replaceChildren(make("div", "sync-empty", "表示するメッセージはありません。"));
+          return;
+        }
+        feed.replaceChildren(...events.map(renderSyncEvent));
+      };
+      const renderSyncBoard = (sync) => {
+        state.sync = sync;
+        renderSyncSummary(sync);
+        renderSyncParticipants(sync);
+        document.querySelectorAll("[data-sync-view]").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.syncView === state.syncView);
+        });
+        renderSyncFeed(sync);
+      };
+      const refreshSyncEvents = async () => {
+        try {
+          state.sync = await call("/api/sync-events");
+          renderSyncBoard(state.sync);
+        } catch (error) {
+          renderSyncBoard({ error: error.message, summary: {}, participants: [], recentEvents: [] });
+        }
       };
       const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       const setBusy = (busy) => {
@@ -1020,13 +1336,26 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         root.replaceChildren(...status.targets.map(renderTarget));
       };
       const refresh = async () => {
-        state.status = await call("/api/status");
+        const [status, sync] = await Promise.all([
+          call("/api/status"),
+          call("/api/sync-events").catch((error) => ({ error: error.message, summary: {}, participants: [], recentEvents: [] }))
+        ]);
+        state.status = status;
         render(state.status);
+        renderSyncBoard(sync);
       };
       byId("start-set").addEventListener("click", () => post("/api/sets/" + byId("set-select").value + "/start"));
       byId("stop-set").addEventListener("click", () => post("/api/sets/" + byId("set-select").value + "/stop"));
       byId("stop-all").addEventListener("click", confirmStopAll);
       byId("refresh").addEventListener("click", () => refresh());
+      byId("sync-refresh").addEventListener("click", refreshSyncEvents);
+      byId("sync-participant").addEventListener("change", () => {
+        state.syncParticipant = byId("sync-participant").value;
+        if (state.sync) renderSyncBoard(state.sync);
+      });
+      document.querySelectorAll("[data-sync-view]").forEach((button) => {
+        button.addEventListener("click", () => setSyncView(button.dataset.syncView));
+      });
       byId("song-select").addEventListener("change", () => {
         rememberSelectedSong();
         renderSelectedSong();
