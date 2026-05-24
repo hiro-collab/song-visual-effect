@@ -44,14 +44,29 @@ const assertHttpUrl = (value, label) => {
   return url.toString();
 };
 
-const writeFile = (filePath, content, force) => {
+const assertWritableSongRoot = (root) => {
+  if (fs.existsSync(root) && fs.lstatSync(root).isSymbolicLink()) {
+    throw new Error(`Refusing to write through symbolic link: ${path.relative(repoRoot, root)}`);
+  }
+  fs.mkdirSync(root, { recursive: true });
+  const realRoot = fs.realpathSync(root);
+  if (!isInside(realSongPacksRoot, realRoot)) {
+    throw new Error(`Refusing to write outside song-packs: ${path.relative(repoRoot, root)}`);
+  }
+  return realRoot;
+};
+
+const writeFile = (filePath, content, force, realSongRoot) => {
   if (!force && fs.existsSync(filePath)) {
     throw new Error(`Refusing to overwrite existing file: ${path.relative(repoRoot, filePath)}`);
   }
   const parentPath = path.dirname(filePath);
   fs.mkdirSync(parentPath, { recursive: true });
+  if (fs.lstatSync(parentPath).isSymbolicLink()) {
+    throw new Error(`Refusing to write through symbolic link: ${path.relative(repoRoot, parentPath)}`);
+  }
   const realParent = fs.realpathSync(parentPath);
-  if (!isInside(realSongPacksRoot, realParent)) {
+  if (!isInside(realSongRoot, realParent)) {
     throw new Error(`Refusing to write outside song-packs: ${path.relative(repoRoot, filePath)}`);
   }
   if (fs.existsSync(filePath) && fs.lstatSync(filePath).isSymbolicLink()) {
@@ -82,6 +97,7 @@ const main = () => {
   const root = path.join(songPacksRoot, id);
   const force = Boolean(opts.force);
   const withAdapter = Boolean(opts["with-adapter"]) || adapterId === `song:${id}`;
+  const realSongRoot = assertWritableSongRoot(root);
 
   const manifest = {
     schema: "music-effect.song-manifest.v1",
@@ -109,7 +125,7 @@ const main = () => {
     }
   };
 
-  writeFile(path.join(root, "manifest.json"), json(manifest), force);
+  writeFile(path.join(root, "manifest.json"), json(manifest), force, realSongRoot);
   writeFile(
     path.join(root, "references.json"),
     json({
@@ -126,32 +142,37 @@ const main = () => {
           ]
         : []
     }),
-    force
+    force,
+    realSongRoot
   );
-  writeFile(path.join(root, "analysis", "markers.json"), json({ estimatedDuration: Number.isFinite(duration) && duration > 0 ? duration : null }), force);
-  writeFile(path.join(root, "analysis", "palette.json"), json({ base: [], accent: [], shadow: [] }), force);
-  writeFile(path.join(root, "design", "effect.json"), json({ schema: "music-effect.effect-design.v1", notes: [], cues: [] }), force);
+  writeFile(path.join(root, "analysis", "markers.json"), json({ estimatedDuration: Number.isFinite(duration) && duration > 0 ? duration : null }), force, realSongRoot);
+  writeFile(path.join(root, "analysis", "palette.json"), json({ base: [], accent: [], shadow: [] }), force, realSongRoot);
+  writeFile(path.join(root, "design", "effect.json"), json({ schema: "music-effect.effect-design.v1", notes: [], cues: [] }), force, realSongRoot);
   writeFile(
     path.join(root, "design", "visual-brief.md"),
     `# ${title} Visual Brief\n\n## Main Structure\n\n- Decide the main visual structure before looking at existing song packs.\n\n## Avoid\n\n- Do not copy prior song layouts, fixture renderers, or glow/line compositions by default.\n\n## Inputs\n\n- Song URL: ${songUrl ?? "(not set)"}\n- Songle ID: ${songleId || "(not set)"}\n\n## Live Controls\n\n- Define only the controls this song needs.\n`,
-    force
+    force,
+    realSongRoot
   );
   writeFile(
     path.join(root, "README.md"),
     `# ${title}\n\nThis song pack is a neutral scaffold. It intentionally does not copy an existing song pack structure.\n\n## Status\n\n- Audio: not included\n- Lyrics: not included by default\n- Adapter: ${adapterId ?? "none"}\n\nIf you use a song-owned adapter, keep its code under this song pack and register it through \`song-packs/local-adapters.ts\` only when needed for same-build local preview.\n`,
-    force
+    force,
+    realSongRoot
   );
   writeFile(
     path.join(root, "CREDITS.md"),
     `# Credits\n\n- Song: ${title}\n- Artist: ${artist}\n${songUrl ? `- Source URL: ${songUrl}\n` : ""}${songleId ? `- Songle ID: ${songleId}\n` : ""}\nNo audio file, full lyrics, private asset, or secret is included in this scaffold.\n`,
-    force
+    force,
+    realSongRoot
   );
 
   if (withAdapter) {
     writeFile(
       path.join(root, "adapter.ts"),
       `import type { SongAdapterContext, SongApp, SongAppFrame, SongAppServices } from "../../system/kit";\n\nexport const createSongApp = (\n  context: SongAdapterContext,\n  services: SongAppServices\n): SongApp => {\n  const { canvas, ctx } = services;\n\n  const resize = () => {\n    const dpr = Math.max(1, window.devicePixelRatio || 1);\n    const rect = canvas.getBoundingClientRect();\n    canvas.width = Math.max(1, Math.floor(rect.width * dpr));\n    canvas.height = Math.max(1, Math.floor(rect.height * dpr));\n  };\n\n  const render = (_frame: SongAppFrame) => {\n    ctx.save();\n    ctx.setTransform(1, 0, 0, 1, 0, 0);\n    ctx.clearRect(0, 0, canvas.width, canvas.height);\n    ctx.restore();\n  };\n\n  return {\n    id: \`\${context.manifest.id}:neutral-start\`,\n    status: \`\${context.manifest.title}: neutral song app scaffold\`,\n    resize,\n    render\n  };\n};\n`,
-      force
+      force,
+      realSongRoot
     );
   }
 
