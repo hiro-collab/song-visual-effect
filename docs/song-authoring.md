@@ -142,6 +142,15 @@ READMEの推奨見出し:
 
 `npm run song:validate -- --id <song-id>` は、危険な混入をエラーにし、README/CREDITS/確認結果などの提出物不足を警告として表示します。警告が出た場合は、中央確認へ渡す前にREADMEやCREDITSを補ってください。最終的な見た目の品質、権利判断、曲固有の演出妥当性は自動検査だけでは判断しません。
 
+中央確認へ渡す前に、機械的な再生確認だけを行う場合は次を使えます。
+
+```powershell
+npm run song:smoke -- --id song-id
+npm run song:smoke -- --id song-id --time 45
+```
+
+`song:smoke` は `song:validate` の後に指定時刻の `preview:snapshot` を実行し、manifestが読めるか、adapterで例外が出ないか、fatalなconsole errorがないか、表示可能なcanvasがあるか、読めるcanvasが明らかに真っ白でないかを確認します。これは映像の良し悪しを判定するテストではありません。曲の解釈、構図、色の好み、盛り上がり、見た目の完成度は、人間のレビューで確認してください。
+
 外部ライブラリや描画エンジンを追加したくなった場合は、まず `docs/library-candidates.md` の採用前チェックを見てください。system標準へ入れるのではなく、曲側の任意adapterや小さなhelperで済むかを先に検討します。
 
 ## 曲の背景調査

@@ -632,6 +632,42 @@
       ]
     },
     {
+      "id": "song-smoke-check",
+      "label": "曲パックの機械的smoke確認",
+      "summary": "song:validateとpreview:snapshotを組み合わせ、提出前に壊れている状態だけを落とします。曲の解釈、構図、色、演出品質は判定しません。",
+      "trigger": "npm run song:smoke -- --id <song-id>",
+      "steps": [
+        {
+          "from": "threadStart",
+          "to": "previewSnapshot",
+          "action": "曲IDと確認時刻を渡す",
+          "payload": "song id、manifest.duration、previewTimes、任意time",
+          "note": "指定時刻がない場合はmanifestのpreviewTimesや曲長から代表時刻を選びます。"
+        },
+        {
+          "from": "previewSnapshot",
+          "to": "songPack",
+          "action": "提出物と危険混入を検証",
+          "payload": "manifest、README/CREDITS/verification、references、song-pack files",
+          "note": "音源、歌詞全文、秘密情報、危険な埋め込みを拒否し、提出物不足は警告します。"
+        },
+        {
+          "from": "previewSnapshot",
+          "to": "browser",
+          "action": "指定時刻を開いて機械的に確認",
+          "payload": "snapshot、console、canvas audit、blank canvas check",
+          "note": "adapter例外、fatal console error、canvasなし、読めるcanvasの明らかな空画面だけを失敗にします。"
+        },
+        {
+          "from": "previewSnapshot",
+          "to": "threadStart",
+          "action": "人間レビューへ渡す",
+          "payload": "summary.json、snapshot.png、consoleログ",
+          "note": "見た目の完成度、曲解釈、構図、色、盛り上がりは人間が判断します。"
+        }
+      ]
+    },
+    {
       "id": "launch-manager-mvp",
       "label": "簡素版Launch Managerを使う",
       "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/Setとsong-packsの曲JSONをGUIから起動・停止・再生します。",

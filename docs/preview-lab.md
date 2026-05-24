@@ -36,12 +36,15 @@ Launch Managerはworktreeごとに空きポートを自動割当します。実�
 
 ## 確認すること
 
+- 取り込み前に `npm run song:smoke -- --id <song-id>` が通るか。
 - 曲メニューに取り込んだ曲が出るか。
 - `選択曲を再生` で必要なtargetが起動するか。
 - player URLの `song=` が、同じworktreeのsong-pack serverを向いているか。
 - console warn/errorが出ていないか。
 - CPU、memory、port、logの表示が追えるか。
 - 停止操作が、このLaunch Managerのmanaged targetだけに効くか。
+
+`song:smoke` は表示が機械的に壊れていないかを見るための入口です。構図、曲解釈、色味、盛り上がり、投影時の見え方は、スクリーンショットや実ブラウザで人間が確認します。
 
 ## 注意
 

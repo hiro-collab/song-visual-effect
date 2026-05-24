@@ -175,6 +175,14 @@ npm run preview:snapshot -- --song shining-star --time 48
 
 既存のfixture player / song-pack serverが起動していればそれを使います。起動していない場合は一時的にローカルサーバーを起動し、このコマンド自身が起動したものだけ停止します。外部依存は追加せず、ローカルChromeまたはEdgeのDevTools Protocolを使います。
 
+曲パック提出前の機械的なsmoke checkには次を使えます。
+
+```powershell
+npm run song:smoke -- --id song-id
+```
+
+この確認は、ページ起動、manifest読み込み、adapter例外、fatalなconsole error、表示可能canvas、明らかな空画面だけを見ます。曲の解釈、構図、色、演出の良さは判定しません。
+
 ## Agent Context
 
 Codexや別エージェントに作業を渡すときは、まず `AGENTS.md` を読ませます。

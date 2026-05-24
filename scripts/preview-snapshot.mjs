@@ -6,6 +6,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
+const modulePath = fileURLToPath(import.meta.url);
 const repoRoot = resolve(__dirname, "..");
 const realRepoRoot = realpathSync(repoRoot);
 const runtimeRoot = resolve(repoRoot, ".codex", "runtime", "preview-snapshots");
@@ -33,6 +34,7 @@ Options:
   --out-dir <path>            Output directory. Default: .codex/runtime/preview-snapshots
   --no-start                  Do not auto-start missing local servers
   --allow-console-errors      Record console errors but exit 0
+  --fail-blank-canvas         Treat readable visible canvases with blank samples as failure
 `;
 
 const parseArgs = (argv) => {
@@ -46,7 +48,8 @@ const parseArgs = (argv) => {
     settleMs: 1400,
     outDir: runtimeRoot,
     noStart: false,
-    allowConsoleErrors: false
+    allowConsoleErrors: false,
+    failBlankCanvas: false
   };
 
   for (let index = 0; index < argv.length; index++) {
@@ -83,6 +86,8 @@ const parseArgs = (argv) => {
       options.noStart = true;
     } else if (arg === "--allow-console-errors") {
       options.allowConsoleErrors = true;
+    } else if (arg === "--fail-blank-canvas") {
+      options.failBlankCanvas = true;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
@@ -576,7 +581,7 @@ const runBrowserSnapshot = async ({ options, config, snapshotDir }) => {
   };
 };
 
-const summarizeFailures = ({ audit, consoleMessages, allowConsoleErrors }) => {
+export const summarizeFailures = ({ audit, consoleMessages, allowConsoleErrors, failBlankCanvas }) => {
   const failures = [];
   const warnings = [];
   const visibleCanvases = (audit.canvases ?? []).filter((canvas) => canvas.visible);
@@ -605,8 +610,11 @@ const summarizeFailures = ({ audit, consoleMessages, allowConsoleErrors }) => {
   const readableSamples = visibleCanvases
     .map((canvas) => canvas.sample)
     .filter((sample) => sample && typeof sample.colored === "number");
-  if (readableSamples.length && readableSamples.every((sample) => sample.colored === 0)) {
-    warnings.push("Visible canvas pixel samples looked blank.");
+  const looksEmpty = (sample) => sample.colored === 0 && (typeof sample.opaque !== "number" || sample.opaque === 0);
+  if (readableSamples.length && readableSamples.every(looksEmpty)) {
+    const message = "Visible canvas pixel samples looked blank.";
+    if (failBlankCanvas) failures.push(message);
+    else warnings.push(message);
   }
   const unreadable = visibleCanvases.filter((canvas) => canvas.sample?.error);
   if (unreadable.length) warnings.push(`${unreadable.length} visible canvas sample(s) could not be read.`);
@@ -631,7 +639,8 @@ const main = async () => {
     const { failures, warnings } = summarizeFailures({
       audit: browserResult.audit,
       consoleMessages: browserResult.consoleMessages,
-      allowConsoleErrors: options.allowConsoleErrors
+      allowConsoleErrors: options.allowConsoleErrors,
+      failBlankCanvas: options.failBlankCanvas
     });
     const summary = {
       ok: failures.length === 0,
@@ -669,7 +678,9 @@ const main = async () => {
   }
 };
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && resolve(process.argv[1]) === modulePath) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}
