@@ -13,6 +13,22 @@ const nowIso = () => new Date().toISOString();
 
 const childIsAlive = (child) => Boolean(child && child.exitCode === null && child.signalCode === null);
 
+const elapsedSince = (isoTime) => {
+  const startMs = isoTime ? Date.parse(isoTime) : NaN;
+  return Number.isFinite(startMs) ? Date.now() - startMs : null;
+};
+
+const markTargetReady = (state) => {
+  if (state.readyAt) return;
+  const durationMs = elapsedSince(state.startedAt);
+  state.readyAt = nowIso();
+  state.startupDurationMs = durationMs;
+  appendManagerLog(
+    state.logWriters?.stdout,
+    durationMs === null ? `${state.target.id} is ready.` : `${state.target.id} is ready after ${durationMs} ms.`
+  );
+};
+
 const spawnCommandFor = (target) => {
   if (isWindows && /^(npm|npx)$/.test(target.command)) {
     return {
@@ -26,7 +42,8 @@ const spawnCommandFor = (target) => {
 const fetchHealth = async (health) => {
   if (!health?.url) return { status: "none", ok: true };
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 1600);
+  const timeoutMs = Number.isFinite(health.timeoutMs) ? health.timeoutMs : 3000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(health.url, { method: "GET", signal: controller.signal });
     return { status: response.ok ? "ok" : "fail", ok: response.ok };
@@ -62,12 +79,15 @@ export class LaunchSupervisor {
           child: null,
           status: "stopped",
           startedAt: null,
+          readyAt: null,
+          startupDurationMs: null,
           stoppedAt: null,
           exitCode: null,
           signal: null,
           error: "",
           health: "unknown",
           healthFailures: 0,
+          healthUpdatedAt: 0,
           metrics: { exists: false },
           metricsUpdatedAt: 0,
           logPaths: null,
@@ -99,12 +119,15 @@ export class LaunchSupervisor {
 
     state.status = "starting";
     state.startedAt = nowIso();
+    state.readyAt = null;
+    state.startupDurationMs = null;
     state.stoppedAt = null;
     state.exitCode = null;
     state.signal = null;
     state.error = "";
     state.health = "unknown";
     state.healthFailures = 0;
+    state.healthUpdatedAt = 0;
     state.metrics = { exists: false };
     state.metricsUpdatedAt = 0;
     state.logPaths = await prepareTargetLogs(this.runtimeRoot, state.target.id);
@@ -133,7 +156,10 @@ export class LaunchSupervisor {
       child.stdout.pipe(state.logWriters.stdout, { end: false });
       child.stderr.pipe(state.logWriters.stderr, { end: false });
       child.once("spawn", () => {
-        if (!state.target.health) state.status = "running";
+        if (!state.target.health) {
+          state.status = "running";
+          markTargetReady(state);
+        }
       });
       child.once("error", (error) => {
         state.status = "error";
@@ -168,6 +194,8 @@ export class LaunchSupervisor {
     if (!childIsAlive(state.child)) {
       state.status = "stopped";
       state.health = "unknown";
+      state.healthFailures = 0;
+      state.healthUpdatedAt = 0;
       state.error = "";
       return this.publicTargetStatus(state);
     }
@@ -221,21 +249,27 @@ export class LaunchSupervisor {
       return;
     }
 
-    const shouldReadMetrics = Date.now() - state.metricsUpdatedAt > METRICS_INTERVAL_MS;
+    const now = Date.now();
+    const shouldReadMetrics = now - state.metricsUpdatedAt > METRICS_INTERVAL_MS;
+    const healthIntervalMs = state.status === "starting" ? 1000 : Number(state.target.health?.intervalMs) || 5000;
+    const shouldReadHealth = !state.target.health || now - state.healthUpdatedAt > healthIntervalMs;
     const [metrics, health] = await Promise.all([
       shouldReadMetrics ? readProcessMetrics(state.child.pid) : Promise.resolve(state.metrics),
-      fetchHealth(state.target.health)
+      shouldReadHealth ? fetchHealth(state.target.health) : Promise.resolve(null)
     ]);
     if (shouldReadMetrics) {
       state.metrics = metrics;
       state.metricsUpdatedAt = Date.now();
     }
+    if (!health) return;
+    state.healthUpdatedAt = Date.now();
     state.health = health.status;
     if (health.ok) {
       state.healthFailures = 0;
       if (state.status === "starting" || state.error === "Health check did not become ready." || state.error === "Health check failed.") {
         state.status = "running";
         state.error = "";
+        markTargetReady(state);
       }
     } else if (state.target.health) {
       state.healthFailures += 1;
@@ -268,12 +302,16 @@ export class LaunchSupervisor {
       command: state.target.command,
       args: state.target.args,
       startupTimeoutMs: state.target.startupTimeoutMs,
+      startupDurationMs: state.startupDurationMs,
       startedAt: state.startedAt,
+      readyAt: state.readyAt,
       stoppedAt: state.stoppedAt,
       exitCode: state.exitCode,
       signal: state.signal,
       error: state.error,
       health: state.health,
+      healthFailures: state.healthFailures,
+      healthUpdatedAt: state.healthUpdatedAt ? new Date(state.healthUpdatedAt).toISOString() : null,
       metrics: state.metrics,
       logPaths: state.logPaths,
       logs

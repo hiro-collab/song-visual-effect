@@ -27,6 +27,30 @@ server.listen(port, "127.0.0.1");
   return script;
 };
 
+const writeFlaggedHealthServer = (root) => {
+  const script = resolve(root, "flagged-health-server.mjs");
+  writeFileSync(
+    script,
+    `import http from "node:http";
+import { existsSync } from "node:fs";
+const port = Number(process.argv[2]);
+const failFlag = process.argv[3];
+const server = http.createServer((_request, response) => {
+  if (existsSync(failFlag)) {
+    response.writeHead(503, { "content-type": "text/plain" });
+    response.end("not ready");
+    return;
+  }
+  response.writeHead(200, { "content-type": "text/plain" });
+  response.end("ok");
+});
+server.listen(port, "127.0.0.1");
+`,
+    "utf8"
+  );
+  return script;
+};
+
 const waitForStatus = async (supervisor, targetId, predicate, label) => {
   const deadline = Date.now() + 6000;
   let latest = null;
@@ -90,6 +114,9 @@ test("LaunchSupervisor starts, health-checks, and stops only managed targets", a
       "managed target should become healthy"
     );
     assert.equal(running.ports[0], managedPort);
+    assert.equal(typeof running.readyAt, "string");
+    assert.equal(typeof running.startupDurationMs, "number");
+    assert.match(running.logs.stdout, /dummy-managed is ready after \d+ ms\./);
 
     await supervisor.stopAll();
     const stopped = await waitForStatus(
@@ -103,6 +130,87 @@ test("LaunchSupervisor starts, health-checks, and stops only managed targets", a
   } finally {
     await supervisor.stopAll().catch(() => {});
     if (external.exitCode === null) external.kill();
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("LaunchSupervisor treats early running health failures as retryable", async () => {
+  const tempRoot = mkdtempSync(join(tmpdir(), "music-effect-launch-health-retry-"));
+  const runtimeRoot = resolve(tempRoot, "runtime");
+  const script = writeFlaggedHealthServer(tempRoot);
+  const failFlag = resolve(tempRoot, "fail-health");
+  const port = await findFreePort({ start: 59100, host: "127.0.0.1" });
+
+  const config = {
+    root: repoRoot,
+    configPath: resolve(repoRoot, "launch", "test-targets.json"),
+    timing: {},
+    launchPortsFile: null,
+    launchPorts: null,
+    targets: [
+      {
+        id: "retry-health-managed",
+        label: "Retry health managed",
+        kind: "test-server",
+        cwd: repoRoot,
+        cwdText: ".",
+        command: process.execPath,
+        args: [script, String(port), failFlag],
+        env: {},
+        ports: [port],
+        urls: { open: `http://127.0.0.1:${port}/` },
+        startupTimeoutMs: 5000,
+        health: { url: `http://127.0.0.1:${port}/`, intervalMs: 1000 }
+      }
+    ],
+    sets: [{ id: "default", label: "Default", description: "", targets: ["retry-health-managed"] }],
+    targetMap: new Map(),
+    setMap: new Map()
+  };
+  config.targetMap = new Map(config.targets.map((target) => [target.id, target]));
+  config.setMap = new Map(config.sets.map((set) => [set.id, set]));
+
+  const supervisor = new LaunchSupervisor(config, { runtimeRoot });
+  try {
+    await supervisor.init();
+    await supervisor.startTarget("retry-health-managed");
+    await waitForStatus(
+      supervisor,
+      "retry-health-managed",
+      (status) => status.status === "running" && status.health === "ok" && status.running,
+      "target should become healthy before simulating a health failure"
+    );
+
+    writeFileSync(failFlag, "fail", "utf8");
+    const firstFailure = await waitForStatus(
+      supervisor,
+      "retry-health-managed",
+      (status) => status.health === "fail" && status.healthFailures === 1,
+      "first health failure should be visible"
+    );
+    assert.equal(typeof firstFailure.readyAt, "string");
+    assert.equal(typeof firstFailure.startupDurationMs, "number");
+    assert.equal(firstFailure.status, "running");
+    assert.equal(firstFailure.error, "");
+
+    const secondFailure = await waitForStatus(
+      supervisor,
+      "retry-health-managed",
+      (status) => status.health === "fail" && status.healthFailures === 2,
+      "second health failure should still be retryable"
+    );
+    assert.equal(secondFailure.status, "running");
+    assert.equal(secondFailure.error, "");
+
+    const confirmedFailure = await waitForStatus(
+      supervisor,
+      "retry-health-managed",
+      (status) => status.status === "error" && status.healthFailures >= 3,
+      "third health failure should become an error"
+    );
+    assert.equal(confirmedFailure.error, "Health check failed.");
+  } finally {
+    await supervisor.stopAll().catch(() => {});
     rmSync(tempRoot, { recursive: true, force: true });
   }
 });

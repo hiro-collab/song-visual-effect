@@ -541,15 +541,15 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         color-scheme: dark;
       }
       select option {
-        background: #25262c;
-        color: #fff7e6;
+        background: Canvas;
+        color: CanvasText;
       }
       select option:checked {
-        background: #3a3121;
-        color: #fff7e6;
+        background: Highlight;
+        color: HighlightText;
       }
       select option:disabled {
-        color: #a9a398;
+        color: GrayText;
       }
       button, a.launch {
         display: inline-flex;
@@ -918,8 +918,17 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         unknown: "確認中",
         none: ""
       })[value] || value;
+      const healthDisplay = (target) => {
+        if (!target?.health || target.health === "none") return "";
+        if (target.health === "fail" && target.status === "running" && !target.error) {
+          const failures = Number(target.healthFailures || 0);
+          return failures > 1 ? "確認再試行中 " + failures + "/3" : "確認中";
+        }
+        return healthLabel(target.health);
+      };
       const statusText = (target) => {
-        const health = target.health && target.health !== "none" ? " / " + healthLabel(target.health) : "";
+        const display = healthDisplay(target);
+        const health = display ? " / " + display : "";
         return statusLabel(target.status) + health;
       };
       const renderNetworkExposure = (exposure = {}) => {
@@ -956,6 +965,11 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       const formatDurationMs = (value) => {
         const ms = Number(value);
         return Number.isFinite(ms) ? Math.round(ms / 1000) + "秒" : "-";
+      };
+      const formatElapsedMs = (value) => {
+        const ms = Number(value);
+        if (!Number.isFinite(ms)) return "-";
+        return ms < 1000 ? Math.round(ms) + "ms" : (ms / 1000).toFixed(1) + "秒";
       };
       const formatMetrics = (metrics) => {
         if (!metrics || metrics.exists === false) return "CPU - / Memory -";
@@ -1317,7 +1331,8 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       };
       const mapStateClass = (target) => {
         if (!target) return "is-stopped";
-        if (target.status === "error" || target.error || target.health === "fail") return "is-error";
+        if (target.status === "error" || target.error) return "is-error";
+        if (target.health === "fail" && target.running) return "is-starting";
         if (target.status === "starting") return "is-starting";
         if (target.status === "stopping") return "is-stopping";
         if (target.running && target.status === "running") return "is-running";
@@ -1801,6 +1816,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           metricNode("状態", statusText(target)),
           metricNode("ポート", target.ports.length ? target.ports.join(", ") : "-"),
           metricNode("起動待ち上限", formatDurationMs(target.startupTimeoutMs)),
+          metricNode("起動所要時間", formatElapsedMs(target.startupDurationMs)),
           metricNode("起動時刻", formatDate(target.startedAt))
         );
         body.append(summary);
@@ -1824,6 +1840,8 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           ["Kind", target.kind],
           ["Resource", formatMetrics(target.metrics)],
           ["Startup timeout", formatDurationMs(target.startupTimeoutMs)],
+          ["Startup duration", formatElapsedMs(target.startupDurationMs)],
+          ["Ready", formatDate(target.readyAt)],
           ["Started", formatDate(target.startedAt)],
           ["Command", target.command + " " + target.args.join(" ")],
           ["CWD", target.cwd]
@@ -1936,7 +1954,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       byId("copy-deck-urls").addEventListener("click", copyAllDeckUrls);
       refresh().catch((error) => setMessage(error.message, "error"));
       setInterval(() => {
-        const readingLogs = document.querySelector(".tech-details:hover, .tech-details:focus-within");
+        const readingLogs = document.querySelector(".tech-details[open], .tech-details:hover, .tech-details:focus-within");
         if (!state.busy && !readingLogs) refresh().catch(() => {});
       }, 2000);
     </script>

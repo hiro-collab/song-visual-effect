@@ -165,6 +165,9 @@ Song Visual Server
 - `起動して開く` は、対象Deckに必要なtargetの `startupTimeoutMs` の最大値に、システム標準の余裕 `5000` ms を足した時間まで待つ。
 - 起動中targetのhealthが一時的に失敗しても、`startupTimeoutMs` の範囲内では即失敗扱いにしない。
 - `startupTimeoutMs` を超えてもhealthがreadyにならない場合、targetは `error` になり、GUIはログ確認を促す。
+- `running` targetのhealthが一時的に失敗した場合は、すぐ確定エラーにせず `確認中` / `確認再試行中` として扱う。連続失敗が確定した場合だけ `error` にする。
+- MVPの起動評価は、process生存とtargetのhealth URLまでを対象にする。曲JSONのロード完了、WebGL/Canvas描画完了、曲固有adapterの初期化完了はまだLaunch Managerのhealth判定には含めない。
+- targetがreadyになった時刻と、process起動からreadyまでの実測時間はLaunch Managerが記録し、stdoutログとGUIの状態カードに表示する。
 
 初期値:
 
@@ -222,6 +225,7 @@ GUIはログ末尾だけを表示します。詳細なイベント履歴やmetri
 - `error`: 2秒ごと、または手動更新。
 - `stopped`: 基本監視しない。
 - UI一覧: 2秒ごとに `/api/status` をポーリング。
+- GUIでサーバー状態カードの詳細ログを開いている間は、ログ読解を邪魔しないよう自動更新を一時停止する。手動更新は可能。
 
 グラフや長期履歴はMVPに含めません。
 
