@@ -158,6 +158,15 @@ type FlowAccent = {
   strength: number;
 };
 
+type FocusWindow = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  angle: number;
+  strength: number;
+};
+
 const SHOTS: Array<{ start: number; end: number; shot: Shot }> = [
   {
     start: 0,
@@ -430,6 +439,7 @@ const drawOpePrototype = (ctx: CanvasRenderingContext2D, view: View) => {
   const organicPulse = clamp(view.organicPulse * 0.92 + view.organicBreath * 0.28 + view.userGlow * 0.08, 0, 1.5);
   drawBackground(ctx, view, shot, mechanicalPulse);
   drawFlowAccents(ctx, view);
+  drawAttentionAperture(ctx, view, shot);
   drawLamp(ctx, view, shot, organicPulse);
   drawRecordPanels(ctx, view, shot, mechanicalPulse);
   drawMonitorFrame(ctx, view, shot, mechanicalPulse);
@@ -557,6 +567,71 @@ const drawExitFlow = (ctx: CanvasRenderingContext2D, view: View, amount: number,
   ctx.closePath();
   ctx.fill();
   ctx.restore();
+};
+
+const focusWindowForShot = (shot: Shot): FocusWindow => {
+  const routeFocus = shot.route * 0.9 + shot.finalPush * 0.7;
+  const recordFocus = Math.max(0, shot.records * 0.65 + shot.pressure * 0.25 - shot.exposure * 0.25);
+  const sutureFocus = shot.sutures * 0.9;
+  const frozenFocus = shot.freeze * 0.85;
+  const aftercareFocus = shot.label === "AFTERCARE" ? 1 : 0;
+
+  if (aftercareFocus > 0.5) {
+    return { x: 0.72, y: 0.74, width: 0.26, height: 0.2, angle: -0.15, strength: 0.52 };
+  }
+  if (routeFocus > 0.7) {
+    return { x: 0.57, y: 0.51, width: 0.72, height: 0.32, angle: -0.52, strength: 0.34 + routeFocus * 0.12 };
+  }
+  if (sutureFocus > 0.55) {
+    return { x: 0.54, y: 0.5, width: 0.5, height: 0.42, angle: -0.18, strength: 0.42 };
+  }
+  if (frozenFocus > 0.55) {
+    return { x: shot.tableX, y: shot.tableY, width: 0.48, height: 0.22, angle: shot.tableTilt, strength: 0.38 };
+  }
+  if (recordFocus > 0.55) {
+    return { x: 0.5, y: 0.55, width: 0.82, height: 0.68, angle: -0.08, strength: 0.28 + recordFocus * 0.12 };
+  }
+  return {
+    x: shot.tableX,
+    y: shot.tableY,
+    width: 0.42 + shot.exposure * 0.2,
+    height: 0.28 + shot.lamp * 0.08,
+    angle: shot.tableTilt,
+    strength: 0.24 + shot.exposure * 0.08
+  };
+};
+
+const drawAttentionAperture = (ctx: CanvasRenderingContext2D, view: View, shot: Shot) => {
+  const focus = focusWindowForShot(shot);
+  const cx = sx(view, focus.x + Math.sin(view.lifePhase * 0.62) * 0.004 * view.organicBreath);
+  const cy = sy(view, focus.y + Math.cos(view.lifePhase * 0.54) * 0.005 * view.organicBreath);
+  const rx = sw(view, focus.width * (0.5 + view.organicPulse * 0.014));
+  const ry = sh(view, focus.height * (0.5 + view.organicBreath * 0.018));
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(focus.angle);
+  ctx.scale(Math.max(0.001, rx / Math.max(rx, ry)), Math.max(0.001, ry / Math.max(rx, ry)));
+  const radius = Math.max(rx, ry);
+  const aperture = ctx.createRadialGradient(0, 0, radius * 0.24, 0, 0, radius * 1.22);
+  aperture.addColorStop(0, rgba(0, 2, 8, 0));
+  aperture.addColorStop(0.58, rgba(0, 2, 8, focus.strength * 0.08));
+  aperture.addColorStop(1, rgba(0, 2, 8, focus.strength));
+  ctx.fillStyle = aperture;
+  ctx.fillRect(-radius * 1.4, -radius * 1.4, radius * 2.8, radius * 2.8);
+  ctx.restore();
+
+  if (shot.label === "AFTERCARE") {
+    ctx.save();
+    ctx.globalAlpha = 0.18 + view.organicPulse * 0.1;
+    ctx.strokeStyle = rgba(230, 255, 247, 0.52);
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(sx(view, 0.57), sy(view, 0.78));
+    ctx.bezierCurveTo(sx(view, 0.63), sy(view, 0.75), sx(view, 0.7), sy(view, 0.76), sx(view, 0.79), sy(view, 0.72));
+    ctx.stroke();
+    ctx.restore();
+  }
 };
 
 const currentShot = (time: number) => {

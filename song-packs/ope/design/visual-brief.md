@@ -38,6 +38,12 @@ An operating room is invaded by public records, news-like judgment, and outside 
 - Provisional accent windows: 31.2-34.8s downward drop, 51.8-55.4s left-to-right exposure sweep, 128.4-133.8s downward lock before the frozen chorus, 184.6-191.4s diagonal exit pull into the final chorus.
 - Keep flow behind the main table/pulse structure so it guides attention without becoming a full-screen texture.
 
+## Attention Pass
+
+- Each section should have one readable attention window: table, records, sutures, pulse route, or last pulse.
+- Use darkening and negative space to guide the eye rather than adding more foreground objects.
+- The outro should contract attention to a small off-center life-sign instead of ending as a full-screen fade.
+
 ## Background Research
 
 - Official metadata: KARENT lists the track as rock, released 2020-02-07, with art by sakiyama.
