@@ -7,6 +7,7 @@
 
 - `sync-onboarding.md`: 新しい担当や久しぶりに戻った担当が最初に使う短い導線。
 - `team-roster.md`: 担当名、branch、worktree、宛先ラベルの対応表。
+- `project-scope.md`: song-pack、system kit、show-profile、互換性方針の境界。
 - `system-overview.md`: 曲に依存しないシステムの考え方。
 - `song-authoring.md`: 新しい曲を作るときの手順と注意。
 - `song-visual-independence.md`: 既存曲やfixtureの見た目に引っ張られないための確認表。
@@ -23,6 +24,7 @@
 まず読むもの:
 
 - `system-overview.md`
+- `project-scope.md`
 - `song-authoring.md`
 - `song-visual-independence.md`
 - `decisions.md`

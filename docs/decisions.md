@@ -172,3 +172,47 @@ system kitとfixture playerは曲を束縛しない補助領域であり、特�
 
 影響:
 ローカル開発で同一ビルド内の曲adapterを試す場合、曲adapter本体は `song-packs/<song-id>/adapter.ts` に置き、`song-packs/local-adapters.ts` だけに `song:<song-id>` の対応を追加する。`song-packs/local-adapters.ts` は `song:` IDだけを扱い、`builtin:` IDやURL/path形式は扱わない。fixture playerのbuiltin registryへ曲固有adapterを直接importしない。system-wide docsには必要最小限のポインタだけを残し、曲の設計メモは曲パック側へ置く。
+
+## D014: このプロジェクトは曲別Web映像制作キットとして扱う
+
+決定:
+このプロジェクトは、OSや巨大ミドルウェアではなく、ブラウザで動く曲別映像を作るための制作キット、検証環境、便利道具箱として扱う。
+
+理由:
+最終的な再生先はTouchDesigner、Unity、OBS、自作VJツールなど複数ありうる。特定ツールを中心に置くと、曲ごとの自由な再生、連携、調整の余地を狭めるため。
+
+影響:
+system側は薄い補助に留める。TouchDesignerやUnityとの連携は、曲パックまたは任意のshow-profile側で扱う。詳細は `docs/project-scope.md` に置く。
+
+## D015: show-profileは任意のイベント運用層にする
+
+決定:
+`show-profile` は、複数曲をイベント、展示、ライブ、検証会でどう並べ、どう起動し、どう調整し、どう外部ツールとつないだかを記録する任意の運用層にする。
+
+理由:
+13曲連続イベントのように、曲ごとの自由とイベント全体の共通運用を両立する必要があるため。ただし、イベントごとの運用方法は多様なので、曲パックやsystemに強制する規格にはしない。
+
+影響:
+Launch Managerはshow-profileがあればセットリスト表示などを補助してよいが、show-profileが無くても曲パック単体は動く。未知の項目は無視してよい。
+
+## D016: Launch Managerは検証補助を主役にする
+
+決定:
+Launch Managerは、曲パックの単体起動確認、任意show-profileのセットリスト確認、サーバー状態やログ確認を担う軽い起動補助画面にする。本番VJ卓や外部連携本体にはしない。
+
+理由:
+Launch Managerが本番切替、TouchDesigner専用操作、Unity専用操作、複雑なタイムライン編集まで背負うと、systemが重くなり、曲ごとの自由を奪いやすいため。
+
+影響:
+Launch Managerへ追加する機能は、制作、検証、当日確認に寄せる。外部連携本体は曲パック、bridge、show-profile側へ逃がす。
+
+## D017: 互換性は統合時の検査、変換、警告を重視する
+
+決定:
+過去形式の永久実行保証は目標にしない。代わりに、複数担当が別々のkit時期で作った曲パックをイベント統合するとき、古い形式や不足を検出し、可能なら正規化、変換し、無理なら明示的に警告する方針にする。
+
+理由:
+曲ごとの自由度が高いため、全世代のadapter APIやplayerを完全互換にするとsystemが重くなる。一方で、イベント統合時に何が噛み合っていないか分かることは重要なため。
+
+影響:
+`schemaVersion` を置き、無い場合は `1` として扱う。未知の項目は無視し、既存項目の意味を変えない。必要に応じてloader正規化、`song:validate` 警告、migration scriptを追加する。
