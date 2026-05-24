@@ -1006,6 +1006,9 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         target.status === "running" &&
         !target.error &&
         (!target.health || target.health === "ok" || target.health === "none");
+      const transientHealthError = (target) =>
+        target?.running &&
+        (target.error === "Health check did not become ready." || target.error === "Health check failed.");
       const requiredTargetsReady = () => {
         const catalog = state.status?.songCatalog;
         const ids = catalog?.requiredTargetIds || [];
@@ -1018,7 +1021,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         const targets = targetMap();
         return ids
           .map((id) => targets.get(id))
-          .filter((target) => target?.status === "error")
+          .filter((target) => target?.status === "error" && !transientHealthError(target))
           .map((target) => target.label + ": " + (target.error || "error"));
       };
       const formatSongLabel = (song) => song.title + (song.artist ? " / " + song.artist : "");
@@ -1219,7 +1222,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       };
       const waitForPlaybackTargets = async () => {
         const startedAt = Date.now();
-        while (Date.now() - startedAt < 25000) {
+        while (Date.now() - startedAt < 45000) {
           await refresh();
           const errors = requiredTargetErrors();
           if (errors.length) throw new Error(errors.join(" / "));
@@ -1259,6 +1262,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       };
       const renderTarget = (target) => {
         const article = make("article", "target is-" + target.status + (target.error ? " has-error" : ""));
+        article.dataset.targetId = target.id;
         const head = make("div", "target-head");
         const title = make("div");
         title.append(make("h2", "", target.label));
@@ -1340,7 +1344,24 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
           " / runtime: " + status.runtimeRoot +
           (status.portsFile ? " / ports file: " + status.portsFile : "");
         const root = byId("targets");
+        const detailsState = new Map(
+          [...root.querySelectorAll(".target")].map((article) => {
+            const details = article.querySelector(".tech-details");
+            const scrollTops = [...(details?.querySelectorAll("pre") || [])].map((pre) => pre.scrollTop);
+            return [article.dataset.targetId, { open: Boolean(details?.open), scrollTops }];
+          })
+        );
         root.replaceChildren(...status.targets.map(renderTarget));
+        for (const article of root.querySelectorAll(".target")) {
+          const saved = detailsState.get(article.dataset.targetId);
+          if (!saved) continue;
+          const details = article.querySelector(".tech-details");
+          if (!details) continue;
+          details.open = saved.open;
+          [...details.querySelectorAll("pre")].forEach((pre, index) => {
+            pre.scrollTop = saved.scrollTops[index] || 0;
+          });
+        }
       };
       const refresh = async () => {
         const [status, sync] = await Promise.all([
