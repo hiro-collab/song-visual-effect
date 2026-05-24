@@ -1,0 +1,46 @@
+{
+  "schema": "music-effect.references.v1",
+  "note": "URL metadata only. Lyrics text, article body text, screenshots, thumbnails, and image data are intentionally not stored.",
+  "items": [
+    {
+      "label": "Songle page",
+      "type": "songle",
+      "url": "https://songle.jp/songs/www.nicovideo.jp%2Fwatch%2Fsm41951611",
+      "purpose": "Used for registered-song confirmation and beat/chorus metadata source.",
+      "language": "ja",
+      "accessedAt": "2026-05-23"
+    },
+    {
+      "label": "Niconico original MV",
+      "type": "official-video",
+      "url": "https://www.nicovideo.jp/watch/sm41951611",
+      "purpose": "Used as the original public video reference without storing video frames or images.",
+      "language": "ja",
+      "accessedAt": "2026-05-23"
+    },
+    {
+      "label": "Official YouTube MV",
+      "type": "official-video",
+      "url": "https://www.youtube.com/watch?v=uB_jQ8H2Yeg",
+      "purpose": "Used to confirm the yellow-green paint stroke motif; no thumbnail or frame image is stored.",
+      "language": "ja",
+      "accessedAt": "2026-05-23"
+    },
+    {
+      "label": "UtaTen lyric page",
+      "type": "lyrics-reference",
+      "url": "https://utaten.com/lyric/mi23032317/",
+      "purpose": "Used only to understand high-level lyric themes; lyrics text is not copied or stored.",
+      "language": "ja",
+      "accessedAt": "2026-05-23"
+    },
+    {
+      "label": "UtaTen interpretation article",
+      "type": "interpretation",
+      "url": "https://utaten.com/specialArticle/index/8431",
+      "purpose": "Used to cross-check high-level themes such as spring, future, and Vocaloid continuity.",
+      "language": "ja",
+      "accessedAt": "2026-05-23"
+    }
+  ]
+}
