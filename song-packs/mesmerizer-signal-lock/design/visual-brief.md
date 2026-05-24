@@ -18,6 +18,9 @@
 - Rebuild: reassemble the control surface back into bright show graphics.
 - Chorus B: widest, brightest show composition, with the hidden lock layer more visible than Chorus A.
 - Outro: pull back and settle into the bright surface again, leaving a thin fading signal.
+- Scene identity should not rely only on camera distance. Add large 3D overlay
+  layers when useful: lock rings for fixation, a scan curtain for interlude,
+  side ribbons for chorus, and pale afterimage planes for post-chorus/outro.
 
 ## Verse Motifs
 

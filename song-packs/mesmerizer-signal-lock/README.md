@@ -35,6 +35,10 @@ verse shots, central hypnotic lock shots, wide chorus venue shots, a distinct
 control/signal interlude display, rebuild graphics, and a pulled-back release
 outro. This keeps scene identity separate from beat intensity, so each section
 can change what the viewer is meant to look at.
+The 3D scene also has composition-specific overlay layers: lock rings for the
+hypnotic fixation scene, a scan curtain for the interlude control surface,
+chorus side ribbons for the wide show, and pale afterimage planes for the drop
+and outro.
 
 Same-build local registration is handled through `song-packs/local-adapters.ts`.
 Do not add a direct import for this song to `examples/fixture-player/adapters/registry.ts`.
