@@ -778,14 +778,14 @@
           "to": "main",
           "action": "別portのplayerを起動",
           "payload": "npm run dev:player -- --port <deck-port>",
-          "note": "同じplayerアプリをDeckごとに別portで起動し、ライブ操作や映像時間状態を混ぜないようにします。"
+          "note": "同じplayerアプリをDeckごとに別portで起動し、ライブ操作や映像時間状態を混ぜないようにします。停止時はDeckごとのmanaged PIDだけを対象にします。"
         },
         {
           "from": "devManager",
           "to": "songServer",
           "action": "曲データを共有配信",
           "payload": "npm run dev:songs",
-          "note": "Song Data ServerはDeck A/Bで共有します。停止操作はDeck停止と分けて扱います。"
+          "note": "Song Data ServerはDeck A/Bで共有します。Deck停止やDeck全停止では暗黙に止めず、別操作として扱います。"
         },
         {
           "from": "devManager",

@@ -241,6 +241,15 @@ GUIはログ末尾だけを表示します。詳細なイベント履歴やmetri
 - UIタブを閉じる: 何も止めない。
 - Launch Server終了: MVPでは管理中targetを停止してから終了する。
 
+Deck A/Bを扱う場合:
+
+- Deck停止は、そのDeckのplayer targetだけを停止する。
+- Deck全停止は、Deck player targetだけを列挙して停止する。Song Data Serverは別操作にする。
+- Launch Serverの全停止は、従来通りそのLaunch Serverが管理しているtarget全体を停止する。
+- 停止対象は、Launch Serverがspawnし、PIDを記録しているmanaged targetに限定する。
+- 停止後はPIDの生存確認とhealth確認を行い、残存しているtargetがあれば成功扱いにしない。
+- PC全体の同名processを探してkillしない。他worktreeや手動起動processを巻き込まない。
+
 将来の拡張として「targetを残してLaunch Serverだけ終了」は検討しますが、MVPには含めません。
 
 ## GUI
@@ -349,3 +358,5 @@ launch/
 - 起動中targetのPID、port、stdout/stderr、CPU/memoryが見える。
 - GUIタブを閉じてもtargetは止まらない。
 - Launch Server終了時にtargetが停止する。
+- Deck A/Bを別portで同時起動し、Deck A停止、Deck B停止、Deck全停止、Launch Server全停止の範囲が仕様通りである。
+- 停止後に対象PIDが残っている場合、UI/APIが停止成功ではなく失敗として示す。

@@ -176,6 +176,34 @@ Deck B start
 - Song Data Server停止: 曲データ配信を止める。起動済みDeckの再読み込みやasset取得に影響するため、UIで警告する。
 - Launch Managerの全停止: 既存のmanaged target停止ルールに従う。ただしUIではDeck停止とSong Data Server停止を区別して見せる。
 
+### 停止保証
+
+複数曲を同時に再生しているときでも、Launch Managerが起動したDeck playerは停止できることを実装要件にします。
+
+保証したいこと:
+
+- Launch ManagerはDeckごとに起動したprocessのPIDを保持する。
+- 停止対象は、Launch Manager自身が起動してPIDを持つmanaged targetだけにする。
+- `Deck A停止` はDeck AのPIDだけを停止し、Deck BとSong Data Serverを止めない。
+- `Deck B停止` はDeck BのPIDだけを停止し、Deck AとSong Data Serverを止めない。
+- `Deck全停止` は起動中のDeck targetを列挙し、それぞれのPIDへ停止要求を出す。
+- `Deck全停止` はSong Data Serverを暗黙に止めない。必要な場合は別操作にする。
+- 同じ曲をDeck A/Bで開いていても、PIDとportで停止対象を区別する。
+- 停止後はprocess生存確認とhealth確認を行い、残っているDeckがあれば `error` または `stopping failed` としてUIに出す。
+- PC全体から同名の `node`、`vite`、`npm` を探して停止しない。
+- 他worktree、他Launch Manager、手動起動のplayerは停止対象にしない。
+
+停止の確認方法:
+
+```text
+1. Deck AとDeck Bを別portで起動する。
+2. Deck A/Bに別々の曲、または同じ曲を読み込む。
+3. Deck A停止でDeck Aだけがstoppedになり、Deck BとSong Data Serverがrunningのまま残ることを確認する。
+4. Deck B停止でDeck Bだけがstoppedになることを確認する。
+5. Deck A/Bを再起動し、Deck全停止でDeck A/Bが両方stoppedになり、Song Data Serverがrunningのまま残ることを確認する。
+6. Launch Managerの全停止では、managed targetだけが止まり、他worktreeのtargetを止めないことを確認する。
+```
+
 ## Deck-local State
 
 将来、映像時間制御やライブ調整を入れる場合、状態はDeckごとに分けます。
@@ -262,6 +290,7 @@ Deck URLを外部ツールへ渡す場合も、次を守ります。
 3. Deck Aだけで既存挙動を保つ。
 4. Deck Bを追加し、別player portで起動できるようにする。
 5. UIでDeckごとの曲選択、open、copy、start、stopを分ける。
-6. 必要になったらDeck-local visual sequencer stateとcontrol APIを追加する。
+6. Deck A/Bの個別停止、Deck全停止、Launch Manager全停止の停止保証テストを追加する。
+7. 必要になったらDeck-local visual sequencer stateとcontrol APIを追加する。
 
 この順に進めることで、既存の動作確認を壊さずにライブ/VJ運用へ拡張します。
