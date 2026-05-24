@@ -243,7 +243,7 @@ input {
 
 .visual-sequencer-field {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-columns: 74px minmax(0, 1fr);
   gap: 8px;
   align-items: center;
   margin-top: 10px;
@@ -263,7 +263,7 @@ input {
 
 .visual-sequencer-scrub {
   width: 100%;
-  margin-top: 12px;
+  margin: 0;
   accent-color: #cfe7ff;
 }
 
@@ -701,14 +701,14 @@ input {
 
   .visual-sequencer-panel {
     top: auto;
-    bottom: 128px;
+    bottom: 148px;
     left: 14px;
     width: min(330px, calc(100vw - 28px));
     padding: 10px;
   }
 
   .beat-state-panel + .visual-sequencer-panel {
-    bottom: 306px;
+    bottom: 326px;
   }
 
   .timing-offset-row {

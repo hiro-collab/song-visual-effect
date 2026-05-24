@@ -177,6 +177,12 @@ http://127.0.0.1:<player-port>/docs/workflows.html
 npm run preview:snapshot -- --song shining-star --time 48
 ```
 
+任意のplayer queryを足したい場合は `--query` を使います。例えばVisual Sequencer panelの表示確認は次のようにできます。このpanelでは検証用にraw timeのseek/nudgeとvisual timeのscrub/nudgeを分けて操作できます。
+
+```powershell
+npm run preview:snapshot -- --song shining-star --time 10 --query visualSequencer=1
+```
+
 既存のfixture player / song-pack serverが起動していればそれを使います。起動していない場合は一時的にローカルサーバーを起動し、このコマンド自身が起動したものだけ停止します。外部依存は追加せず、ローカルChromeまたはEdgeのDevTools Protocolを使います。
 
 曲パック提出前の機械的なsmoke checkには次を使えます。

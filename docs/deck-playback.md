@@ -238,6 +238,8 @@ Deckごとの操作APIを追加する場合、Launch Manager全体ではなくDe
 
 これはMVPには含めません。特に `load-song` は、既に開いているDeck playerへ曲差し替え命令を送るための将来APIとして予約します。実装する場合は、前の曲のadapter state、audio state、lyrics state、visual sequencer snapshot、localStorage key、エラー表示をどうリセットまたは移行するかを別途仕様化してから入れます。
 
+Player操作の `play`、`pause`、`seek` はraw/player timeを動かす操作として扱います。Visual Sequencerだけを操作するAPIを追加する場合は、音声やplayer pauseと混ざらないよう、`visual` を含む名前を予約します。例: `set-visual-rate`、`set-visual-offset`、`set-visual-mode`、`nudge-visual`、`scrub-visual-to`、`pause-visual`、`resume-visual`、`sync-visual-to-raw`、`snapshot-visual`、`restore-visual`。
+
 例:
 
 ```text
@@ -245,9 +247,16 @@ POST /api/decks/:deckId/load-song
 POST /api/decks/:deckId/play
 POST /api/decks/:deckId/pause
 POST /api/decks/:deckId/seek
-POST /api/decks/:deckId/set-rate
-POST /api/decks/:deckId/nudge
-POST /api/decks/:deckId/set-offset
+POST /api/decks/:deckId/set-visual-rate
+POST /api/decks/:deckId/set-visual-offset
+POST /api/decks/:deckId/set-visual-mode
+POST /api/decks/:deckId/nudge-visual
+POST /api/decks/:deckId/scrub-visual-to
+POST /api/decks/:deckId/pause-visual
+POST /api/decks/:deckId/resume-visual
+POST /api/decks/:deckId/sync-visual-to-raw
+POST /api/decks/:deckId/snapshot-visual
+POST /api/decks/:deckId/restore-visual
 POST /api/decks/:deckId/set-live-control
 ```
 

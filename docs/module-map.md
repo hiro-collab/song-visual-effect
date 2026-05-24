@@ -30,7 +30,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `examples/fixtures/soft-light-player/README.md`: fixtureが標準テンプレートではないことを明示する注意書き。
 - `examples/fixtures/soft-light-player/adapters/registry.ts`: fixture内で使う `builtin:` adapter registry。曲固有adapterを直接importせず、必要な場合は `song-packs/local-adapters.ts` へ委譲する。
 - `examples/fixtures/soft-light-player/renderers/` と `effects/`: soft light確認用の見た目。新しい曲のテンプレートとして読まない。
-- `examples/fixtures/soft-light-player/tools/`: lyric timing、beat state、visual sequencer panelなど、fixtureに載せているoptional tool。system kitの必須UIではない。
+- `examples/fixtures/soft-light-player/tools/`: lyric timing、beat state、visual sequencer panelなど、fixtureに載せているoptional tool。visual sequencer panelは検証用にraw timeとvisual timeを分けて動かせる。system kitの必須UIではない。
 
 ## song-packs
 
@@ -52,7 +52,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/create-song-pack.mjs`: 既存曲を読まずに中立的な曲パック雛形を作る補助スクリプト。
 - `scripts/validate-song-pack.mjs`: 曲パックの参照メモがURLメタデータだけになっているかなどを確認する補助スクリプト。
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
-- `scripts/preview-snapshot.mjs`: 指定曲と指定時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` に保存する。
+- `scripts/preview-snapshot.mjs`: 指定曲と指定時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` に保存する。`--query visualSequencer=1` のようにoptional tool用のplayer queryも追加できる。
 - `scripts/smoke-song-pack.mjs`: `song:validate` と `preview:snapshot` を組み合わせ、ページ起動、manifest読み込み、adapter例外、fatal console error、表示可能canvas、明らかな空画面だけを確認する。
 - `scripts/smoke-all-song-packs.mjs`: 複数の曲パックへ `song:smoke` を順に実行する中央確認用の入口。対象は `--ids`、`--exclude`、`--max` で絞れる。
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。

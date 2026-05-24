@@ -28,6 +28,7 @@ Options:
   --song-port <port>          Song pack server port. Default: SONG_PACK_PORT or 5174
   --player-url <url>          Existing loopback player origin. Default: http://127.0.0.1:<player-port>/
   --song-base-url <url>       Existing loopback song-pack origin. Default: http://127.0.0.1:<song-port>/
+  --query <key=value&...>     Extra player URL query params, for optional tools such as visualSequencer=1
   --width <px>                Viewport width. Default: 1280
   --height <px>               Viewport height. Default: 720
   --settle-ms <ms>            Wait after load before capture. Default: 1400
@@ -47,6 +48,7 @@ const parseArgs = (argv) => {
     height: 720,
     settleMs: 1400,
     outDir: runtimeRoot,
+    extraQuery: [],
     noStart: false,
     allowConsoleErrors: false,
     failBlankCanvas: false
@@ -74,6 +76,8 @@ const parseArgs = (argv) => {
       options.playerUrl = next();
     } else if (arg === "--song-base-url") {
       options.songBaseUrl = next();
+    } else if (arg === "--query") {
+      options.extraQuery.push(next());
     } else if (arg === "--width") {
       options.width = Number(next());
     } else if (arg === "--height") {
@@ -116,6 +120,21 @@ const parseArgs = (argv) => {
   return options;
 };
 
+const reservedSnapshotQueryKeys = new Set(["song", "previewTime"]);
+
+const applyExtraQuery = (targetUrl, entries) => {
+  for (const entry of entries) {
+    const params = new URLSearchParams(entry.startsWith("?") ? entry.slice(1) : entry);
+    for (const [key, value] of params) {
+      if (!key) throw new Error("Extra query parameter keys must not be empty.");
+      if (reservedSnapshotQueryKeys.has(key)) {
+        throw new Error(`Extra query must not override reserved preview parameter: ${key}`);
+      }
+      targetUrl.searchParams.set(key, value);
+    }
+  }
+};
+
 const assertLoopbackUrl = (value, label) => {
   const url = new URL(value);
   const hostname = url.hostname.toLowerCase().replace(/^\[(.*)\]$/, "$1");
@@ -151,6 +170,7 @@ const resolveSnapshotConfig = (options) => {
   assertLoopbackUrl(manifestUrl.href, "song manifest URL");
 
   const targetUrl = new URL(playerUrl);
+  applyExtraQuery(targetUrl, options.extraQuery);
   targetUrl.searchParams.set("song", manifestUrl.href);
   targetUrl.searchParams.set("previewTime", String(Math.max(0, options.time)));
 
@@ -580,6 +600,8 @@ const runBrowserSnapshot = async ({ options, config, snapshotDir }) => {
     screenshotPath
   };
 };
+
+export { parseArgs, resolveSnapshotConfig };
 
 export const summarizeFailures = ({ audit, consoleMessages, allowConsoleErrors, failBlankCanvas }) => {
   const failures = [];

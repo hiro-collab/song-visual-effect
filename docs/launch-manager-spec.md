@@ -299,6 +299,8 @@ MVP:
 
 MVPのDeck APIは、Deck URL生成、target起動、target停止、status表示に留めます。既に開いているDeck playerへ曲を差し替える `POST /api/decks/:deckId/load-song` は将来拡張として扱い、MVPには含めません。
 
+将来Deck-localなVisual Sequencer操作APIを追加する場合は、playerの `pause` / `seek` と混ざらないよう、`pause-visual`、`scrub-visual-to`、`set-visual-rate` のように `visual` を含む名前を使います。MVPでは外部APIを作らず、必要な確認はplayer画面内のoptional panelに留めます。
+
 ログは最初は `/api/status` に末尾を含めてもよいです。必要になったら次を追加します。
 
 - `GET /api/targets/:id/logs?stream=stdout|stderr`

@@ -237,4 +237,4 @@ Launch ManagerはDeckごとの起動、停止、曲選択、URL copy/open、stat
 ライブや展示では、ブラウザ音声、外部再生、TouchDesigner、Unity、OBS、自作ツールなど、時刻の出どころがイベントごとに変わりうるため。system側が音声正本や外部連携方式を決めると、曲パックやshow-profile側の自由を狭める。
 
 影響:
-`VisualSequencer` は `followRaw` と `freeRun` を持ち、pause、scrub、nudge、rate、offset、snapshot/restoreを扱う。曲側やfixture playerは必要な場合だけ使う。duration、ループ範囲、音声シーク、外部プロトコル、恒久保存、本格的なキーフレーム編集はこのhelperの責務にしない。
+`VisualSequencer` は `followRaw` と `freeRun` を持ち、pause、scrub、nudge、rate、offset、snapshot/restoreを扱う。曲側やfixture playerは必要な場合だけ使う。duration、ループ範囲、音声シーク、外部プロトコル、恒久保存、本格的なキーフレーム編集はこのhelperの責務にしない。まずはplayer画面内のoptional panelで確認し、Launch Managerや外部controllerからのDeck-local操作APIはDeck運用が固まった後の次段階に回す。
