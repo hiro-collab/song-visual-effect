@@ -15,7 +15,7 @@
 曲に依存しない補助ライブラリです。曲名、曲専用cue、描画方式を固定しません。
 
 - `system/kit/index.ts`: 曲アプリが参照しやすい公開API入口。必要なhelperだけをここから選んでimportできる。
-- `system/kit/core/`: 型、manifest読み込み、安全なfetch、Transport、frame loopなど、描画方式に依存しない土台。
+- `system/kit/core/`: 型、manifest読み込み、安全なfetch、Transport、frame loop、Visual Sequencerなど、描画方式に依存しない土台。
 - `system/kit/timing/`: beat、chorus、lyricsの時刻検索、beat state helper、手動歌詞タイミングのデータ処理。
 - `system/kit/render/`: 表示レイヤ、content rect、DPR/clip/pointer/text fit、damping、palette、optional Three services型など、任意で使える描画補助。
 - `system/kit/song-app/`: fixtureや曲adapterをつなぐ最小インターフェースと、曲パッケージ内asset reader。
@@ -30,7 +30,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `examples/fixtures/soft-light-player/README.md`: fixtureが標準テンプレートではないことを明示する注意書き。
 - `examples/fixtures/soft-light-player/adapters/registry.ts`: fixture内で使う `builtin:` adapter registry。曲固有adapterを直接importせず、必要な場合は `song-packs/local-adapters.ts` へ委譲する。
 - `examples/fixtures/soft-light-player/renderers/` と `effects/`: soft light確認用の見た目。新しい曲のテンプレートとして読まない。
-- `examples/fixtures/soft-light-player/tools/`: lyric timingやbeat stateなど、fixtureに載せているoptional tool。system kitの必須UIではない。
+- `examples/fixtures/soft-light-player/tools/`: lyric timing、beat state、visual sequencer panelなど、fixtureに載せているoptional tool。system kitの必須UIではない。
 
 ## song-packs
 

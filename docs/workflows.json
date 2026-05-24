@@ -25,6 +25,7 @@
       "componentIds": [
         "assets",
         "transport",
+        "visualSequencer",
         "frameLoop",
         "visualHost",
         "timingEditor",
@@ -100,7 +101,7 @@
     {
       "id": "system-kit-zone",
       "label": "汎用補助 system kit",
-      "summary": "assets、transport、frame、timing、visual hostなど、曲が必要なhelperだけ選んで使う領域です。",
+      "summary": "assets、transport、visual sequencer、frame、timing、visual hostなど、曲が必要なhelperだけ選んで使う領域です。",
       "x": 41,
       "y": 31,
       "width": 56,
@@ -198,6 +199,16 @@
       "x": 72,
       "y": 38,
       "description": "audio要素または内部クロックから現在時刻を作り、再生、停止、シークを制御するhelperです。"
+    },
+    {
+      "id": "visualSequencer",
+      "label": "Visual Sequencer",
+      "kind": "system-service",
+      "group": "system kit",
+      "file": "system/kit/core/visualSequencer.ts / examples/fixtures/soft-light-player/tools/visualSequencerTool.ts",
+      "x": 82,
+      "y": 48,
+      "description": "raw timeとnowMsから映像・歌詞・cue向けのvisual timeを作るDOM非依存helperです。fixtureでは?visualSequencer=1のoptional panelから確認できます。"
     },
     {
       "id": "frameLoop",
@@ -539,9 +550,16 @@
         },
         {
           "from": "frameLoop",
+          "to": "visualSequencer",
+          "action": "必要なら映像用時刻へ変換",
+          "payload": "rawTime、nowMs、mode、rate、offset、paused",
+          "note": "通常はraw timeと一致します。optional panelを有効にしたときだけvisual timeを映像、歌詞、beat表示へ渡します。"
+        },
+        {
+          "from": "frameLoop",
           "to": "songAdapter",
           "action": "曲adapterへ時刻を渡す",
-          "payload": "time、dt、userGlow",
+          "payload": "visual time、dt、userGlow",
           "note": "曲ごとの演出判断はadapter側が持ちます。"
         },
         {

@@ -219,6 +219,8 @@ Deck-local stateの例:
 
 Deck AとDeck Bが同じ曲を開いていても、これらの状態は混ぜません。
 
+映像用の `visualTime`、`rate`、`offset`、pause、scrub、nudge、snapshot/restore は、`system/kit/core/visualSequencer.ts` の `createVisualSequencer()` をDeckごとに1インスタンス作って扱うことを標準の出発点にします。このhelperはDOMやplayer serverを正本にせず、`rawTime` と `nowMs` を外部から受け取るだけに留めます。
+
 ## Future Control API
 
 Deckごとの操作APIを追加する場合、Launch Manager全体ではなくDeckを宛先にします。
