@@ -24,6 +24,7 @@ Launch Managerでできること:
 - `launch/targets.json` に書かれた起動対象だけを起動する。
 - サーバーごとの起動、停止、再起動、起動セットの起動/停止、全停止を行う。全停止は誤操作防止のため二度押し確認です。
 - PID、port、health、CPU、memory、stdout/stderr末尾を見る。
+- `launch/targets.json` の `startupTimeoutMs` で、サーバーごとの起動待ち上限を管理する。
 - worktree、Launch Manager、再生画面、曲データサーバーの実ポートを見る。
 - 起動時に空きポートを自動割当し、既に起動している別worktreeの管理画面へ誤接続しない。
 

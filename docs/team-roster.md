@@ -1,5 +1,7 @@
 # Team Roster
 
+Encoding note: This file is UTF-8. In Windows PowerShell 5.1, use `Get-Content -Encoding UTF8 docs\team-roster.md` if Japanese text looks garbled.
+
 この文書は、並行作業中の「担当」と「worktree / branch / 宛先ラベル」を対応させるための名簿です。
 
 正本データは `config/sync-participants.json` です。人間が読むときはこの文書、ツールが読むときは JSON を使います。

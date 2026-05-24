@@ -36,11 +36,13 @@ npm run sync:inbox
 
 新しい曲や曲固有エフェクトを始める場合は、既存曲worktreeではなく、`codex/system-kit-refactor` の最新readyを取り込んだ新しいworktree/branchから始めます。既存曲の `song-packs/*` は参考元にしません。
 
-ready通知は「必ず取り込むもの」ではなく、「取り込み候補」です。設計方針に合うか確認してからmergeします。
+ready通知は「必ず取り込むもの」ではなく、「取り込み候補」です。設計方針に合うか確認してからmergeします。readyは作業中の状態ではなく、他worktreeへ取り込んでよい、ひとまとまりのcommitを示します。
 note通知は「連絡」です。merge可能なcommitを示すものではないため、必要なら返答や相談だけ行います。
 `sync:brief` は、自分宛ての未対応question/blocker、未merge ready、最近のinfo/doneをまとめて表示します。
 
 共通ノウハウ候補のnoteは、そのまま正本docsへ入れません。`docs/knowledge-review.md` に沿って、曲固有のモチーフ、構図、色、数値、カメラ、演出名を取り除き、複数曲で使える作法や確認観点だけを昇格します。
+
+中央統合の分担は、`system-main` がsystem kit、Launch Manager、security、同期ツール、正本docsを扱い、`song-preview-lab` が採用済み複数曲のプレビュー検証を扱う、という整理です。各曲worktreeは他曲readyを横取りmergeしません。ある曲だけで例外的に他担当の支援機能を試したい場合は、system担当がcherry-pick、一時ブランチ、preview-lab反映などを仲介します。
 
 ## 次に読むファイル
 

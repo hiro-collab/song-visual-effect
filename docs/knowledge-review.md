@@ -163,3 +163,36 @@ system担当は、候補を小さな主張に分解してから分類します�
 - reject: すべての曲を有機的な動きに寄せること、単純な曲にも複数scene familyを必須にすること、特定の方向運動や記号レイヤーを共通ルールにすること。
 
 反映済み: `docs/song-authoring.md` の曲構成と画面構成へ、条件つきの動き/scene分離として追記した。
+
+### 2026-05-24: 3D spotlight beam anchor
+
+元連絡: `#f799c8f223`。誤送信 `#7aad10761a` は、この連絡で置き換え済み。
+
+- conditional: 3Dステージライトのビームを円錐メッシュで表現する場合、円錐本体を平行移動して合わせるのではなく、照明器具側に円錐の頂点を置き、ターゲット方向へ回転/伸縮させる選択肢がある。照明の発生源とビームの見た目がずれにくくなる。
+- song-owned: ビーム幅、色、透明度、タイミング、照明の台数、ステージ上の意味づけ、どの曲でスポットライト表現を使うか。
+- reject: すべての3D曲にスポットライトや円錐ビームを必須化すること。
+
+反映方針: これは3Dステージライトを使う場合の実装上の注意であり、曲作り全体の共通ルールにはしない。将来3D helper guidanceを作る場合の候補として残す。
+
+### 2026-05-24: Canvas2D contentRect starter
+
+元連絡: `#696ab157bd`
+
+- common: Canvas2Dを選んだ曲adapterでは、DPR resize、safe area、clip、pointer正規化、text fitting、決定的なframe renderingを小さな補助として使えるようにしておくと、曲ごとの見た目を縛らずに実装事故を減らせる。
+- conditional: `system/kit/render/contentRect.ts` は、Canvas2Dを使う曲でsafe areaやHUD、ポインタ操作、文字収まりが必要な場合の選択肢として扱う。全曲必須ではない。
+- song-owned: イガク固有の紙、カード、遠近感、色、診断室、scan表現、ラベル、密度、pointer scanの意味づけ。
+- reject: contentRect内にすべての主映像を閉じ込めること、Canvas2Dを新曲の標準描画方式として固定すること、イガクの画面構成をstarter template化すること。
+
+反映済み: `docs/library-candidates.md` にCanvas2D contentRect helperの扱いを追記した。実装例は中立的な補助として扱い、曲固有の見た目は入れない。
+
+### 2026-05-24: rendering stack decision matrix
+
+元連絡: `#464bce8527`
+
+- common: 描画方式は曲の主役構造、必要な奥行き、sprite/filter需要、seek/previewTimeでの再現性、bundle size、追加依存の安全性から選ぶ。既存曲の方式や見た目をテンプレートにしない。
+- conditional: Canvas2D、Three.js、PixiJS/Konva/p5.js、GSAP/anime.js的なtimeline/easingは、それぞれ得意領域が違うため、曲ごとに任意選択する。system標準へ昇格する前に、複数曲で同じ需要があるか確認する。
+- conditional: timeline/easingを使う場合は、自走アニメではなく `frame.time`、beat、chorus、manual marker、previewTimeから同じ状態を再計算できるscrubbableな形を優先する。
+- song-owned: どのレンダラーを選ぶか、scene構造、カメラ、shader/filter、sprite、timeline名、比喩、色、曲固有asset。
+- reject: 描画方式の選択表を、特定曲の映像文法や依存ライブラリ採用の強制にすること。依存追加のbundle/audit/license確認を省くこと。
+
+反映済み: `docs/library-candidates.md` に描画方式を選ぶときの中立的な判断表を追加した。`docs/song-authoring.md` のcore ruleにはまだ昇格しない。

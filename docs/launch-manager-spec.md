@@ -39,11 +39,14 @@ PCブラウザや将来のスマホから開く操作画面です。
 
 - target一覧を表示する。
 - `song-packs/*/manifest.json` を曲JSONメニューとして表示し、選択した曲のfixture player URLを作る。
+- `show-profiles/*/show.json` があれば、任意のセットリストとして表示し、該当する曲JSON選択を補助する。
 - 起動、停止、再起動、全停止をLaunch Serverへ依頼する。
 - 状態マップ、PID、port、URL、CPU、memory、ログ末尾を表示する。
 - Git共通ディレクトリのworktree-sync通知を読み、各担当のready、質問、ブロッカー、ackを閲覧しやすく表示する。
 
 UIは正本を持ちません。ブラウザタブを閉じても起動中targetは止まりません。
+
+`show-profile` は任意の運用メモです。Launch Managerは読める範囲だけ表示し、未知の項目は無視します。show-profileが存在しなくても、曲JSONメニューとtarget起動は従来通り動きます。
 
 ### Launch Target
 
@@ -113,6 +116,7 @@ Song Visual Server
       "command": "npm",
       "args": ["run", "dev:player", "--", "--port", "${PLAYER_PORT:-5173}"],
       "ports": ["${PLAYER_PORT:-5173}"],
+      "startupTimeoutMs": 60000,
       "urls": {
         "open": "http://127.0.0.1:${PLAYER_PORT:-5173}/"
       },
@@ -139,6 +143,25 @@ Song Visual Server
 - `cwd` はリポジトリ内、または明示許可されたローカルディレクトリだけ。
 - 外部URLからtarget定義を読まない。
 - target定義は既存曲テンプレートではない。曲ごとに自由に追加してよい。
+
+## 起動待ち時間
+
+各サーバーの起動待ち時間は、Launch Managerのtarget定義で管理します。
+
+- `startupTimeoutMs`: process起動後、healthがreadyになるまでLaunch Managerが待つ上限時間。単位はミリ秒。
+- `startupTimeoutMs` を省略したtargetは、システム標準の `45000` ms を使う。
+- `選択曲を再生` は、必要targetの `startupTimeoutMs` の最大値に、システム標準の余裕 `5000` ms を足した時間まで待つ。
+- 起動中targetのhealthが一時的に失敗しても、`startupTimeoutMs` の範囲内では即失敗扱いにしない。
+- `startupTimeoutMs` を超えてもhealthがreadyにならない場合、targetは `error` になり、GUIはログ確認を促す。
+
+初期値:
+
+| target | startupTimeoutMs | 意図 |
+| --- | ---: | --- |
+| `fixture-player` | `60000` | Viteや3D/大きめbundleの初回起動を許容する。 |
+| `song-pack-server` | `30000` | 軽いasset serverとして短めに失敗検知する。 |
+
+この値は曲ごとの映像設計ではなく、Launch Managerが管理する起動運用の仕様です。曲パック側へは持ち込まないでください。
 
 ## ポート管理
 
@@ -219,6 +242,7 @@ GUIはログ末尾だけを表示します。詳細なイベント履歴やmetri
 MVP画面:
 
 - 上部: 曲JSON選択。`song-packs/<song-id>/manifest.json` を選び、必要なtargetを起動して再生画面を開く。
+- show-profile / セットリスト: `show-profiles/<show-id>/show.json` がある場合だけ、イベントや検証会用の曲順を表示する。項目を曲JSON選択へ反映できるが、曲パックの文法や外部連携方式は決めない。
 - 状態マップ: Launch Manager、各target、選択中の曲JSONをノードとして表示する。起動中ノードと関連線は発光し、サーバーが増えても連携関係を見渡せるようにする。
 - 担当メッセージ: `sync:ready`、`sync:note`、`sync:ack` の履歴を、要対応、担当、種別で絞り込み表示する。書き込みやack操作はCLIの `sync:*` に残し、GUIは読み取り専用にする。
 - 詳細操作: Launch Set選択、選択Set起動、選択Set停止、全停止。全停止は二度押し確認にする。
@@ -239,6 +263,7 @@ GUI上には、次の注意を表示します。
 MVP:
 
 - `GET /api/status`。target状態に加え、曲JSONメニュー用の `songCatalog` を返す。
+- `GET /api/status` は、存在する場合だけ `showProfiles` も返す。show-profileはローカル `show-profiles/*/show.json` の最小メタデータとsetlistだけを読む。
 - `GET /api/sync-events`。Git共通ディレクトリの `codex-sync/events.jsonl` からready/note/ackを読み、担当別・要対応別に整形して返す。
 - `POST /api/targets/:id/start`
 - `POST /api/targets/:id/stop`

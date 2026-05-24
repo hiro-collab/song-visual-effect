@@ -7,7 +7,6 @@ import { readProcessMetrics } from "./metrics.mjs";
 import { findPortConflicts } from "./ports.mjs";
 
 const isWindows = platform() === "win32";
-const HEALTH_GRACE_MS = 15000;
 const METRICS_INTERVAL_MS = 5000;
 
 const nowIso = () => new Date().toISOString();
@@ -234,15 +233,18 @@ export class LaunchSupervisor {
     state.health = health.status;
     if (health.ok) {
       state.healthFailures = 0;
-      if (state.status === "starting") state.status = "running";
+      if (state.status === "starting" || state.error === "Health check did not become ready." || state.error === "Health check failed.") {
+        state.status = "running";
+        state.error = "";
+      }
     } else if (state.target.health) {
       state.healthFailures += 1;
       const startedAt = state.startedAt ? Date.parse(state.startedAt) : Date.now();
-      const graceExpired = Date.now() - startedAt > HEALTH_GRACE_MS;
+      const startupExpired = Date.now() - startedAt > state.target.startupTimeoutMs;
       if (state.status === "running" && state.healthFailures >= 3) {
         state.status = "error";
         state.error = "Health check failed.";
-      } else if (state.status === "starting" && graceExpired) {
+      } else if (state.status === "starting" && startupExpired) {
         state.status = "error";
         state.error = "Health check did not become ready.";
       }
@@ -265,6 +267,7 @@ export class LaunchSupervisor {
       cwd: state.target.cwdText,
       command: state.target.command,
       args: state.target.args,
+      startupTimeoutMs: state.target.startupTimeoutMs,
       startedAt: state.startedAt,
       stoppedAt: state.stoppedAt,
       exitCode: state.exitCode,
@@ -289,6 +292,7 @@ export class LaunchSupervisor {
       runtimeRoot: this.runtimeRoot,
       portsFile: this.config.launchPortsFile ?? null,
       launchPorts: this.config.launchPorts ?? null,
+      timing: this.config.timing,
       sets: this.config.sets,
       targets
     };

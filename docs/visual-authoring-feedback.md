@@ -1,5 +1,7 @@
 # Visual Authoring Feedback Loop
 
+Encoding note: This file is UTF-8. In Windows PowerShell 5.1, use `Get-Content -Encoding UTF8 docs\visual-authoring-feedback.md` if Japanese text looks garbled. 日常運用では `sync:onboard` / `sync:brief` / `sync:inbox` の出力を優先してください。
+
 この文書は、共有ノウハウを各曲映像へ戻して改善するための運用です。
 
 目的は、曲ごとの見た目を揃えることではありません。共有された考え方や検証観点を、それぞれの曲担当が自分の曲に合う形で使えるか確認し、必要なら映像側へ反映することです。

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { applyLaunchPortsToEnv, resolvePortsFromEnv, writePortsFile } from "./auto-ports.mjs";
 import { assertLoopbackHost, loadLaunchConfig } from "./config.mjs";
 import { LaunchSupervisor } from "./supervisor.mjs";
+import { listShowProfiles } from "./shows.mjs";
 import { listSongCatalog } from "./songs.mjs";
 import { readSyncEvents } from "./sync-events.mjs";
 import { managerHtml } from "./ui.mjs";
@@ -57,6 +58,17 @@ const safeSongCatalog = async (config) => {
       errors: [`song catalog could not be read: ${error.message}`],
       requiredTargetIds: [],
       launchSetId: null
+    };
+  }
+};
+
+const safeShowProfiles = async (config) => {
+  try {
+    return await listShowProfiles(config);
+  } catch (error) {
+    return {
+      profiles: [],
+      errors: [`show profiles could not be read: ${error.message}`]
     };
   }
 };
@@ -162,7 +174,8 @@ export const startLaunchManager = async ({
       if (request.method === "GET" && url.pathname === "/api/status") {
         sendJson(response, 200, {
           ...(await supervisor.snapshot()),
-          songCatalog: await safeSongCatalog(config)
+          songCatalog: await safeSongCatalog(config),
+          showProfiles: await safeShowProfiles(config)
         });
         return;
       }

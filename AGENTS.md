@@ -36,6 +36,7 @@
 まず次だけを読む。
 
 - `docs/README.md`: docs内の正本と作業メモの読み分け。
+- `docs/project-scope.md`: song-pack、system kit、show-profile、互換性方針の境界。
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲を作るときのアンカー回避ルール。
 - `docs/song-visual-independence.md`: 既存fixtureの見た目に引っ張られないためのチェックリスト。
@@ -59,6 +60,7 @@
 
 - `README.md`: 起動方法と利用方法。
 - `docs/README.md`: docs内の正本、作業メモ、可視化資料の読み分け。
+- `docs/project-scope.md`: systemが背負う範囲と背負わない範囲。
 - `docs/thread-start.md`: 新しいスレッドの開始手順とready通知への対応。
 - `docs/handoff.md`: 現在状態と次にやるべきこと。
 - `docs/architecture.md`: 全体構成と処理の流れ。
