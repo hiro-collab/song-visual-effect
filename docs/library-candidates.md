@@ -26,7 +26,31 @@
 | 手描き/筆線 | 点列、太さ、色を受け取るstroke helper | 設計候補 |
 | timeline/easing | `frame.time` から値を計算するscrubbable helper | 設計候補 |
 
+## 描画方式を選ぶときの問い
+
+これは推奨レンダラー表ではなく、曲ごとに描画方式を選ぶための中立的な確認表です。既存曲の方式を次の曲のテンプレートにしません。
+
+| 需要 | 向きやすい選択肢 | 注意 |
+| --- | --- | --- |
+| safe area、clip、pointer、文字収まり、軽い2D描画 | Canvas2D + `system/kit/render/contentRect.ts` | Canvas2Dを全曲標準にしない。主映像を必ずcontentRectへ閉じ込める必要はない。 |
+| 奥行き、部屋、ステージ、カメラ、3D asset | Three.js | 曲固有scene logicとassetは曲パック側に置く。容量、ライセンス、fallbackを確認する。 |
+| sprite、mask、filter、blend、2Dレイヤ管理 | PixiJS / Konva / p5.js | system標準依存にせず、曲側任意依存として評価する。bundle sizeとadapter分離を見る。 |
+| section遷移、stamp、easing、timeline | GSAP / anime.js 的な考え方、または小さなscrubbable helper | 自走timelineで曲時間とズレないよう、`frame.time` やmarkerから同じ状態を再計算できる形を優先する。 |
+
+どの方式でも、曲固有のモチーフ、構図、色、数値、ラベル、scene名はsystem docsへ移しません。
+
 ## 候補別メモ
+
+### Canvas2D contentRect helper
+
+用途:
+DPR resize、safe area clip、pointer正規化、文字サイズfit、fixture UIと重なりにくい描画補助。
+
+現時点の判断:
+`system/kit/render/contentRect.ts` は実装済みの小さいhelperです。Canvas2Dを選んだ曲だけが任意で使います。見た目や構図は決めません。
+
+見る点:
+全画面投影の主映像はviewport全体で構成し、contentRectはHUD、状態ラベル、pointer mappingだけに使う選択肢もあります。contentRectを使うこと自体を曲作りの標準にしません。
 
 ### perfect-freehand / rough.js / paper.js
 
