@@ -23,5 +23,5 @@ visual plus the shared texture and source/license notes.
 - Three.js (`three`), MIT license
 - TypeScript types for Three.js (`@types/three`), MIT license
 
-`npm audit --audit-level=moderate` was run on 2026-05-23 JST and reported
+`npm audit --audit-level=moderate` was run on 2026-05-24 JST and reported
 `found 0 vulnerabilities`.
