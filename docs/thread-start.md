@@ -90,16 +90,9 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - 他worktreeのLaunch Managerや、別portで起動しているtargetを止めない。
 - 同じLaunch Manager URLを複数スレッドで見ている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
 
-並行作業では、worktreeごとにportを分けます。
+並行作業では、通常はLaunch Managerの自動ポート割当を使います。実際のportはGUI下部と `.codex/runtime/ports.json` に表示されます。固定したい場合だけ `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` を明示します。
 
-```powershell
-$env:DEV_MANAGER_PORT=5182
-$env:PLAYER_PORT=5183
-$env:SONG_PACK_PORT=5184
-npm run dev
-```
-
-停止操作や起動管理の修正をする前に、Launch Manager画面下部の `config` / `runtime` と各targetのportを見て、自分のworktreeを操作していることを確認してください。
+停止操作や起動管理の修正をする前に、Launch Manager画面下部の `worktree` / `ports` / `config` / `runtime` と各targetのportを見て、自分のworktreeを操作していることを確認してください。
 
 ## ready通知への対応
 

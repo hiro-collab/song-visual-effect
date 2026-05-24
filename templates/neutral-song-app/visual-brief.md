@@ -44,6 +44,22 @@
 | bridge / interlude |  |  |  |  |  |  |  |
 | outro |  |  |  |  |  |  |  |
 
+`close` / `wide` / `stage` / `camera` のような語彙は、この曲に合う場合だけ使う。共通ノウハウ候補にするときは、中立的な問いに言い換える。
+
+## Timeline Map / Structure Map
+
+timeline-map:
+
+- 人間向けの時系列理解メモ:
+- 歌詞、Songle、手動cue、背景調査から見えた変化点:
+- 曲固有の解釈や比喩:
+
+structure-map:
+
+- adapterが読む最小データ:
+- cue名、時刻、強度、参照先:
+- 実装に不要な解釈を入れていないか:
+
 ## 使わない表現
 
 - 今回あえて避ける構図:
@@ -80,6 +96,7 @@
 - 候補:
 - 適用できそうな範囲:
 - この曲固有かもしれない部分:
+- 共通化する場合、特定の舞台、カメラ、画面比喩ではなく中立的な問いに言い換えたか:
 - 作業中または実装の区切りで、system担当へ `--topic knowledge-candidate` として送ったか:
 - 最終報告で `knowledge-candidate` または `knowledge-candidate: none` を明記したか:
 

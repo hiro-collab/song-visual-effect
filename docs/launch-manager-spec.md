@@ -24,6 +24,7 @@ PC上で動く起動管理の本体です。
 責任:
 
 - target定義を読む。
+- worktreeごとの空きポートを自動割当し、`.codex/runtime/ports.json` に記録する。
 - 起動、停止、再起動を実行する。
 - PID、port、URL、ログ場所、状態を持つ。
 - stdout/stderrを保存する。
@@ -109,13 +110,13 @@ Song Visual Server
       "kind": "web-app",
       "cwd": ".",
       "command": "npm",
-      "args": ["run", "dev:player", "--", "--port", "5173"],
-      "ports": [5173],
+      "args": ["run", "dev:player", "--", "--port", "${PLAYER_PORT:-5173}"],
+      "ports": ["${PLAYER_PORT:-5173}"],
       "urls": {
-        "open": "http://127.0.0.1:5173/"
+        "open": "http://127.0.0.1:${PLAYER_PORT:-5173}/"
       },
       "health": {
-        "url": "http://127.0.0.1:5173/",
+        "url": "http://127.0.0.1:${PLAYER_PORT:-5173}/",
         "intervalMs": 5000
       }
     }
@@ -140,13 +141,13 @@ Song Visual Server
 
 ## ポート管理
 
-最初は賢くしすぎない。
+人間が担当ごとにport表を管理しない。
 
-- targetに固定portを書ける。
-- 起動前にportが空いているか確認する。
-- portが埋まっていたら自動変更せず、エラー表示する。
-- GUIに「どのportが衝突しているか」を出す。
-- 将来必要なら `autoPort: true` と代替rangeを追加する。
+- Launch Manager起動時に、worktree rootから安定した候補帯を作る。
+- `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` が未指定なら、空きportを自動で選ぶ。
+- 明示指定されたportは尊重し、重複や不正値は起動エラーにする。
+- 実際のportは `.codex/runtime/ports.json` とGUI下部に表示する。
+- target起動直前にもport衝突を確認し、割当後に別プロセスが使った場合はGUIにエラーを出す。
 
 理由:
 
@@ -195,7 +196,7 @@ GUIはログ末尾だけを表示します。詳細なイベント履歴やmetri
 3. Launch SetまたはLaunch Targetを選ぶ。
 4. 起動ボタンを押す。
 5. Launch Serverがtarget定義を検証する。
-6. port衝突を確認する。
+6. target起動直前にport衝突を確認する。
 7. stdout/stderrログファイルを用意する。
 8. processを起動する。
 9. health checkする。
@@ -286,8 +287,9 @@ MVP:
 ```text
 scripts/launch-manager/
   config.mjs       targets.json読み込みと検証
+  auto-ports.mjs   worktreeごとのport自動割当とports.json記録
   supervisor.mjs   spawn/stop/restart/process状態
-  ports.mjs        port衝突確認
+  ports.mjs        port空き確認と候補探索
   logs.mjs         stdout/stderr保存と末尾取得
   metrics.mjs      PID/CPU/memoryの簡易取得
   server.mjs       HTTP APIとHTML UI
@@ -302,8 +304,9 @@ launch/
 
 - `npm run build`
 - `npm run dev`
+- `/api/status` に root、launchPorts、portsFile が出る。
 - GUIから `basic-fixture` を起動/停止できる。
-- port衝突時に起動せず、GUIにエラーが出る。
+- target起動直前のport衝突時に起動せず、GUIにエラーが出る。
 - 起動中targetのPID、port、stdout/stderr、CPU/memoryが見える。
 - GUIタブを閉じてもtargetは止まらない。
 - Launch Server終了時にtargetが停止する。

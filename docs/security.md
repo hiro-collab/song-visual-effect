@@ -45,8 +45,8 @@
 ## 運用ルール
 
 - `DEV_MANAGER_HOST` や `SONG_PACK_HOST` に `0.0.0.0` などloopback以外を指定すると起動を拒否します。
-- fixture player のポートやoriginを変える場合は、`SONG_PACK_CORS_ORIGINS` を明示してください。
-- 起動管理サーバー経由で `PLAYER_PORT` を変える場合は、song-pack serverへ対応するCORS許可originを渡します。個別起動では手動で合わせてください。
+- fixture player のポートやoriginを個別起動で変える場合は、`SONG_PACK_CORS_ORIGINS` を明示してください。
+- 起動管理サーバー経由で起動する場合は、自動割当されたplayer portに合わせて、song-pack serverへ対応するCORS許可originを渡します。個別起動では手動で合わせてください。
 - localStorage は作業用キャッシュです。秘密情報や未公開の権利素材情報を保存しないでください。
 - Launch Manager のruntimeログは `.codex/runtime/` に生成されます。Gitでは無視しますが、targetのstdout/stderrに秘密情報を出さないでください。
 - 外部Web adapterを直接読み込む設計は、任意コード実行になるため未許可です。manifestの `webAdapter` にURLや相対パスを書いても、現行実装ではadapterコードとして解決しません。

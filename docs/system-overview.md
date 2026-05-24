@@ -65,8 +65,10 @@ npm run dev
 起動管理画面:
 
 ```text
-http://127.0.0.1:5172/
+http://127.0.0.1:<manager-port>/
 ```
+
+実際のportはworktreeごとに自動割当され、GUI下部と `.codex/runtime/ports.json` に表示されます。
 
 同梱のfixture playerは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定の曲を自動選択せず、起動エラーとして扱います。
 

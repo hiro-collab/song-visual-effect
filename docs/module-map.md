@@ -55,10 +55,11 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/preview-snapshot.mjs`: 指定曲と指定時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` に保存する。
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
 - `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。
+- `scripts/launch-manager/auto-ports.mjs`: worktreeごとのLaunch Manager/player/song-pack port自動割当と `.codex/runtime/ports.json` 記録。
 - `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP API、origin検証、CSPつきHTML応答。
 - `scripts/launch-manager/ui.mjs`: Launch Manager管理画面のHTML、CSS、ブラウザ側JS。
 - `scripts/launch-manager/supervisor.mjs`: managed targetの起動、停止、再起動、状態管理。
-- `scripts/launch-manager/ports.mjs`: 起動前のport衝突確認。
+- `scripts/launch-manager/ports.mjs`: port空き確認、衝突確認、候補探索。
 - `scripts/launch-manager/logs.mjs`: stdout/stderr保存とログ末尾取得。
 - `scripts/launch-manager/metrics.mjs`: PIDごとのCPU/memory簡易取得。
 - `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知、brief/ack、note/inbox連絡を扱うローカル同期補助。
