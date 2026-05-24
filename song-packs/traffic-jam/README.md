@@ -10,6 +10,7 @@ projector-oriented 3D traffic scene.
 - Visual adapter: `adapter.ts`
 - Effect timing/design: `design/effect.json`
 - Reimplementation brief: `design/reimplementation-brief.md`
+- Screen composition plan: `design/composition-map.md`
 - URL-only reference metadata: `references.json`
 - Lightweight analysis used by the effect: `analysis/markers.json`,
   `analysis/palette.json`
