@@ -22,6 +22,8 @@
 
 ## 作り始める前に読むもの
 
+新しい曲の作業branchは、現在の統合基準 `codex/system-kit-refactor` の最新readyを取り込んだ状態から始めます。既存曲worktreeや古い実験branchを土台にしないでください。
+
 新しい曲を作るエージェントは、次の順に読みます。
 
 1. `AGENTS.md`

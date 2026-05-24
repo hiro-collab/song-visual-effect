@@ -7,6 +7,8 @@
 - まず関連ファイルを調査し、既存の設計意図を確認する。
 - 変更が複数ファイルに及ぶ場合は、短い計画を立ててから実装する。
 - 実装は小さいステップに分け、既存挙動を壊さない。
+- 新しい作業や新しい曲の作業を始めるときは、現在の統合基準である `codex/system-kit-refactor` を土台にする。現時点の代表worktreeは `_worktrees/adapter-cues`。
+- プロジェクトルート直下のworktreeが常に最新基準とは限らない。作業開始時に `git status --short --branch` と `git worktree list` で自分のbranchを確認する。
 - 並行 worktree 作業では、作業開始時と区切りごとに `npm run sync:brief` を確認する。必要なら詳細として `npm run sync:check` と `npm run sync:inbox` も見る。
 - 他担当への質問、ブロッカー、短い共有事項は `npm run sync:note -- --from <自分の担当> --to <相手> --level <info|question|blocker|done> -m "短い連絡"` で共有する。
 - 対応済み、または自分の担当では対応不要と判断した連絡は `npm run sync:ack -- --id <id> --from <自分の担当>` で確認済みにする。
@@ -23,6 +25,8 @@
 作業の種類によって読むファイルを分ける。新しい曲を作る場合は、既存曲やfixtureの情報に触れないことを優先する。
 
 ### 新しい曲を作る場合
+
+まず、作業branchが `codex/system-kit-refactor` の最新readyを取り込んだ状態から分岐していることを確認する。既存曲のworktree、古い実験branch、プロジェクトルート直下のbranchを基準にしない。
 
 まず次だけを読む。
 
