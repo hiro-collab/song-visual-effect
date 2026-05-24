@@ -53,9 +53,17 @@ export const getSongManifestUrl = () => {
   return queryValue ? absoluteUrl(queryValue) : null;
 };
 
+const manifestLoadHint =
+  "Check the manifest URL, song-pack server status, and SONG_PACK_CORS_ORIGINS when using custom ports.";
+
 const loadManifest = async (manifestUrl: string) => {
-  const manifest = await fetchJson<unknown>([manifestUrl]);
-  return isSongManifest(manifest) ? manifest : null;
+  try {
+    const manifest = await fetchBoundedJson<unknown>(manifestUrl);
+    return isSongManifest(manifest) ? manifest : null;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Song manifest could not be loaded: ${manifestUrl}. ${manifestLoadHint} ${detail}`);
+  }
 };
 
 const asSeconds = (value: unknown): number | null => {
@@ -213,7 +221,7 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
   const resolvedManifestUrl = absoluteUrl(manifestUrl);
   const manifest = await loadManifest(resolvedManifestUrl);
   if (!manifest) {
-    throw new Error(`Song manifest could not be loaded: ${resolvedManifestUrl}`);
+    throw new Error(`Song manifest could not be loaded: ${resolvedManifestUrl}. ${manifestLoadHint}`);
   }
   const baseUrl = sourceBaseUrl(resolvedManifestUrl);
   const analysis = manifest?.analysis ?? {};

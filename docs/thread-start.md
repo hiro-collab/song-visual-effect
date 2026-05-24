@@ -24,7 +24,7 @@ npm run sync:inbox
 - 他スレッドから質問、ブロッカー、短い連絡が来ているか。
 - そのready通知が、今回の担当範囲に関係するか。
 
-現時点では、`codex/system-kit-refactor` がメイン相当の統合基準です。代表worktreeは `_worktrees/adapter-cues` です。プロジェクトルート直下のworktreeは別branchである場合があるため、新しい曲作業の基準にしないでください。
+現時点では、`codex/system-kit-refactor` がメイン相当の統合基準です。代表worktreeは `_worktrees/system-main` です。プロジェクトルート直下のworktreeは別branchである場合があるため、新しい曲作業の基準にしないでください。
 
 新しい曲や曲固有エフェクトを始める場合は、既存曲worktreeではなく、`codex/system-kit-refactor` の最新readyを取り込んだ新しいworktree/branchから始めます。既存曲の `song-packs/*` は参考元にしません。
 

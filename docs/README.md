@@ -40,6 +40,7 @@
 - `launch-manager-spec.md`
 - `worktree-sync.md`
 - `thread-start.md`
+- `worktree-guide.md`
 - `workflows.json`
 
 `workflows.html` は人間が構成を眺めるための表示です。LLMへ渡す場合は、できるだけ `workflows.json` を使ってください。
