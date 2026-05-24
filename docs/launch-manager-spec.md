@@ -41,6 +41,7 @@ PCブラウザや将来のスマホから開く操作画面です。
 - `song-packs/*/manifest.json` を曲JSONメニューとして表示し、選択した曲のfixture player URLを作る。
 - 起動、停止、再起動、全停止をLaunch Serverへ依頼する。
 - 状態マップ、PID、port、URL、CPU、memory、ログ末尾を表示する。
+- Git共通ディレクトリのworktree-sync通知を読み、各担当のready、質問、ブロッカー、ackを閲覧しやすく表示する。
 
 UIは正本を持ちません。ブラウザタブを閉じても起動中targetは止まりません。
 
@@ -219,6 +220,7 @@ MVP画面:
 
 - 上部: 曲JSON選択。`song-packs/<song-id>/manifest.json` を選び、必要なtargetを起動して再生画面を開く。
 - 状態マップ: Launch Manager、各target、選択中の曲JSONをノードとして表示する。起動中ノードと関連線は発光し、サーバーが増えても連携関係を見渡せるようにする。
+- 担当メッセージ: `sync:ready`、`sync:note`、`sync:ack` の履歴を、要対応、担当、種別で絞り込み表示する。書き込みやack操作はCLIの `sync:*` に残し、GUIは読み取り専用にする。
 - 詳細操作: Launch Set選択、選択Set起動、選択Set停止、全停止。全停止は二度押し確認にする。
 - 中央: サーバー状態カード一覧。
 - サーバーカード: 状態、port、起動時刻を先に表示する。
@@ -237,6 +239,7 @@ GUI上には、次の注意を表示します。
 MVP:
 
 - `GET /api/status`。target状態に加え、曲JSONメニュー用の `songCatalog` を返す。
+- `GET /api/sync-events`。Git共通ディレクトリの `codex-sync/events.jsonl` からready/note/ackを読み、担当別・要対応別に整形して返す。
 - `POST /api/targets/:id/start`
 - `POST /api/targets/:id/stop`
 - `POST /api/targets/:id/restart`
@@ -256,6 +259,7 @@ MVP:
 - bind先は `127.0.0.1` のみ。
 - POST APIはsame-originだけ許可する。
 - 任意コマンド入力UIは作らない。
+- worktree-sync通知GUIは読み取り専用にし、ack、note、mergeなどの書き込み操作は既存CLIに残す。
 - target定義はローカルファイルだけ。
 - 曲JSONメニューはローカル `song-packs/*/manifest.json` の最小メタデータだけを読む。音源解析、歌詞本文解析、外部URL由来のtarget定義読み込みは行わない。
 - targetの `cwd` とログ出力先がリポジトリまたは許可ディレクトリ内にあることを確認する。
@@ -293,6 +297,7 @@ scripts/launch-manager/
   logs.mjs         stdout/stderr保存と末尾取得
   metrics.mjs      PID/CPU/memoryの簡易取得
   server.mjs       HTTP APIとHTML UI
+  sync-events.mjs  worktree-sync通知の読み取り専用整形
 
 launch/
   targets.json     初期targetとset
