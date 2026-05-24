@@ -2,7 +2,7 @@
   "targets": [
     {
       "id": "fixture-player",
-      "label": "Fixture player",
+      "label": "再生画面",
       "kind": "web-app",
       "cwd": ".",
       "command": "npm",
@@ -20,7 +20,7 @@
     },
     {
       "id": "song-pack-server",
-      "label": "Song pack server",
+      "label": "曲データサーバー",
       "kind": "asset-server",
       "cwd": ".",
       "command": "npm",
@@ -43,8 +43,8 @@
   "sets": [
     {
       "id": "basic-fixture",
-      "label": "Basic fixture",
-      "description": "Fixture player と song-pack server を起動する検証用セット。",
+      "label": "標準再生セット",
+      "description": "再生画面と曲データサーバーを起動する標準セット。",
       "targets": ["song-pack-server", "fixture-player"]
     }
   ]

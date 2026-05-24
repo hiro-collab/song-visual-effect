@@ -54,7 +54,7 @@ http://127.0.0.1:5174
   song package server target
 ```
 
-管理画面で `Basic fixture` setを起動すると、fixture player app と song package server が立ち上がります。GUIタブを閉じても起動中targetは止まりません。停止するにはTarget停止、Set停止、または全停止を使います。
+管理画面で曲JSONを選んで再生すると、再生画面と曲データサーバーが立ち上がり、選択した曲のfixture player URLを開きます。状態マップでは、Launch Manager、各target、選択中の曲JSONの関係をノードグラフとして確認でき、起動中のノードと連携線が光ります。詳細操作で `標準再生セット` を手動起動することもできます。GUIタブを閉じても起動中targetは止まりません。停止するにはTarget停止、Set停止、または全停止を使います。
 
 fixture player appは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定曲へ自動フォールバックせず、起動エラーとして扱います。
 
