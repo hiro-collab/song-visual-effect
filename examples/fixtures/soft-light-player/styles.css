@@ -261,6 +261,16 @@ input {
   color: rgba(255, 250, 238, 0.9);
 }
 
+.visual-sequencer-field select option {
+  background: Canvas;
+  color: CanvasText;
+}
+
+.visual-sequencer-field select option:checked {
+  background: Highlight;
+  color: HighlightText;
+}
+
 .visual-sequencer-scrub {
   width: 100%;
   margin: 0;
