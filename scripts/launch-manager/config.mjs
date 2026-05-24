@@ -8,6 +8,11 @@ const SHELL_META_PATTERN = /[&|<>^%!"]/;
 const TEMPLATE_PATTERN = /\$\{([A-Z0-9_]+)(?::-(.*?))?\}/g;
 const PROTECTED_ENV_NAMES = new Set(["COMSPEC", "NODE_OPTIONS", "PATH", "PATHEXT", "SYSTEMROOT"]);
 
+export const LAUNCH_TIMING_DEFAULTS = Object.freeze({
+  defaultStartupTimeoutMs: 45000,
+  playbackReadyWaitPaddingMs: 5000
+});
+
 const asArray = (value, label) => {
   if (!Array.isArray(value)) throw new Error(`${label} must be an array.`);
   return value;
@@ -89,6 +94,15 @@ const normalizePort = (value, label) => {
   return port;
 };
 
+const normalizeTimeoutMs = (value, label, { defaultValue, min = 1000, max = 300000 } = {}) => {
+  const rawValue = value === undefined || value === null ? defaultValue : value;
+  const timeoutMs = Number(rawValue);
+  if (!Number.isInteger(timeoutMs) || timeoutMs < min || timeoutMs > max) {
+    throw new Error(`${label} must be an integer between ${min} and ${max} milliseconds.`);
+  }
+  return timeoutMs;
+};
+
 const normalizeUrls = (rawUrls = {}, label) => {
   if (!rawUrls || typeof rawUrls !== "object" || Array.isArray(rawUrls)) return {};
   const urls = {};
@@ -143,6 +157,9 @@ const normalizeTarget = (rawTarget, index, root) => {
   if (health && (!Number.isFinite(health.intervalMs) || health.intervalMs < 1000)) {
     throw new Error(`targets[${index}].health.intervalMs must be at least 1000.`);
   }
+  const startupTimeoutMs = normalizeTimeoutMs(rawTarget.startupTimeoutMs, `targets[${index}].startupTimeoutMs`, {
+    defaultValue: LAUNCH_TIMING_DEFAULTS.defaultStartupTimeoutMs
+  });
 
   return {
     id,
@@ -155,6 +172,7 @@ const normalizeTarget = (rawTarget, index, root) => {
     env: normalizeEnv(rawTarget.env, `targets[${index}].env`),
     ports,
     urls: normalizeUrls(rawTarget.urls, `targets[${index}].urls`),
+    startupTimeoutMs,
     health
   };
 };
@@ -208,6 +226,7 @@ export const loadLaunchConfig = async ({
   return {
     root: resolvedRoot,
     configPath: resolvedConfigPath,
+    timing: { ...LAUNCH_TIMING_DEFAULTS },
     targets,
     sets,
     targetMap: new Map(targets.map((target) => [target.id, target])),

@@ -8,6 +8,7 @@
       "command": "npm",
       "args": ["run", "dev:player", "--", "--port", "${PLAYER_PORT:-5173}"],
       "ports": ["${PLAYER_PORT:-5173}"],
+      "startupTimeoutMs": 60000,
       "urls": {
         "open": "http://127.0.0.1:${PLAYER_PORT:-5173}/",
         "workflowMap": "http://127.0.0.1:${PLAYER_PORT:-5173}/docs/workflows.html",
@@ -31,6 +32,7 @@
         "SONG_PACK_CORS_ORIGINS": "http://127.0.0.1:${PLAYER_PORT:-5173},http://localhost:${PLAYER_PORT:-5173}"
       },
       "ports": ["${SONG_PACK_PORT:-5174}"],
+      "startupTimeoutMs": 30000,
       "urls": {
         "open": "http://127.0.0.1:${SONG_PACK_PORT:-5174}/"
       },

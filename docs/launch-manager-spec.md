@@ -113,6 +113,7 @@ Song Visual Server
       "command": "npm",
       "args": ["run", "dev:player", "--", "--port", "${PLAYER_PORT:-5173}"],
       "ports": ["${PLAYER_PORT:-5173}"],
+      "startupTimeoutMs": 60000,
       "urls": {
         "open": "http://127.0.0.1:${PLAYER_PORT:-5173}/"
       },
@@ -139,6 +140,25 @@ Song Visual Server
 - `cwd` はリポジトリ内、または明示許可されたローカルディレクトリだけ。
 - 外部URLからtarget定義を読まない。
 - target定義は既存曲テンプレートではない。曲ごとに自由に追加してよい。
+
+## 起動待ち時間
+
+各サーバーの起動待ち時間は、Launch Managerのtarget定義で管理します。
+
+- `startupTimeoutMs`: process起動後、healthがreadyになるまでLaunch Managerが待つ上限時間。単位はミリ秒。
+- `startupTimeoutMs` を省略したtargetは、システム標準の `45000` ms を使う。
+- `選択曲を再生` は、必要targetの `startupTimeoutMs` の最大値に、システム標準の余裕 `5000` ms を足した時間まで待つ。
+- 起動中targetのhealthが一時的に失敗しても、`startupTimeoutMs` の範囲内では即失敗扱いにしない。
+- `startupTimeoutMs` を超えてもhealthがreadyにならない場合、targetは `error` になり、GUIはログ確認を促す。
+
+初期値:
+
+| target | startupTimeoutMs | 意図 |
+| --- | ---: | --- |
+| `fixture-player` | `60000` | Viteや3D/大きめbundleの初回起動を許容する。 |
+| `song-pack-server` | `30000` | 軽いasset serverとして短めに失敗検知する。 |
+
+この値は曲ごとの映像設計ではなく、Launch Managerが管理する起動運用の仕様です。曲パック側へは持ち込まないでください。
 
 ## ポート管理
 

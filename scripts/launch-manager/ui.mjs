@@ -786,6 +786,10 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       })[key] || key;
       const stripAnsi = (value) => String(value || "").replace(/\\u001B\\[[0-?]*[ -/]*[@-~]/g, "");
       const formatDate = (value) => value ? new Date(value).toLocaleString() : "-";
+      const formatDurationMs = (value) => {
+        const ms = Number(value);
+        return Number.isFinite(ms) ? Math.round(ms / 1000) + "秒" : "-";
+      };
       const formatMetrics = (metrics) => {
         if (!metrics || metrics.exists === false) return "CPU - / Memory -";
         const cpu = Number.isFinite(metrics.cpuPercent) ? metrics.cpuPercent + "%" : "-";
@@ -1024,6 +1028,19 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
           .filter((target) => target?.status === "error" && !transientHealthError(target))
           .map((target) => target.label + ": " + (target.error || "error"));
       };
+      const requiredTargetsStartupTimeoutMs = () => {
+        const catalog = state.status?.songCatalog;
+        const ids = catalog?.requiredTargetIds || [];
+        const targets = targetMap();
+        const timing = state.status?.timing || {};
+        const fallback = Number(timing.defaultStartupTimeoutMs) || 45000;
+        const padding = Number(timing.playbackReadyWaitPaddingMs) || 5000;
+        const maxTargetTimeout = ids.reduce((maxTimeout, id) => {
+          const timeout = Number(targets.get(id)?.startupTimeoutMs);
+          return Number.isFinite(timeout) ? Math.max(maxTimeout, timeout) : maxTimeout;
+        }, fallback);
+        return maxTargetTimeout + padding;
+      };
       const formatSongLabel = (song) => song.title + (song.artist ? " / " + song.artist : "");
       const renderRuntimeStrip = (catalog) => {
         const root = byId("runtime-strip");
@@ -1221,14 +1238,18 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         }
       };
       const waitForPlaybackTargets = async () => {
-        const startedAt = Date.now();
-        while (Date.now() - startedAt < 45000) {
+        const deadline = Date.now() + requiredTargetsStartupTimeoutMs();
+        while (Date.now() < deadline) {
           await refresh();
           const errors = requiredTargetErrors();
           if (errors.length) throw new Error(errors.join(" / "));
           if (requiredTargetsReady()) return;
           await sleep(800);
         }
+        await refresh();
+        const errors = requiredTargetErrors();
+        if (errors.length) throw new Error(errors.join(" / "));
+        if (requiredTargetsReady()) return;
         throw new Error("サーバーの起動待ちがタイムアウトしました。サーバー状態カードの詳細ログを確認してください。");
       };
       const playSelectedSong = async () => {
@@ -1277,6 +1298,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         summary.append(
           metricNode("状態", statusText(target)),
           metricNode("ポート", target.ports.length ? target.ports.join(", ") : "-"),
+          metricNode("起動待ち上限", formatDurationMs(target.startupTimeoutMs)),
           metricNode("起動時刻", formatDate(target.startedAt))
         );
         body.append(summary);
@@ -1299,6 +1321,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
           ["ID", target.id],
           ["Kind", target.kind],
           ["Resource", formatMetrics(target.metrics)],
+          ["Startup timeout", formatDurationMs(target.startupTimeoutMs)],
           ["Started", formatDate(target.startedAt)],
           ["Command", target.command + " " + target.args.join(" ")],
           ["CWD", target.cwd]
