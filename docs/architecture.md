@@ -82,6 +82,7 @@ Launch Managerの非責務:
 - 曲パッケージ内のassetを境界チェックつきで読む。
 - JSONとテキストをサイズ上限つきで取得する。
 - 再生、停止、シーク、現在時刻を扱う `Transport`。
+- raw timeから映像・歌詞・cue向けのvisual timeを作るDOM非依存の `VisualSequencer`。
 - `requestAnimationFrame` のフレームループ。
 - beat、chorus、lyricsなどの時刻検索。
 - 手動歌詞タイミング調整のデータ処理。
@@ -95,6 +96,7 @@ Launch Managerの非責務:
 - 既存曲の構成を標準化すること。
 - 描画方式をCanvas2Dに固定すること。
 - 歌詞タイミング編集UIを全曲必須にすること。
+- 音声、外部プレイヤー、イベントごとの時刻正本を決めること。
 - 曲ごとのWebアプリを必ずこのfixture playerに載せること。
 
 ## Fixture
@@ -106,6 +108,7 @@ Launch Managerの非責務:
 - manifestを読み、画面に曲情報を表示する。
 - 既存のsoft light rendererで簡易的に映像確認する。
 - optional lyric timing UIを試せるようにする。
+- URLパラメータで有効化するoptional Visual Sequencer panelを試せるようにする。
 - system kitの回帰確認に使う。
 
 非役割:

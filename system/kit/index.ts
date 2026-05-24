@@ -42,6 +42,14 @@ export { createCanvasScene, fitTextToRect, resizeCanvasToDisplaySize, withConten
 export type { SongAppThreeServices } from "./render/threeServices";
 export { Transport } from "./core/transport";
 export { startFrameLoop } from "./core/frameLoop";
+export type {
+  VisualSequencer,
+  VisualSequencerMode,
+  VisualSequencerOptions,
+  VisualSequencerSnapshot,
+  VisualSequencerState
+} from "./core/visualSequencer";
+export { createVisualSequencer } from "./core/visualSequencer";
 export { activeRange, beatAt, emphasisAt, lyricAt, lyricIndexAt } from "./timing/timing";
 export type { BeatSyncFrameInput, BeatSyncReaderOptions, BeatSyncSource, BeatSyncState } from "./timing/beatSync";
 export {

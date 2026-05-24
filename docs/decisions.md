@@ -216,3 +216,14 @@ Launch Managerへ追加する機能は、制作、検証、当日確認に寄せ
 
 影響:
 `schemaVersion` を置き、無い場合は `1` として扱う。未知の項目は無視し、既存項目の意味を変えない。必要に応じてloader正規化、`song:validate` 警告、migration scriptを追加する。
+
+## D018: 映像用時間軸はraw timeを外部入力として受け取る薄いhelperにする
+
+決定:
+音声や外部プレイヤーの時刻をsystem側で正本化せず、`rawTime` と `nowMs` を受け取って `visualTime` を返すDOM非依存の `VisualSequencer` helperを `system/kit` に置く。
+
+理由:
+ライブや展示では、ブラウザ音声、外部再生、TouchDesigner、Unity、OBS、自作ツールなど、時刻の出どころがイベントごとに変わりうるため。system側が音声正本や外部連携方式を決めると、曲パックやshow-profile側の自由を狭める。
+
+影響:
+`VisualSequencer` は `followRaw` と `freeRun` を持ち、pause、scrub、nudge、rate、offset、snapshot/restoreを扱う。曲側やfixture playerは必要な場合だけ使う。duration、ループ範囲、音声シーク、外部プロトコル、恒久保存、本格的なキーフレーム編集はこのhelperの責務にしない。

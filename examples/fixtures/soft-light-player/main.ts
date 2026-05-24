@@ -3,6 +3,7 @@ import { getAppElements } from "./dom";
 import { createSongApp } from "./adapters/registry";
 import { LyricTimingTool } from "./tools/lyricTimingTool";
 import { BeatStateTool } from "./tools/beatStateTool";
+import { isVisualSequencerToolEnabled, VisualSequencerTool } from "./tools/visualSequencerTool";
 import {
   Transport,
   clamp,
@@ -40,9 +41,11 @@ let musicMap: MusicMap;
 let transport: Transport;
 let timingTool: LyricTimingTool | null = null;
 let beatStateTool: BeatStateTool | null = null;
+let visualSequencerTool: VisualSequencerTool | null = null;
 let songContext: SongAdapterContext;
 let songApp: SongApp;
 let visualHost: SongVisualHost;
+let lastSongTime = 0;
 
 const isBeatStateToolEnabled = () => {
   const value = new URLSearchParams(window.location.search).get("beatState")?.toLowerCase();
@@ -56,6 +59,16 @@ const setPlayingIcon = () => {
 };
 
 const currentTime = () => transport.currentTime();
+
+const wrapTime = (time: number, duration: number) => {
+  const safeDuration = Math.max(0.001, duration);
+  return ((time % safeDuration) + safeDuration) % safeDuration;
+};
+
+const resolveVisualSongTime = (rawTime: number, now: number) => {
+  const state = visualSequencerTool?.update(rawTime, now);
+  return wrapTime(state?.visualTime ?? rawTime, musicMap.duration);
+};
 
 const loadThree = async () => {
   const [THREE, loaderModule] = await Promise.all([
@@ -72,8 +85,9 @@ const updateLyrics = (time: number) => {
   timingTool?.update(time);
 };
 
-const tick = (_now: number, dt: number) => {
-  const time = currentTime() % musicMap.duration;
+const tick = (now: number, dt: number) => {
+  const time = resolveVisualSongTime(currentTime(), now);
+  lastSongTime = time;
   const userGlow = Number.parseFloat(glowRange.value);
   const safeArea = visualHost.safeArea();
   songApp.render({ time, dt, userGlow, safeArea, contentRect: safeArea });
@@ -147,7 +161,13 @@ const boot = async () => {
     songContext = createSongAdapterContext(musicMap);
     visualHost = createVisualHost(canvas, {
       root: document.querySelector<HTMLElement>("#app") ?? document.body,
-      overlaySelectors: [".topbar", ".controlbar", ".timing-panel:not([hidden])", ".beat-state-panel"]
+      overlaySelectors: [
+        ".topbar",
+        ".controlbar",
+        ".timing-panel:not([hidden])",
+        ".beat-state-panel",
+        ".visual-sequencer-panel"
+      ]
     });
     songApp = await createSongApp(songContext, {
       canvas,
@@ -175,9 +195,13 @@ const boot = async () => {
     if (isBeatStateToolEnabled()) {
       beatStateTool = new BeatStateTool({
         musicMap,
-        getTime: () => currentTime() % musicMap.duration
+        getTime: () => lastSongTime
       });
       beatStateTool.mount(document.querySelector("#app") ?? document.body);
+    }
+    if (isVisualSequencerToolEnabled()) {
+      visualSequencerTool = new VisualSequencerTool({ duration: musicMap.duration });
+      visualSequencerTool.mount(document.querySelector("#app") ?? document.body);
     }
     timingTool?.bindControls();
     timingTool?.initialize();
