@@ -1,6 +1,34 @@
 # Sync Onboarding Quickstart
 
+Encoding note: This file is UTF-8. In Windows PowerShell 5.1, use `Get-Content -Encoding UTF8 docs\sync-onboarding.md` if Japanese text looks garbled. 通常は文書を直接読むより、下記の `sync:roster` / `sync:onboard` の出力を優先してください。
+
 新しい担当、または久しぶりに戻った担当が、最初に確認する短い導線です。詳しい運用は `thread-start.md` と `worktree-sync.md` を読んでください。
+
+## 古い worktree を最新化する
+
+古い worktree では、まだ `sync:roster` や新しい `sync:onboard` が存在しないことがあります。その場合も、いきなり raw `git merge` は使わず、まず worktree が clean か確認します。
+
+```powershell
+git status --short --branch
+```
+
+clean でなければ、先に自分の未コミット変更を commit / stash / 相談のいずれかで整理します。
+
+clean なら、既に使える場合は次を実行します。
+
+```powershell
+npm run sync:brief -- --for <担当ラベル>
+```
+
+`sync:brief` が表示する取り込みコマンドを正本として使います。分岐済み worktree で `merge commit may be needed` と表示された場合は、差分範囲を確認し、問題なければ `--allow-merge-commit` 付きのコマンドを使ってよいです。
+
+```powershell
+npm run sync:merge -- --from codex/system-kit-refactor --allow-merge-commit
+```
+
+`sync:merge` 自体が存在しない、または失敗して判断できない場合は、raw `git merge` へ進まず `system` 担当へ連絡してください。
+
+曲担当が `codex/system-kit-refactor` を branch-wide merge するのは、自分の作業枝を最新の共通基盤へ追いつかせるためです。逆向きに、古い曲枝を system 側へ丸ごと merge する意味ではありません。曲実装を system へ取り込むときは、古い docs や他曲削除を混ぜないよう、曲所有ファイルだけの cherry-pick / 手動取り込みを優先します。
 
 ## まず確認する
 

@@ -1,5 +1,7 @@
 # Worktree Sync
 
+Encoding note: This file is UTF-8. In Windows PowerShell 5.1, use `Get-Content -Encoding UTF8 docs\worktree-sync.md` if Japanese text looks garbled. 日常運用では `sync:roster` / `sync:onboard` / `sync:brief` の出力を優先してください。
+
 複数の Codex スレッド / 担当が別々の worktree で作業するための連絡板です。
 
 ready 通知は「この commit は取り込み候補です」という合図であり、自動 merge 命令ではありません。note 通知は質問、ブロッカー、方針共有、作業報告に使います。
@@ -109,6 +111,17 @@ ready を取り込む前に、差分範囲を見ます。古い branch の全体
 npm run sync:merge -- --from <branch>
 npm run sync:merge -- --from <branch> --allow-merge-commit
 ```
+
+古い worktree を最新の system 基盤へ追いつかせる場合も、まず clean 状態を確認します。
+
+```powershell
+git status --short --branch
+npm run sync:brief -- --for <担当ラベル>
+```
+
+`sync:brief` が `merge commit may be needed` と案内したときは、差分範囲を確認し、問題がない場合だけ `--allow-merge-commit` を付けます。`sync:merge` が存在しない、または失敗して理由が判断できないときは、raw `git merge` を使わず `system` 担当へ相談します。
+
+曲担当の worktree が `codex/system-kit-refactor` を branch-wide merge するのは、自分の作業枝を最新の共通基盤へ更新するためです。system 側が曲枝を取り込むときは別判断です。古い曲枝の branch-wide merge が他曲削除や docs 巻き戻しを含む場合、system 側では曲所有ファイルだけの cherry-pick / 手動取り込みを優先します。
 
 注意:
 
