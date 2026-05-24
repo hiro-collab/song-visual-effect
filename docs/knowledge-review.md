@@ -148,3 +148,14 @@ system担当は、候補を小さな主張に分解してから分類します�
 - song-owned: mapの値、ラベル、感情語、表示語彙。これらは曲の解釈に属する。
 
 反映済み: `docs/song-authoring.md` のsystem補助説明へ、song-owned time mapの扱いを追記した。
+
+### 2026-05-24: motion layers and scene families
+
+元連絡: `#0413b251a3`, `#0ed768680b`
+
+- conditional: 曲に機械的な拍、歌唱主体、感情主体、環境変化など複数の時間感覚がある場合、拍に鋭く同期するレイヤーと、lag / damping / overshoot で少し遅れて追うレイヤーを分ける選択肢がある。
+- conditional: 区間ごとの強度調整だけでは単調に見える場合、時間範囲を別のscene draw関数やcomposition profileへ振り分ける選択肢がある。
+- song-owned: 感情主体、生命感、身体的な線、scene名、区間ごとの見た目、各曲のモチーフ。
+- reject: すべての曲を有機的な動きに寄せること、または単純な曲にも複数scene familyを必須にすること。
+
+反映済み: `docs/song-authoring.md` の曲構成と画面構成へ、条件つきの動き/scene分離として追記した。
