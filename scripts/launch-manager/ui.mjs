@@ -592,6 +592,10 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         const memory = Number.isFinite(metrics.memoryMb) ? metrics.memoryMb + " MB" : "-";
         return "CPU " + cpu + " / Memory " + memory;
       };
+      const formatLaunchPorts = (ports) => {
+        if (!ports) return "ports: unknown";
+        return "ports: manager " + ports.manager + " / player " + ports.player + " / songs " + ports.songPack + " (" + ports.mode + ")";
+      };
       const truncate = (value, max) => {
         const text = String(value || "");
         return text.length > max ? text.slice(0, max - 1) + "..." : text;
@@ -1006,7 +1010,12 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         renderSongCatalog(status.songCatalog);
         renderSystemMap(status);
         byId("updated-at").textContent = "更新: " + new Date(status.updatedAt).toLocaleTimeString();
-        byId("runtime").textContent = "config: " + status.configPath + " / runtime: " + status.runtimeRoot;
+        byId("runtime").textContent =
+          "worktree: " + status.root +
+          " / " + formatLaunchPorts(status.launchPorts) +
+          " / config: " + status.configPath +
+          " / runtime: " + status.runtimeRoot +
+          (status.portsFile ? " / ports file: " + status.portsFile : "");
         const root = byId("targets");
         root.replaceChildren(...status.targets.map(renderTarget));
       };

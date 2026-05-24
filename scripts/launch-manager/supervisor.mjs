@@ -284,8 +284,11 @@ export class LaunchSupervisor {
     }
     const status = {
       updatedAt: nowIso(),
+      root: this.config.root,
       configPath: this.config.configPath,
       runtimeRoot: this.runtimeRoot,
+      portsFile: this.config.launchPortsFile ?? null,
+      launchPorts: this.config.launchPorts ?? null,
       sets: this.config.sets,
       targets
     };

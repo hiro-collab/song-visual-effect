@@ -103,7 +103,9 @@ npm run sync:ack -- --id abc123def0 --from system
 
 ## 開発サーバーの注意
 
-複数 worktree で同時に起動する場合は、worktreeごとにポートを分けます。
+複数 worktree で同時に起動する場合も、通常は手でポート番号を割り当てません。`npm run dev` と `start-music-effect.cmd` はworktree rootから安定した候補帯を作り、Launch Manager、fixture player、song-pack server用の空きポートを自動で選びます。実際の値はGUI下部と `.codex/runtime/ports.json` に記録されます。
+
+明示的に固定したい場合だけ、次のように環境変数を指定します。
 
 ```powershell
 $env:DEV_MANAGER_PORT=5182
@@ -112,7 +114,7 @@ $env:SONG_PACK_PORT=5184
 npm run dev
 ```
 
-`npm run dev` 経由で起動する場合、`launch/targets.json` が `PLAYER_PORT` に合わせた `SONG_PACK_CORS_ORIGINS` を song-pack server へ渡します。
+`npm run dev` 経由で起動する場合、`launch/targets.json` がplayer portに合わせた `SONG_PACK_CORS_ORIGINS` を song-pack server へ渡します。
 
 個別に `npm run dev:songs` だけを起動する場合は、fixture player側のoriginに合わせて `SONG_PACK_CORS_ORIGINS` を手動で指定してください。
 

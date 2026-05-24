@@ -79,7 +79,7 @@
 - `全停止` は「このLaunch ServerがPIDを持って管理している子プロセス」だけに効く。
 - 別worktreeのLaunch Manager、別スレッドが別portで起動したtarget、手動起動した外部プロセスは停止対象にしない。
 - 複数スレッドが同じLaunch Manager URLを開いている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
-- 並行作業では `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` をworktreeごとに分ける。
+- 並行作業では、通常はLaunch Managerの自動ポート割当を使う。必要な場合だけ `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` を明示する。
 - 停止操作や実装変更の前に、GUI下部の `config` / `runtime` とtargetのportを見て、自分のworktreeを操作していることを確認する。
 
 ## 新しい曲を作るときのルール

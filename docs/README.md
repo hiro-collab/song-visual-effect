@@ -13,6 +13,7 @@
 - `decisions.md`: 設計判断と理由。
 - `security.md`: ローカル開発サーバー、manifest、Songle取得、Launch Managerの信頼境界。
 - `knowledge-review.md`: 各曲担当から届く共通ノウハウ候補を審議し、共通化するものと曲側に戻すものを分けるルール。
+- `preview-lab.md`: 複数曲を中央検証用worktreeでまとめて確認する運用。
 
 ## 新しい曲を作るとき
 
@@ -42,6 +43,7 @@
 - `worktree-sync.md`
 - `thread-start.md`
 - `worktree-guide.md`
+- `preview-lab.md`
 - `workflows.json`
 
 `workflows.html` は人間が構成を眺めるための表示です。LLMへ渡す場合は、できるだけ `workflows.json` を使ってください。

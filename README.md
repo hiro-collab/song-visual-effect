@@ -6,7 +6,7 @@
 
 ## Setup
 
-Windowsで普段使う場合は、リポジトリ直下の `start-music-effect.cmd` をダブルクリックします。既にLaunch Managerが起動中なら管理画面を開くだけです。初回だけ `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得します。
+Windowsで普段使う場合は、リポジトリ直下の `start-music-effect.cmd` をダブルクリックします。同じworktreeのLaunch Managerが既に起動中なら管理画面を開くだけです。別worktreeのLaunch Managerが起動中でも、そのポートへ誤接続せず、このworktree用の空きポートを自動で使います。初回だけ `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得します。
 
 手動で起動する場合:
 
@@ -15,11 +15,7 @@ npm install
 npm run dev
 ```
 
-`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、曲JSONを選んで再生すると、再生画面と曲データサーバーが起動し、選択した曲の再生画面を開きます。
-
-```text
-http://127.0.0.1:5172/
-```
+`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、曲JSONを選んで再生すると、再生画面と曲データサーバーが起動し、選択した曲の再生画面を開きます。ポートはworktreeごとに自動割当され、起動後に `.codex/runtime/ports.json` とGUI下部へ表示されます。
 
 Launch Managerでできること:
 
@@ -28,14 +24,15 @@ Launch Managerでできること:
 - `launch/targets.json` に書かれた起動対象だけを起動する。
 - サーバーごとの起動、停止、再起動、起動セットの起動/停止、全停止を行う。全停止は誤操作防止のため二度押し確認です。
 - PID、port、health、CPU、memory、stdout/stderr末尾を見る。
-- port衝突時は自動で別portに逃がさず、エラーとして表示する。
+- worktree、Launch Manager、再生画面、曲データサーバーの実ポートを見る。
+- 起動時に空きポートを自動割当し、既に起動している別worktreeの管理画面へ誤接続しない。
 
 GUIタブを閉じても起動中サーバーは止まりません。停止するには、管理画面の各サーバー停止、起動セット停止、または全停止を使ってください。Launch Manager自体を終了すると、MVPでは管理中サーバーを停止してから終了します。
 
-fixture player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。
+fixture player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。実際のポートはGUIや `.codex/runtime/ports.json` を確認してください。
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
+http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
 ```
 
 manifest URLを指定しない場合、特定の曲へ自動フォールバックしません。これは、システムが既存曲に引っ張られないようにするためです。
@@ -47,7 +44,7 @@ npm run dev:player
 npm run dev:songs
 ```
 
-別worktreeで同時に起動する場合は、ポート衝突を避けるために環境変数でずらします。
+別worktreeで同時に起動する場合も、通常は手でポートを割り当てる必要はありません。必要な場合だけ、環境変数で明示できます。
 
 ```powershell
 $env:DEV_MANAGER_PORT=5182
@@ -117,7 +114,7 @@ npm run song:validate -- --id song-id
 現在は動作確認用の曲パッケージとして、魔王魂「Shining Star」を同梱しています。
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
+http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-star/manifest.json
 ```
 
 これはfixtureであり、次の曲の標準構成ではありません。新しい曲を作るときは、この中身を見ずに `docs/song-authoring.md` から始めてください。
@@ -153,8 +150,8 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 - 開発サーバーはloopback hostだけで使い、外部ネットワークへ公開しないでください。
 - APIキー、秘密鍵、トークンを曲パッケージ、docs、プロンプト、ログに置かないでください。
 - manifest内の曲素材パスは、既定でその曲パッケージ配下だけを読みます。
-- fixture playerのoriginを変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
-- `npm run dev` で `PLAYER_PORT` を変えた場合は、起動管理サーバーがsong-pack serverのCORS許可originも合わせて渡します。
+- fixture playerのoriginを個別起動で変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
+- `npm run dev` や `start-music-effect.cmd` で起動する場合は、Launch Managerがplayer portに合わせたCORS許可originをsong-pack serverへ渡します。
 - 詳細は `docs/security.md` を参照してください。
 
 ## Workflow Map
@@ -162,7 +159,7 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 主要な流れは `docs/workflows.html` で確認できます。
 
 ```text
-http://127.0.0.1:5173/docs/workflows.html
+http://127.0.0.1:<player-port>/docs/workflows.html
 ```
 
 表示内容は `docs/workflows.json` から読み込まれます。このJSONは、機能追加やバグ修正時にLLMへシステムの流れを説明するための共有資料としても使えます。

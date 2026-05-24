@@ -45,8 +45,8 @@
 - Launch Managerは `song-packs/*/manifest.json` を曲JSONメニューとして列挙し、GUI上で曲を選んで必要なtargetを起動し、その曲のfixture player URLを開ける。
 - Launch Manager GUIは曲選択を主導線にし、手動Set操作は詳細操作へ折りたたむ。全停止は誤操作防止のため二度押し確認にする。
 - Launch Manager GUIは、Launch Manager、各target、選択中の曲JSONを二次元ノードグラフとして見せる状態マップを持つ。起動中ノードと関連線は光り、サーバーが増えたときも連携関係を把握しやすくする。
-- Windowsでは `start-music-effect.cmd` をダブルクリックするとLaunch Managerを起動できる。既に起動中なら管理画面を開くだけで、初回は `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得する。
-- Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。
+- Windowsでは `start-music-effect.cmd` をダブルクリックするとLaunch Managerを起動できる。同じworktreeで既に起動中なら管理画面を開くだけで、別worktreeが起動中でも誤接続せず、このworktree用の空きポートを自動で使う。
+- Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeでは自動ポート割当を使い、GUI下部の `worktree` / `ports` / `config` / `runtime` とtarget portを確認してから操作する。
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
 - docsの読み分けを `docs/README.md` に集約し、`examples/fixtures/soft-light-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
 - 古い作業候補、既知問題、beat sync詳細、旧レビューHTMLは `docs/archive/working-notes/` に退避した。通常の作業入口では正本docsを優先する。
@@ -111,25 +111,23 @@ npm run dev
 `npm run dev` はLaunch Managerを立てます。管理画面で曲JSONを選び、`選択曲を再生` を押すと、再生画面と曲データサーバーが起動し、選択曲の再生画面を開きます。詳細操作として `標準再生セット` を手動起動することもできます。
 管理画面の状態マップでは、Launch Manager、各サーバー、選択中の曲JSONのつながりをノードグラフとして確認できます。
 
-```text
-http://127.0.0.1:5172/
-```
+実際のportはworktreeごとに自動割当され、GUI下部と `.codex/runtime/ports.json` に表示されます。
 
 fixture player appは曲manifestを明示して開きます。
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
+http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
 ```
 
 動作確認用fixture:
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
+http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-star/manifest.json
 ```
 
 このfixtureは新しい曲のテンプレートではありません。
 
-並行worktreeで既定ポートが埋まっている場合:
+並行worktreeで固定ポートを明示したい場合:
 
 ```powershell
 $env:DEV_MANAGER_PORT=5182
@@ -141,7 +139,7 @@ npm run dev
 ワークフロー地図:
 
 ```text
-http://127.0.0.1:5173/docs/workflows.html
+http://127.0.0.1:<player-port>/docs/workflows.html
 ```
 
 ## 主要ファイル

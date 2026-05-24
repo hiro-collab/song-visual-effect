@@ -378,7 +378,7 @@
       "id": "boot-with-manifest",
       "label": "曲パッケージを読み込んで起動",
       "summary": "URLの?song=からmanifestを読み、曲素材をMusicMapへ変換して画面を起動します。",
-      "trigger": "http://127.0.0.1:5173/?song=<manifest-url> を開く",
+      "trigger": "http://127.0.0.1:<player-port>/?song=<manifest-url> を開く",
       "steps": [
         {
           "from": "browser",
@@ -663,8 +663,8 @@
           "from": "browser",
           "to": "devManager",
           "action": "起動管理画面を開く",
-          "payload": "start-music-effect.cmd または http://127.0.0.1:5172/",
-          "note": "ダブルクリック起動では既存環境変数を上書きせず、起動済みなら管理画面を開くだけです。複数サーバーを手作業で起動する運用を避けます。"
+          "payload": "start-music-effect.cmd または .codex/runtime/ports.json のurl",
+          "note": "ダブルクリック起動では同じworktreeの起動済みmanagerだけを再利用し、別worktreeが起動中なら空きポートで新しく起動します。複数サーバーを手作業で起動する運用を避けます。"
         },
         {
           "from": "devManager",
@@ -678,7 +678,7 @@
           "to": "main",
           "action": "fixture playerを起動",
           "payload": "launch/targets.json -> npm run dev:player -- --port <PLAYER_PORT>",
-          "note": "起動前にport衝突を確認し、衝突時は自動変更せずエラーにします。"
+          "note": "Launch Manager起動時にworktreeごとの空きポートを自動割当し、.codex/runtime/ports.json とGUI下部に記録します。"
         },
         {
           "from": "devManager",
@@ -691,7 +691,7 @@
           "from": "main",
           "to": "songServer",
           "action": "外部manifestを取得",
-          "payload": "http://127.0.0.1:5174/<song-id>/manifest.json",
+          "payload": "http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json",
           "note": "曲パックサーバーは許可originだけにCORSヘッダーを返します。"
         },
         {
