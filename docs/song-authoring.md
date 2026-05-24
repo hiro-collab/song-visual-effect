@@ -76,6 +76,30 @@ npm run song:validate -- --id song-id
 
 外部ライブラリや描画エンジンを追加したくなった場合は、まず `docs/library-candidates.md` の採用前チェックを見てください。system標準へ入れるのではなく、曲側の任意adapterや小さなhelperで済むかを先に検討します。
 
+## Songle URLの選び方
+
+Songle/Songriumから解析JSONを取得する場合は、曲パックごとにcanonical URLを1つ決めてください。
+
+- `nico.ms` や `youtu.be` などの短縮URLをcanonicalにしない。
+- できるだけ `www.nicovideo.jp/watch/<id>` や `www.youtube.com/watch?v=<id>` のような公式の通常URLを使う。
+- 同じ曲がNico版、YouTube版、別投稿版として複数登録されている場合は、別の解析ソースとして扱う。
+- 複数登録が見つかった場合は、beat、chorus、chord、melodyの有無、件数、更新履歴を軽く比較してから1つ選ぶ。
+- 選んだURL、確認した代替URL、選定理由は、曲パック側の `references.json` や `credits.md` にURLメタデータとして記録する。
+
+Songleの登録単位が違うと、同じ曲名でもbeatやchordの数、chorus区間、更新者、更新日が変わることがあります。曲側の演出は、選んだcanonical URLの解析結果に対して作ってください。
+
+## Songle解析JSONの見方
+
+Songle由来のJSONは、完全な音楽スコアではなく、演出のきっかけに使う補助データとして扱います。
+
+- `beat` は拍、downbeat、小節感のきっかけとして使う。
+- `chorus` や repeat segment は、盛り上がり区間や構成変化の候補として使う。
+- `chord` は色、緊張感、場面転換の補助ヒントとして使う。
+- `melody` は、手元のJSONに音高や音量カーブが含まれるとは限らない。`notes` のstart、duration、indexだけの場合は、音符密度、休符、長音、入りのタイミングのヒントとして使う。
+- `melody = ピッチ線` と決めつけない。pitch、volume、confidenceなどのフィールドが実際にあるかを確認してから使う。
+- 盛り上がり推定は、beat/downbeat、chorus、chord変化、melody note密度、休符、長音、手動design cuesを組み合わせて行う。
+- Songleのタイミング精度は曲や登録によってずれる。ライブ用に厳密な切り替えが必要なら、曲側で手動cueやタイミング補正を追加する。
+
 ## 使ってよいシステム補助
 
 曲ごとに必要なものだけ選んでください。
