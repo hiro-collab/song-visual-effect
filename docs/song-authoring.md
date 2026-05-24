@@ -130,6 +130,7 @@ npm run song:validate -- --id song-id
 - ネット上の記事本文、歌詞全文、画像、スクリーンショット、動画素材を曲パックへ保存しない。
 - 参照したものは `references.json` にURL、参照用途、確認日だけを記録する。
 - 調査から得た解釈、モチーフ、避けたい表現は曲パック側の `design/` や `visual-brief.md` に自分の言葉で書く。
+- 感想、コメント、外部評価は、解釈の一次根拠ではなく受容確認として扱う。複数ソースで反復する感情語、誤読リスク、外部評価の方向だけを確認し、個別コメント、文体、UI形状、語句を演出モチーフに直結しない。
 
 共通化するのは調査の作法だけです。調査結果からどの画面構成にするか、どの文法を使うかは曲ごとに決めます。
 
@@ -186,8 +187,9 @@ Songle由来のJSONは、完全な音楽スコアではなく、演出のきっ�
 - storage: localStorageや将来の保存API。
 - tools: 歌詞タイミング編集などのoptional tool。
 - loader: manifestや素材URL解決。
+- song-owned time map: 曲側の追加JSONを `context.assets.readJson()` で読み、beat反応の強度や包絡を調整する。manifest標準スキーマへ昇格させず、値や語彙は曲側に残す。
 - visual host: 曲adapter用の追加表示レイヤ、DPR/resize、fixture UIと重ならないsafe area。WebGLなどでcanvasを使う場合は2D contextを作らないレイヤも選べる。
-- content rect helper: Canvas2Dを選んだ曲だけが任意で使える、DPR resize、safe area clip、pointer正規化、文字サイズfitの小さな補助。
+- content rect helper: Canvas2Dを選んだ曲だけが任意で使える、DPR resize、safe area clip、pointer正規化、文字サイズfitの小さな補助。全画面投影の主映像はviewport全体で構成し、contentRectはポインタ正規化やHUD/状態ラベルだけに使ってもよい。
 
 これらは文法ではなく部品です。曲側が全部使う必要はありません。
 
