@@ -67,6 +67,7 @@ system担当は、候補を小さな主張に分解してから分類します�
 ## 共通化できる例
 
 - 曲の背景調査は、URLと参照用途だけ記録する。
+- 感想、コメント、外部評価は受容確認として扱い、複数ソースで反復する傾向だけを見る。個別コメントや文体は保存、転載、演出モチーフ化しない。
 - Songleの `melody` を常にピッチ線と決めつけない。
 - Songle、歌詞、手動cueから、人間向けの時系列理解メモと、実装向けの構造データを分けて作る。
 - 曲のパートごとに、何を見る時間か、表示範囲、密度、余白、文字位置、色、遷移を先に問いとして決める。
@@ -81,6 +82,7 @@ system担当は、候補を小さな主張に分解してから分類します�
 - 特定曲のMV由来のモチーフ、生活感、キャラクター配置。
 - 特定曲で効いた色、照明、カメラ、3Dレイアウト。
 - ある曲の `design/cues.json` 文法を、他曲の標準JSON構成にすること。
+- 個別コメント、レビュー文体、SNS/動画サイトのUI形状、特定語句を、そのまま演出モチーフにすること。
 
 ## レビュー手順
 
@@ -117,3 +119,32 @@ system担当は、候補を小さな主張に分解してから分類します�
 - song-owned: Ope固有の区間名、時刻、感情、画面モチーフ、色。
 
 反映済み: `docs/song-authoring.md` と `templates/neutral-song-app/visual-brief.md` には、timeline-map / structure-map の分離と、中立的な問いで画面設計する注意を入れた。
+
+### 2026-05-24: Ope外部評価調査ノウハウ
+
+元連絡: `#9a5b3d150e`
+
+- common: 感想、コメント、外部評価は解釈の一次根拠ではなく受容確認として扱う。
+- common: 複数ソースで反復する感情語、誤読リスク、外部評価の方向だけを確認する。
+- song-owned/reject: 個別コメント、文体、UI形状、語句を演出モチーフへ直結すること。転載リスクと曲文脈混入リスクが高い。
+
+反映済み: `docs/song-authoring.md` の背景調査へ、受容確認としての扱いを追記した。
+
+### 2026-05-24: contentRectと全画面投影
+
+元連絡: `#284f630bcb`
+
+- conditional: 全画面投影やWebGLの主映像はviewport全体で構成し、contentRectはポインタ正規化やHUD/状態ラベルだけに使ってもよい。
+- song-owned: すべての曲で主映像をcontentRect内に閉じ込めること。曲によっては全画面構成が主役になる。
+
+反映済み: `docs/song-authoring.md` のsystem補助説明へ、contentRectの限定利用を追記した。
+
+### 2026-05-24: song-owned time map
+
+元連絡: `#be904bd7af`
+
+- conditional: 曲側の追加time mapは `context.assets.readJson()` で読み、beat反応の強度や包絡を調整する入力として使える。
+- common: manifest標準スキーマを増やさず、曲側adapterが必要なJSONを曲パック内で読む。
+- song-owned: mapの値、ラベル、感情語、表示語彙。これらは曲の解釈に属する。
+
+反映済み: `docs/song-authoring.md` のsystem補助説明へ、song-owned time mapの扱いを追記した。
