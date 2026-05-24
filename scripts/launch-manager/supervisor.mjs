@@ -7,7 +7,7 @@ import { readProcessMetrics } from "./metrics.mjs";
 import { findPortConflicts } from "./ports.mjs";
 
 const isWindows = platform() === "win32";
-const HEALTH_GRACE_MS = 15000;
+const HEALTH_GRACE_MS = 30000;
 const METRICS_INTERVAL_MS = 5000;
 
 const nowIso = () => new Date().toISOString();
@@ -234,7 +234,10 @@ export class LaunchSupervisor {
     state.health = health.status;
     if (health.ok) {
       state.healthFailures = 0;
-      if (state.status === "starting") state.status = "running";
+      if (state.status === "starting" || state.error === "Health check did not become ready." || state.error === "Health check failed.") {
+        state.status = "running";
+        state.error = "";
+      }
     } else if (state.target.health) {
       state.healthFailures += 1;
       const startedAt = state.startedAt ? Date.parse(state.startedAt) : Date.now();

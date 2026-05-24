@@ -435,6 +435,13 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         font: inherit;
       }
       select { padding: 0 12px; min-width: 210px; }
+      select option {
+        background: #25262c;
+        color: #fff7e6;
+      }
+      select option:disabled {
+        color: #a9a398;
+      }
       button, a.launch {
         display: inline-flex;
         align-items: center;
