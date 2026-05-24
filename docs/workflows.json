@@ -268,7 +268,7 @@
       "file": "scripts/serve-song-packs.mjs",
       "x": 91,
       "y": 14,
-      "description": "song-packsを別ポートで配信します。CORSはfixture playerのoriginに限定し、manifestやJSONを読めるようにします。"
+      "description": "song-packsを別ポートで配信します。CORSはDeck A/B playerのoriginに限定し、manifestやJSONを読めるようにします。"
     },
     {
       "id": "previewSnapshot",
@@ -858,16 +858,16 @@
         {
           "from": "devManager",
           "to": "main",
-          "action": "fixture playerを起動",
-          "payload": "launch/targets.json -> npm run dev:player -- --port <PLAYER_PORT>",
-          "note": "Launch Manager起動時にworktreeごとの空きポートを自動割当し、.codex/runtime/ports.json とGUI下部に記録します。"
+          "action": "Deck playerを起動",
+          "payload": "launch/targets.json -> npm run dev:player -- --port <DECK_A_PLAYER_PORT|DECK_B_PLAYER_PORT>",
+          "note": "Launch Manager起動時にworktreeごとの空きポートを自動割当し、Deck A/BとSong Data Serverのportを.codex/runtime/ports.json とGUI下部に記録します。PLAYER_PORTはDeck A互換値として残します。"
         },
         {
           "from": "devManager",
           "to": "songServer",
           "action": "曲パックサーバーを起動",
           "payload": "launch/targets.json -> npm run dev:songs",
-          "note": "song-packsをfixture player origin向けCORSつきで配信します。"
+          "note": "song-packsをDeck A/B player origin向けCORSつきで配信します。"
         },
         {
           "from": "main",

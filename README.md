@@ -15,14 +15,14 @@ npm install
 npm run dev
 ```
 
-`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、曲JSONを選んで再生すると、再生画面と曲データサーバーが起動し、選択した曲の再生画面を開きます。ポートはworktreeごとに自動割当され、起動後に `.codex/runtime/ports.json` とGUI下部へ表示されます。
+`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、Deck A/Bごとに曲JSONを選ぶと、Deckごとの再生画面URLを開いたりコピーしたりできます。ポートはworktreeごとに自動割当され、起動後に `.codex/runtime/ports.json` とGUI下部へ表示されます。
 
-ライブ/VJ運用では、今後Deck A/Bを標準の再生単位として扱います。2つのplayer serverを別portで起動し、TouchDesigner、OBS、Unityなどの外部ツールがそれぞれのURLを読み込みます。詳細は `docs/deck-playback.md` を参照してください。
+ライブ/VJ運用では、Deck A/Bを標準の再生単位として扱います。2つのplayer serverを別portで起動し、TouchDesigner、OBS、Unityなどの外部ツールがそれぞれのURLを読み込みます。詳細は `docs/deck-playback.md` を参照してください。
 
 Launch Managerでできること:
 
-- 曲JSONメニューから `song-packs/*/manifest.json` を選び、選択曲を再生する。
-- Launch Manager、各サーバー、選択中の曲JSONを状態マップで見て、起動中のノードと連携線を視覚的に確認する。
+- Deck A/Bごとに `song-packs/*/manifest.json` を選び、起動、停止、URL open/copyを行う。
+- Launch Manager、Deck A/B、各サーバー、選択中の曲JSONを状態マップで見て、起動中のノードと連携線を視覚的に確認する。
 - `launch/targets.json` に書かれた起動対象だけを起動する。
 - サーバーごとの起動、停止、再起動、起動セットの起動/停止、全停止を行う。全停止は誤操作防止のため二度押し確認です。
 - PID、port、health、CPU、memory、stdout/stderr末尾を見る。
@@ -32,7 +32,7 @@ Launch Managerでできること:
 
 GUIタブを閉じても起動中サーバーは止まりません。停止するには、管理画面の各サーバー停止、起動セット停止、または全停止を使ってください。Launch Manager自体を終了すると、MVPでは管理中サーバーを停止してから終了します。
 
-fixture player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。実際のポートはGUIや `.codex/runtime/ports.json` を確認してください。
+player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。Deck A/Bは同じplayer appを別portで起動します。実際のポートはGUIや `.codex/runtime/ports.json` を確認してください。
 
 ```text
 http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
@@ -51,7 +51,8 @@ npm run dev:songs
 
 ```powershell
 $env:DEV_MANAGER_PORT=5182
-$env:PLAYER_PORT=5183
+$env:DECK_A_PLAYER_PORT=5183
+$env:DECK_B_PLAYER_PORT=5185
 $env:SONG_PACK_PORT=5184
 npm run dev
 ```
@@ -153,8 +154,8 @@ http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-s
 - 開発サーバーは既定でloopback hostだけで使います。Launch ManagerをLAN公開する場合は `docs/security.md` のopt-in手順、警告表示、control token方針を確認してください。
 - APIキー、秘密鍵、トークンを曲パッケージ、docs、プロンプト、ログに置かないでください。
 - manifest内の曲素材パスは、既定でその曲パッケージ配下だけを読みます。
-- fixture playerのoriginを個別起動で変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
-- `npm run dev` や `start-music-effect.cmd` で起動する場合は、Launch Managerがplayer portに合わせたCORS許可originをsong-pack serverへ渡します。
+- player originを個別起動で変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
+- `npm run dev` や `start-music-effect.cmd` で起動する場合は、Launch ManagerがDeck A/Bのplayer portに合わせたCORS許可originをsong-pack serverへ渡します。
 - 曲パックやshow-profileで外部入力、LAN操作、TouchDesigner/OSC/MIDIなどを使う場合は、任意の `capabilities` とREADMEまたは `security-notes.md` に責任範囲を短く残すことを推奨します。
 - 詳細は `docs/security.md` を参照してください。
 

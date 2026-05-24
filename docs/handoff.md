@@ -42,12 +42,12 @@
 - 各曲担当から出たライブラリ/ツール候補は `docs/library-candidates.md` に集約する。system標準依存を増やす前に、曲側任意依存、小さいhelper、time-drivenな再現性、bundle/securityを確認する。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 - 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
-- Launch Managerは `song-packs/*/manifest.json` を曲JSONメニューとして列挙し、GUI上で曲を選んで必要なtargetを起動し、その曲のfixture player URLを開ける。
-- Launch Manager GUIは曲選択を主導線にし、手動Set操作は詳細操作へ折りたたむ。全停止は誤操作防止のため二度押し確認にする。
-- Launch Manager GUIは、Launch Manager、各target、選択中の曲JSONを二次元ノードグラフとして見せる状態マップを持つ。起動中ノードと関連線は光り、サーバーが増えたときも連携関係を把握しやすくする。
+- Launch Managerは `song-packs/*/manifest.json` を曲JSONメニューとして列挙し、Deck A/Bごとに曲を選んで必要なtargetを起動し、そのDeck URLを開く/コピーできる。
+- Launch Manager GUIはDeck A/B曲選択を主導線にし、手動Set操作は詳細操作へ折りたたむ。全停止は誤操作防止のため二度押し確認にする。
+- Launch Manager GUIは、Launch Manager、Deck A/B、各target、選択中の曲JSONを二次元ノードグラフとして見せる状態マップを持つ。起動中ノードと関連線は光り、サーバーが増えたときも連携関係を把握しやすくする。
 - Windowsでは `start-music-effect.cmd` をダブルクリックするとLaunch Managerを起動できる。同じworktreeで既に起動中なら管理画面を開くだけで、別worktreeが起動中でも誤接続せず、このworktree用の空きポートを自動で使う。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeでは自動ポート割当を使い、GUI下部の `worktree` / `ports` / `config` / `runtime` とtarget portを確認してから操作する。
-- ライブ/VJ運用の次の実装方針として、Deck A/Bを標準再生単位にする仕様を `docs/deck-playback.md` に追加した。現在の単一player flowはDeck A互換として扱い、Deck B実装では別player portと共有Song Data Serverを使う。
+- ライブ/VJ運用の標準再生単位として、Launch ManagerにDeck A/Bを追加した。Deck A/Bは別player portで起動し、共有Song Data Serverから曲パッケージを読む。曲変更MVPはDeckごとのURL更新/open/copyに留め、既存Deck画面へload-song命令は送らない。
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
 - 追加セキュリティレビューで、Launch ManagerのLAN公開を `LAUNCH_MANAGER_ALLOW_LAN=1` の明示opt-inにし、LAN公開時の警告バナーとcontrol token検証を追加した。曲パック/show-profileの任意 `capabilities` と `security-notes.md` 方針は `docs/security.md` を正本にする。
 - docsの読み分けを `docs/README.md` に集約し、`examples/fixtures/soft-light-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
@@ -111,22 +111,22 @@ npm install
 npm run dev
 ```
 
-`npm run dev` はLaunch Managerを立てます。管理画面で曲JSONを選び、`選択曲を再生` を押すと、再生画面と曲データサーバーが起動し、選択曲の再生画面を開きます。詳細操作として `標準再生セット` を手動起動することもできます。
-管理画面の状態マップでは、Launch Manager、各サーバー、選択中の曲JSONのつながりをノードグラフとして確認できます。
+`npm run dev` はLaunch Managerを立てます。管理画面でDeck A/Bごとに曲JSONを選び、`起動して開く` を押すと、対象Deckの再生画面と曲データサーバーが起動し、選択曲のDeck URLを開きます。詳細操作として `標準再生セット` や `Deck A/B 再生セット` を手動起動することもできます。
+管理画面の状態マップでは、Launch Manager、Deck A/B、各サーバー、選択中の曲JSONのつながりをノードグラフとして確認できます。
 担当メッセージ欄では、各worktree担当からのready通知、質問、ブロッカー、ackをブラウザで確認できます。
 
 実際のportはworktreeごとに自動割当され、GUI下部と `.codex/runtime/ports.json` に表示されます。
 
-fixture player appは曲manifestを明示して開きます。
+player appは曲manifestを明示して開きます。Deck A/Bは同じplayer appを別portで起動します。
 
 ```text
-http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
+http://127.0.0.1:<deck-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
 ```
 
 動作確認用fixture:
 
 ```text
-http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-star/manifest.json
+http://127.0.0.1:<deck-port>/?song=http://127.0.0.1:<song-pack-port>/shining-star/manifest.json
 ```
 
 このfixtureは新しい曲のテンプレートではありません。
@@ -135,7 +135,8 @@ http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-s
 
 ```powershell
 $env:DEV_MANAGER_PORT=5182
-$env:PLAYER_PORT=5183
+$env:DECK_A_PLAYER_PORT=5183
+$env:DECK_B_PLAYER_PORT=5185
 $env:SONG_PACK_PORT=5184
 npm run dev
 ```
@@ -178,7 +179,7 @@ http://127.0.0.1:<player-port>/docs/workflows.html
 
 1. fixture playerが新しい曲のテンプレートに見えないよう、docsとUI文言を維持する。
 2. 新曲実装担当が `templates/neutral-song-app/visual-brief.md` を先に埋める運用を定着させる。
-3. `docs/deck-playback.md` に沿って、Launch ManagerをDeck A/BのURL管理、起動、停止、状態表示へ拡張する。
+3. Deck A/B UIを実機で使いながら、現場向けの文言、ログ表示、状態マップの読みやすさを調整する。
 4. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
 
 Launch Managerを変更する場合:

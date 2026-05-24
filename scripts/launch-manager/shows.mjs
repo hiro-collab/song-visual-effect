@@ -202,7 +202,10 @@ const readShowProfileSummary = async ({
 export const listShowProfiles = async (config) => {
   const showProfilesRoot = resolve(config.root, "show-profiles");
   const songPacksRoot = resolve(config.root, "song-packs");
-  const fixturePlayer = targetById(config, "fixture-player") ?? config.targets.find((target) => target.kind === "web-app");
+  const fixturePlayer =
+    targetById(config, "deck-a-player") ??
+    targetById(config, "fixture-player") ??
+    config.targets.find((target) => target.kind === "web-app");
   const songPackServer =
     targetById(config, "song-pack-server") ?? config.targets.find((target) => target.kind === "asset-server");
   const playerBaseUrl = firstUsableUrl(fixturePlayer);

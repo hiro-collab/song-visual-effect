@@ -39,7 +39,7 @@ PCブラウザや将来のスマホから開く操作画面です。
 責任:
 
 - target一覧を表示する。
-- `song-packs/*/manifest.json` を曲JSONメニューとして表示し、選択した曲のfixture player URLを作る。
+- `song-packs/*/manifest.json` を曲JSONメニューとして表示し、Deck A/Bごとのplayer URLを作る。
 - `show-profiles/*/show.json` があれば、任意のセットリストとして表示し、該当する曲JSON選択を補助する。
 - 起動、停止、再起動、全停止をLaunch Serverへ依頼する。
 - 状態マップ、PID、port、URL、CPU、memory、ログ末尾を表示する。
@@ -59,7 +59,6 @@ UIは正本を持ちません。ブラウザタブを閉じても起動中target
 - 曲Bの映像サーバー
 - Deck A player
 - Deck B player
-- fixture player
 - song-pack server
 - 保存API
 - 外部ツール起動用ラッパー
@@ -70,7 +69,7 @@ UIは正本を持ちません。ブラウザタブを閉じても起動中target
 
 例:
 
-- `basic-fixture`: fixture player + song-pack server
+- `basic-fixture`: Deck A player + song-pack server
 - `live-preview`: 曲A映像 + 曲B映像 + song-pack server
 - `deck-preview`: Deck A player + Deck B player + song-pack server
 
@@ -115,19 +114,19 @@ Song Visual Server
 {
   "targets": [
     {
-      "id": "fixture-player",
-      "label": "再生画面",
+      "id": "deck-a-player",
+      "label": "Deck A 再生画面",
       "kind": "web-app",
       "cwd": ".",
       "command": "npm",
-      "args": ["run", "dev:player", "--", "--port", "${PLAYER_PORT:-5173}"],
-      "ports": ["${PLAYER_PORT:-5173}"],
+      "args": ["run", "dev:player", "--", "--port", "${DECK_A_PLAYER_PORT:-5173}"],
+      "ports": ["${DECK_A_PLAYER_PORT:-5173}"],
       "startupTimeoutMs": 60000,
       "urls": {
-        "open": "http://127.0.0.1:${PLAYER_PORT:-5173}/"
+        "open": "http://127.0.0.1:${DECK_A_PLAYER_PORT:-5173}/"
       },
       "health": {
-        "url": "http://127.0.0.1:${PLAYER_PORT:-5173}/",
+        "url": "http://127.0.0.1:${DECK_A_PLAYER_PORT:-5173}/",
         "intervalMs": 5000
       }
     }
@@ -136,11 +135,18 @@ Song Visual Server
     {
       "id": "basic-fixture",
       "label": "標準再生セット",
-      "targets": ["fixture-player", "song-pack-server"]
+      "targets": ["song-pack-server", "deck-a-player"]
+    },
+    {
+      "id": "deck-preview",
+      "label": "Deck A/B 再生セット",
+      "targets": ["song-pack-server", "deck-a-player", "deck-b-player"]
     }
   ]
 }
 ```
+
+実際の `launch/targets.json` では、このDeck A定義に加えて `deck-b-player` と `song-pack-server` を定義します。Deck Bは同じ `npm run dev:player` を別portで起動します。
 
 初期制約:
 
@@ -156,7 +162,7 @@ Song Visual Server
 
 - `startupTimeoutMs`: process起動後、healthがreadyになるまでLaunch Managerが待つ上限時間。単位はミリ秒。
 - `startupTimeoutMs` を省略したtargetは、システム標準の `45000` ms を使う。
-- `選択曲を再生` は、必要targetの `startupTimeoutMs` の最大値に、システム標準の余裕 `5000` ms を足した時間まで待つ。
+- `起動して開く` は、対象Deckに必要なtargetの `startupTimeoutMs` の最大値に、システム標準の余裕 `5000` ms を足した時間まで待つ。
 - 起動中targetのhealthが一時的に失敗しても、`startupTimeoutMs` の範囲内では即失敗扱いにしない。
 - `startupTimeoutMs` を超えてもhealthがreadyにならない場合、targetは `error` になり、GUIはログ確認を促す。
 
@@ -164,7 +170,7 @@ Song Visual Server
 
 | target | startupTimeoutMs | 意図 |
 | --- | ---: | --- |
-| `fixture-player` | `60000` | Viteや3D/大きめbundleの初回起動を許容する。 |
+| `deck-a-player` / `deck-b-player` | `60000` | Viteや3D/大きめbundleの初回起動を許容する。 |
 | `song-pack-server` | `30000` | 軽いasset serverとして短めに失敗検知する。 |
 
 この値は曲ごとの映像設計ではなく、Launch Managerが管理する起動運用の仕様です。曲パック側へは持ち込まないでください。
@@ -174,7 +180,8 @@ Song Visual Server
 人間が担当ごとにport表を管理しない。
 
 - Launch Manager起動時に、worktree rootから安定した候補帯を作る。
-- `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` が未指定なら、空きportを自動で選ぶ。
+- `DEV_MANAGER_PORT`、`DECK_A_PLAYER_PORT`、`DECK_B_PLAYER_PORT`、`SONG_PACK_PORT` が未指定なら、空きportを自動で選ぶ。
+- `PLAYER_PORT` は互換用としてDeck A portを指す。
 - 明示指定されたportは尊重し、重複や不正値は起動エラーにする。
 - 実際のportは `.codex/runtime/ports.json` とGUI下部に表示する。
 - target起動直前にもport衝突を確認し、割当後に別プロセスが使った場合はGUIにエラーを出す。
@@ -256,8 +263,8 @@ Deck A/Bを扱う場合:
 
 MVP画面:
 
-- 上部: 曲JSON選択。`song-packs/<song-id>/manifest.json` を選び、必要なtargetを起動して再生画面を開く。
-- Deck表示: Deck A/Bを使う実装では、Deckごとに曲JSON選択、URL copy/open、start/stop/restart、statusを表示する。標準の「選択曲を再生」はDeck A互換として扱ってよい。
+- 上部: Deck A/B表示。Deckごとに `song-packs/<song-id>/manifest.json` を選び、必要なtargetを起動して再生画面URLを開く/コピーする。
+- Deck表示: Deckごとに曲JSON選択、URL copy/open、start/stop/restart、statusを表示する。標準の単一再生導線はDeck A互換として扱う。
 - Deck曲変更: MVPでは、Deckごとの曲JSON選択はselected manifestとoutput URLを更新するだけにする。既に開いているDeck playerへ曲差し替え命令は送らない。利用者は `open` または `copy` したURLを外部ツール側で読み直す。
 - show-profile / セットリスト: `show-profiles/<show-id>/show.json` がある場合だけ、イベントや検証会用の曲順を表示する。項目を曲JSON選択へ反映できるが、曲パックの文法や外部連携方式は決めない。
 - 状態マップ: Launch Manager、各target、選択中の曲JSONをノードとして表示する。起動中ノードと関連線は発光し、サーバーが増えても連携関係を見渡せるようにする。

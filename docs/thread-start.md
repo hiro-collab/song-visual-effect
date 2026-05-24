@@ -102,7 +102,7 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - 同じLaunch Manager URLを複数スレッドで見ている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
 - Deck A/Bを扱う場合、Deck停止は該当Deckのplayer serverだけを止め、Song Data Server停止とは分けて考える。Deck仕様の正本は `docs/deck-playback.md`。
 
-並行作業では、通常はLaunch Managerの自動ポート割当を使います。実際のportはGUI下部と `.codex/runtime/ports.json` に表示されます。固定したい場合だけ `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` を明示します。
+並行作業では、通常はLaunch Managerの自動ポート割当を使います。実際のportはGUI下部と `.codex/runtime/ports.json` に表示されます。固定したい場合だけ `DEV_MANAGER_PORT`、`DECK_A_PLAYER_PORT`、`DECK_B_PLAYER_PORT`、`SONG_PACK_PORT` を明示します。`PLAYER_PORT` はDeck A互換値として扱います。
 
 停止操作や起動管理の修正をする前に、Launch Manager画面下部の `worktree` / `ports` / `config` / `runtime` と各targetのportを見て、自分のworktreeを操作していることを確認してください。
 

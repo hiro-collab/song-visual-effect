@@ -306,7 +306,9 @@ export const startLaunchManager = async ({
       console.warn("POST control API is read-only-disabled until LAUNCH_MANAGER_CONTROL_TOKEN is set.");
     }
   }
-  console.log(`Ports: manager ${launchPorts.manager}, player ${launchPorts.player}, song packs ${launchPorts.songPack}`);
+  console.log(
+    `Ports: manager ${launchPorts.manager}, Deck A ${launchPorts.deckA}, Deck B ${launchPorts.deckB}, song packs ${launchPorts.songPack}`
+  );
   console.log(`Launch targets: ${config.configPath}`);
   return { server, supervisor, config, url };
 };

@@ -60,7 +60,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; }
       h2 { margin: 0; font-size: 18px; }
       p { margin: 0; color: var(--muted); line-height: 1.7; }
-      .toolbar, .target-actions, .links, .song-actions, .show-actions, .flow-steps, .map-legend, .sync-tabs, .sync-controls, .sync-summary, .participant-stats {
+      .toolbar, .target-actions, .links, .song-actions, .show-actions, .deck-actions, .flow-steps, .map-legend, .sync-tabs, .sync-controls, .sync-summary, .participant-stats {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
@@ -111,6 +111,57 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         grid-template-columns: minmax(260px, 1fr) auto;
         gap: 12px;
         align-items: end;
+      }
+      .deck-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .deck-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        background: rgba(0, 0, 0, 0.14);
+      }
+      .deck-card h3 {
+        margin: 0 0 8px;
+        font-size: 17px;
+      }
+      .deck-card.is-running {
+        border-color: rgba(147, 230, 177, 0.52);
+        box-shadow: 0 0 18px rgba(147, 230, 177, 0.08);
+      }
+      .deck-card.is-error {
+        border-color: rgba(255, 170, 165, 0.6);
+      }
+      .deck-status {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .deck-meta {
+        min-height: 44px;
+        margin: 10px 0;
+        color: var(--text);
+        overflow-wrap: anywhere;
+      }
+      .deck-url {
+        display: block;
+        min-height: 36px;
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        background: rgba(0, 0, 0, 0.16);
+        color: var(--muted);
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+      .deck-global-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
       }
       .show-form {
         display: grid;
@@ -480,7 +531,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         min-height: 40px;
         border: 1px solid var(--line);
         border-radius: 8px;
-        background: rgba(255, 255, 255, 0.06);
+        background: #25262c;
         color: var(--text);
         font: inherit;
       }
@@ -491,6 +542,10 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       }
       select option {
         background: #25262c;
+        color: #fff7e6;
+      }
+      select option:checked {
+        background: #3a3121;
         color: #fff7e6;
       }
       select option:disabled {
@@ -657,7 +712,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       }
       @media (max-width: 760px) {
         header { display: block; }
-        .song-form, .show-form { grid-template-columns: 1fr; }
+        .song-form, .show-form, .deck-grid { grid-template-columns: 1fr; }
         .sync-head { display: block; }
         .sync-summary { justify-content: flex-start; min-width: 0; margin-top: 10px; }
         .sync-controls { display: grid; }
@@ -698,26 +753,18 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       </section>
 
       <section class="song-launcher" aria-label="Song launcher">
-        <h2>曲を選んで再生</h2>
-        <p>URLを手で組み立てず、ここから曲パッケージの manifest.json を選んで開きます。</p>
+        <h2>Deck A/Bで再生</h2>
+        <p>Deckごとに曲パッケージの manifest.json を選び、別々の再生画面URLを開くかコピーします。</p>
         <div class="flow-steps" aria-label="Playback flow">
-          <span class="step"><strong>1</strong> 曲JSONを選ぶ</span>
-          <span class="step"><strong>2</strong> サーバーを起動</span>
-          <span class="step"><strong>3</strong> 再生画面を開く</span>
+          <span class="step"><strong>1</strong> Deckごとに曲JSONを選ぶ</span>
+          <span class="step"><strong>2</strong> Deckを起動</span>
+          <span class="step"><strong>3</strong> URLを開く/外部ツールへ渡す</span>
         </div>
-        <div class="song-form">
-          <label>
-            曲JSON
-            <select id="song-select" aria-label="Song manifest">
-              <option>曲JSONを読み込み中...</option>
-            </select>
-          </label>
-          <div class="song-actions">
-            <button id="play-song" class="primary" disabled>選択曲を再生</button>
-            <a id="open-song" class="launch secondary" href="#" target="_blank" rel="noreferrer" aria-disabled="true">開く</a>
-          </div>
+        <div id="deck-list" class="deck-grid" aria-label="Deck controls"></div>
+        <div class="deck-global-actions">
+          <button id="stop-decks" class="danger" type="button">Deck全停止</button>
+          <button id="copy-deck-urls" type="button">Deck URLをまとめてコピー</button>
         </div>
-        <p id="song-meta" class="song-meta"></p>
         <p id="message" class="message" role="status" aria-live="polite"></p>
         <div id="runtime-strip" class="runtime-strip"></div>
       </section>
@@ -810,7 +857,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
 
       <section class="status-heading" aria-label="Server status heading">
         <h2>サーバー状態</h2>
-        <p>通常は上の「選択曲を再生」だけで操作できます。</p>
+        <p>通常は上のDeck操作だけで起動、停止、URL確認ができます。</p>
       </section>
       <section id="targets" class="grid" aria-label="Launch targets"></section>
       <p id="runtime" class="footer"></p>
@@ -833,10 +880,15 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         if (text !== undefined) node.textContent = text;
         return node;
       };
-      const selectedSongStorageKey = "music-effect.launch-manager.selectedSong";
+      const legacySelectedSongStorageKey = "music-effect.launch-manager.selectedSong";
+      const deckSelectionStoragePrefix = "music-effect.launch-manager.deckSong.";
       const selectedShowStorageKey = "music-effect.launch-manager.selectedShow";
       const selectedSetlistStorageKey = "music-effect.launch-manager.selectedSetlist";
       const controlTokenStorageKey = "music-effect.launch-manager.controlToken";
+      const fallbackDecks = [
+        { id: "deck-a", label: "Deck A", targetId: "deck-a-player", playerBaseUrl: "" },
+        { id: "deck-b", label: "Deck B", targetId: "deck-b-player", playerBaseUrl: "" }
+      ];
       const call = async (url, options = {}) => {
         const requestOptions = { ...options, headers: { ...(options.headers || {}) } };
         if (String(requestOptions.method || "GET").toUpperCase() === "POST") {
@@ -913,7 +965,11 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       };
       const formatLaunchPorts = (ports) => {
         if (!ports) return "ports: unknown";
-        return "ports: manager " + ports.manager + " / player " + ports.player + " / songs " + ports.songPack + " (" + ports.mode + ")";
+        return "ports: manager " + ports.manager +
+          " / Deck A " + (ports.deckA ?? ports.player) +
+          " / Deck B " + (ports.deckB ?? "-") +
+          " / songs " + ports.songPack +
+          " (" + ports.mode + ")";
       };
       const truncate = (value, max) => {
         const text = String(value || "");
@@ -1100,25 +1156,59 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         }
         if (sets.some((set) => set.id === current)) select.value = current;
       };
-      const selectedSong = () => {
-        const catalog = state.status?.songCatalog;
-        const value = byId("song-select").value;
-        return (catalog?.songs || []).find((song) => song.directoryName === value) || null;
+      const deckDomId = (deckId, suffix) => deckId + "-" + suffix;
+      const configuredDecks = () => {
+        const decks = state.status?.songCatalog?.decks || [];
+        const normalized = decks.length ? decks : fallbackDecks;
+        return normalized.map((deck, index) => ({
+          ...deck,
+          id: deck.id || fallbackDecks[index]?.id || "deck-" + (index + 1),
+          label: deck.label || fallbackDecks[index]?.label || "Deck " + (index + 1),
+          targetId: deck.targetId || fallbackDecks[index]?.targetId || "",
+          playerBaseUrl: deck.playerBaseUrl || ""
+        }));
       };
-      const loadSelectedSongId = () => {
+      const deckById = (deckId) => configuredDecks().find((deck) => deck.id === deckId) || null;
+      const deckTarget = (deckId) => {
+        const deck = deckById(deckId);
+        return deck ? targetMap().get(deck.targetId) || null : null;
+      };
+      const storedDeckSongId = (deckId) => {
         try {
-          return localStorage.getItem(selectedSongStorageKey) || "";
+          return (
+            localStorage.getItem(deckSelectionStoragePrefix + deckId) ||
+            (deckId === "deck-a" ? localStorage.getItem(legacySelectedSongStorageKey) : "") ||
+            ""
+          );
         } catch {
           return "";
         }
       };
-      const rememberSelectedSong = () => {
-        const value = byId("song-select").value;
+      const rememberDeckSong = (deckId) => {
+        const select = byId(deckDomId(deckId, "song-select"));
+        const value = select?.value || "";
         if (!value) return;
         try {
-          localStorage.setItem(selectedSongStorageKey, value);
+          localStorage.setItem(deckSelectionStoragePrefix + deckId, value);
+          if (deckId === "deck-a") localStorage.setItem(legacySelectedSongStorageKey, value);
         } catch {}
       };
+      const selectedSongForDeck = (deckId) => {
+        const catalog = state.status?.songCatalog;
+        const select = byId(deckDomId(deckId, "song-select"));
+        const value = select?.value || "";
+        return (catalog?.songs || []).find((song) => song.directoryName === value) || null;
+      };
+      const selectedSong = () => selectedSongForDeck("deck-a");
+      const deckUrlForSong = (deck, song) => {
+        if (!deck || !song) return "";
+        if (song.deckUrls?.[deck.id]) return song.deckUrls[deck.id];
+        if (!deck.playerBaseUrl || !song.manifestUrl) return "";
+        const url = new URL(deck.playerBaseUrl);
+        url.searchParams.set("song", song.manifestUrl);
+        return url.toString();
+      };
+      const selectedDeckUrl = (deckId) => deckUrlForSong(deckById(deckId), selectedSongForDeck(deckId));
       const loadStoredValue = (key) => {
         try {
           return localStorage.getItem(key) || "";
@@ -1156,11 +1246,14 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           if (announce) setMessage("セットリスト項目に対応する曲JSONが見つかりません: " + songDirectoryName, "warn");
           return false;
         }
-        byId("song-select").value = song.directoryName;
-        rememberSelectedSong();
-        renderSelectedSong();
+        const deckASelect = byId(deckDomId("deck-a", "song-select"));
+        if (deckASelect) {
+          deckASelect.value = song.directoryName;
+          rememberDeckSong("deck-a");
+        }
+        renderDecks();
         if (state.status) renderSystemMap(state.status);
-        if (announce) setMessage(formatSongLabel(song) + " を曲JSON選択へ反映しました。", "ok");
+        if (announce) setMessage(formatSongLabel(song) + " をDeck Aへ反映しました。", "ok");
         return true;
       };
       const targetMap = () => new Map((state.status?.targets || []).map((target) => [target.id, target]));
@@ -1172,24 +1265,23 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       const transientHealthError = (target) =>
         target?.running &&
         (target.error === "Health check did not become ready." || target.error === "Health check failed.");
-      const requiredTargetsReady = () => {
-        const catalog = state.status?.songCatalog;
-        const ids = catalog?.requiredTargetIds || [];
+      const songPackTargetId = () => state.status?.songCatalog?.songPackTargetId || "song-pack-server";
+      const deckRequiredTargetIds = (deckId) => {
+        const deck = deckById(deckId);
+        return [songPackTargetId(), deck?.targetId].filter(Boolean);
+      };
+      const targetsReady = (ids) => {
         const targets = targetMap();
         return ids.length > 0 && ids.every((id) => targetReady(targets.get(id)));
       };
-      const requiredTargetErrors = () => {
-        const catalog = state.status?.songCatalog;
-        const ids = catalog?.requiredTargetIds || [];
+      const targetErrors = (ids) => {
         const targets = targetMap();
         return ids
           .map((id) => targets.get(id))
           .filter((target) => target?.status === "error" && !transientHealthError(target))
           .map((target) => target.label + ": " + (target.error || "error"));
       };
-      const requiredTargetsStartupTimeoutMs = () => {
-        const catalog = state.status?.songCatalog;
-        const ids = catalog?.requiredTargetIds || [];
+      const targetsStartupTimeoutMs = (ids) => {
         const targets = targetMap();
         const timing = state.status?.timing || {};
         const fallback = Number(timing.defaultStartupTimeoutMs) || 45000;
@@ -1204,7 +1296,12 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       const renderRuntimeStrip = (catalog) => {
         const root = byId("runtime-strip");
         const targets = targetMap();
-        const pills = (catalog.requiredTargetIds || []).map((id) => {
+        const ids = [
+          catalog.songPackTargetId,
+          ...(catalog.deckTargetIds || [])
+        ].filter(Boolean);
+        const uniqueIds = [...new Set(ids)];
+        const pills = uniqueIds.map((id) => {
           const target = targets.get(id);
           const label = target ? target.label : id;
           const status = target ? statusText(target) : "missing";
@@ -1244,10 +1341,15 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       const renderSystemMap = (status) => {
         const targets = status.targets || [];
         const catalog = status.songCatalog || { requiredTargetIds: [] };
-        const requiredIds = new Set(catalog.requiredTargetIds || []);
+        const decks = configuredDecks();
+        const requiredIds = new Set([
+          catalog.songPackTargetId,
+          ...(catalog.deckTargetIds || []),
+          ...(catalog.requiredTargetIds || [])
+        ].filter(Boolean));
         const targetsById = new Map(targets.map((target) => [target.id, target]));
         const rowGap = 88;
-        const height = Math.max(282, 112 + Math.max(targets.length, 2) * rowGap);
+        const height = Math.max(310, 112 + Math.max(targets.length, decks.length, 2) * rowGap);
         const width = 980;
         const manager = { x: 28, y: Math.round(height / 2 - 38), w: 184, h: 76 };
         const targetNodes = targets.map((target, index) => ({
@@ -1257,16 +1359,20 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           w: 224,
           h: 76
         }));
-        const song = selectedSong();
-        const songNode = {
-          x: 704,
-          y: Math.round(height / 2 - 38),
-          w: 228,
-          h: 76,
-          title: song ? song.title : "曲JSON未選択",
-          subtitle: song ? song.manifestPath : "song-packs/*/manifest.json",
-          status: song ? "選択中" : "未選択"
-        };
+        const songNodes = decks.map((deck, index) => {
+          const song = selectedSongForDeck(deck.id);
+          return {
+            deck,
+            song,
+            x: 704,
+            y: 56 + index * rowGap,
+            w: 228,
+            h: 76,
+            title: song ? deck.label + ": " + song.title : deck.label + ": 曲JSON未選択",
+            subtitle: song ? song.manifestPath : "song-packs/*/manifest.json",
+            status: song ? "選択中" : "未選択"
+          };
+        });
         const svg = makeSvg("svg", { viewBox: "0 0 " + width + " " + height, "aria-hidden": "true" });
 
         for (const item of targetNodes) {
@@ -1283,24 +1389,26 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         }
 
         const songServer = targetsById.get("song-pack-server") || targets.find((target) => target.kind === "asset-server");
-        const player = targetsById.get("fixture-player") || targets.find((target) => target.kind === "web-app");
         const songServerNode = targetNodes.find((item) => item.target.id === songServer?.id);
-        const playerNode = targetNodes.find((item) => item.target.id === player?.id);
-        if (songServerNode) {
-          appendMapEdge(
-            svg,
-            { x: songServerNode.x + songServerNode.w, y: songServerNode.y + songServerNode.h / 2 },
-            { x: songNode.x, y: songNode.y + 24 },
-            songServer?.running ? "is-related is-active" : "is-related"
-          );
-        }
-        if (playerNode) {
-          appendMapEdge(
-            svg,
-            { x: songNode.x, y: songNode.y + 56 },
-            { x: playerNode.x + playerNode.w, y: playerNode.y + playerNode.h / 2 },
-            player?.running ? "is-related is-active" : "is-related"
-          );
+        for (const songNode of songNodes) {
+          if (songServerNode) {
+            appendMapEdge(
+              svg,
+              { x: songServerNode.x + songServerNode.w, y: songServerNode.y + songServerNode.h / 2 },
+              { x: songNode.x, y: songNode.y + 24 },
+              songServer?.running ? "is-related is-active" : "is-related"
+            );
+          }
+          const deckTarget = targetsById.get(songNode.deck.targetId);
+          const deckNode = targetNodes.find((item) => item.target.id === deckTarget?.id);
+          if (deckNode) {
+            appendMapEdge(
+              svg,
+              { x: songNode.x, y: songNode.y + 56 },
+              { x: deckNode.x + deckNode.w, y: deckNode.y + deckNode.h / 2 },
+              deckTarget?.running ? "is-related is-active" : "is-related"
+            );
+          }
         }
 
         appendMapNode(svg, {
@@ -1325,48 +1433,40 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
             className: mapStateClass(item.target) + (requiredIds.has(item.target.id) ? " is-required" : "")
           });
         }
-        appendMapNode(svg, {
-          x: songNode.x,
-          y: songNode.y,
-          w: songNode.w,
-          h: songNode.h,
-          title: songNode.title,
-          subtitle: songNode.subtitle,
-          status: songNode.status,
-          className: "is-song" + (song ? " is-required" : "")
-        });
+        for (const songNode of songNodes) {
+          appendMapNode(svg, {
+            x: songNode.x,
+            y: songNode.y,
+            w: songNode.w,
+            h: songNode.h,
+            title: songNode.title,
+            subtitle: songNode.subtitle,
+            status: songNode.status,
+            className: "is-song" + (songNode.song ? " is-required" : "")
+          });
+        }
 
         byId("system-map-stage").replaceChildren(svg);
         const runningCount = targets.filter((target) => target.running).length;
         byId("map-summary").textContent = "起動中 " + runningCount + " / " + targets.length;
       };
-      const renderSelectedSong = () => {
-        const song = selectedSong();
-        const meta = byId("song-meta");
-        const open = byId("open-song");
-        if (!song) {
-          meta.textContent = "曲JSONが見つかりません。song-packs/<song-id>/manifest.json を確認してください。";
-          open.href = "#";
-          open.setAttribute("aria-disabled", "true");
-          byId("play-song").disabled = true;
-          return;
-        }
-        const duration = song.duration ? " / " + Math.round(song.duration) + "秒" : "";
-        meta.textContent = formatSongLabel(song) + duration + " / " + song.manifestPath;
-        open.href = song.playerUrl || "#";
-        open.toggleAttribute("aria-disabled", !song.playerUrl);
-        byId("play-song").disabled = state.busy || !song.playerUrl;
-      };
-      const renderSongCatalog = (catalog = { songs: [], errors: [], requiredTargetIds: [] }) => {
-        const select = byId("song-select");
-        const current = select.value;
-        const stored = loadSelectedSongId();
-        select.replaceChildren();
+      const renderDeckCard = (deck, catalog) => {
+        const target = deckTarget(deck.id);
+        const current = byId(deckDomId(deck.id, "song-select"))?.value || "";
+        const stored = storedDeckSongId(deck.id);
+        const article = make("article", "deck-card " + mapStateClass(target));
+        article.dataset.deckId = deck.id;
+        article.append(make("h3", "", deck.label));
+        article.append(make("p", "deck-status", target ? statusText(target) + " / port " + (target.ports?.join(", ") || "-") : "target未定義"));
+
+        const label = make("label", "", "曲JSON");
+        const select = make("select");
+        select.id = deckDomId(deck.id, "song-select");
+        select.setAttribute("aria-label", deck.label + " song manifest");
         if (!catalog.songs.length) {
           select.append(make("option", "", "曲JSONがありません"));
           select.disabled = true;
         } else {
-          select.disabled = false;
           for (const song of catalog.songs) {
             const option = make("option", "", formatSongLabel(song));
             option.value = song.directoryName;
@@ -1379,11 +1479,56 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
             select.value = stored;
           }
         }
-        renderSelectedSong();
+        select.addEventListener("change", () => {
+          rememberDeckSong(deck.id);
+          renderDecks();
+          if (state.status) renderSystemMap(state.status);
+        });
+        label.append(select);
+        article.append(label);
+
+        const song = (catalog.songs || []).find((item) => item.directoryName === select.value) || null;
+        const deckUrl = deckUrlForSong(deck, song);
+        const duration = song?.duration ? " / " + Math.round(song.duration) + "秒" : "";
+        article.append(make("p", "deck-meta", song ? formatSongLabel(song) + duration + " / " + song.manifestPath : "曲JSONを選んでください。"));
+        article.append(make("code", "deck-url", deckUrl || "Deck URLを生成できません。"));
+
+        const actions = make("div", "deck-actions");
+        const openButton = make("button", "primary", "起動して開く");
+        openButton.type = "button";
+        openButton.disabled = state.busy || !deckUrl || !target;
+        openButton.addEventListener("click", () => openDeck(deck.id));
+        const copyButton = make("button", "", "URLコピー");
+        copyButton.type = "button";
+        copyButton.disabled = state.busy || !deckUrl;
+        copyButton.addEventListener("click", () => copyDeckUrl(deck.id));
+        const startButton = make("button", "", "起動");
+        startButton.type = "button";
+        startButton.disabled = state.busy || !target;
+        startButton.addEventListener("click", () => startDeck(deck.id));
+        const stopButton = make("button", "", "停止");
+        stopButton.type = "button";
+        stopButton.disabled = state.busy || !target;
+        stopButton.addEventListener("click", () => stopDeck(deck.id));
+        const restartButton = make("button", "", "再起動");
+        restartButton.type = "button";
+        restartButton.disabled = state.busy || !target;
+        restartButton.addEventListener("click", () => restartDeck(deck.id));
+        actions.append(openButton, copyButton, startButton, stopButton, restartButton);
+        article.append(actions);
+        return article;
+      };
+      const renderDecks = () => {
+        const catalog = state.status?.songCatalog || { songs: [], errors: [], requiredTargetIds: [], decks: [] };
+        const root = byId("deck-list");
+        root.replaceChildren(...configuredDecks().map((deck) => renderDeckCard(deck, catalog)));
         renderRuntimeStrip(catalog);
         if (catalog.errors?.length) {
           setMessage("読み込めない曲JSONがあります: " + catalog.errors.join(" / "), "warn");
         }
+      };
+      const renderSongCatalog = (catalog = { songs: [], errors: [], requiredTargetIds: [], decks: [] }) => {
+        renderDecks();
       };
       const renderSelectedShow = () => {
         const profile = selectedShowProfile();
@@ -1472,59 +1617,170 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           setMessage("読み込めないshow-profile項目があります: " + showProfiles.errors.join(" / "), "warn");
         }
       };
-      const startPlaybackTargets = async () => {
-        const catalog = state.status?.songCatalog;
-        if (!catalog) throw new Error("曲カタログをまだ読み込めていません。");
-        if (catalog.launchSetId) {
-          await call("/api/sets/" + catalog.launchSetId + "/start", { method: "POST" });
+      const copyText = async (text) => {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
           return;
         }
-        for (const targetId of catalog.requiredTargetIds || []) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.append(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      };
+      const startDeckTargets = async (deckId) => {
+        if (!state.status?.songCatalog) throw new Error("曲カタログをまだ読み込めていません。");
+        for (const targetId of deckRequiredTargetIds(deckId)) {
           await call("/api/targets/" + targetId + "/start", { method: "POST" });
         }
       };
-      const waitForPlaybackTargets = async () => {
-        const deadline = Date.now() + requiredTargetsStartupTimeoutMs();
+      const waitForDeckTargets = async (deckId) => {
+        const ids = deckRequiredTargetIds(deckId);
+        const deadline = Date.now() + targetsStartupTimeoutMs(ids);
         while (Date.now() < deadline) {
           await refresh();
-          const errors = requiredTargetErrors();
+          const errors = targetErrors(ids);
           if (errors.length) throw new Error(errors.join(" / "));
-          if (requiredTargetsReady()) return;
+          if (targetsReady(ids)) return;
           await sleep(800);
         }
         await refresh();
-        const errors = requiredTargetErrors();
+        const errors = targetErrors(ids);
         if (errors.length) throw new Error(errors.join(" / "));
-        if (requiredTargetsReady()) return;
-        throw new Error("サーバーの起動待ちがタイムアウトしました。サーバー状態カードの詳細ログを確認してください。");
+        if (targetsReady(ids)) return;
+        throw new Error(deckById(deckId)?.label + " の起動待ちがタイムアウトしました。サーバー状態カードの詳細ログを確認してください。");
       };
-      const playSelectedSong = async () => {
-        const song = selectedSong();
-        if (!song?.playerUrl) {
+      const startDeck = async (deckId) => {
+        const deck = deckById(deckId);
+        if (!deck) return;
+        try {
+          setBusy(true);
+          setMessage(deck.label + " を起動しています...", "warn");
+          await startDeckTargets(deckId);
+          await waitForDeckTargets(deckId);
+          setMessage(deck.label + " を起動しました。", "ok");
+        } catch (error) {
+          setMessage(error.message, "error");
+        } finally {
+          setBusy(false);
+          renderDecks();
+        }
+      };
+      const stopDeck = async (deckId) => {
+        const deck = deckById(deckId);
+        if (!deck?.targetId) return;
+        try {
+          setBusy(true);
+          setMessage(deck.label + " を停止しています...", "warn");
+          await call("/api/targets/" + deck.targetId + "/stop", { method: "POST" });
+          await refresh();
+          setMessage(deck.label + " を停止しました。Song Data Serverと他Deckは止めていません。", "ok");
+        } catch (error) {
+          setMessage(error.message, "error");
+        } finally {
+          setBusy(false);
+          renderDecks();
+        }
+      };
+      const restartDeck = async (deckId) => {
+        const deck = deckById(deckId);
+        if (!deck?.targetId) return;
+        try {
+          setBusy(true);
+          setMessage(deck.label + " を再起動しています...", "warn");
+          await call("/api/targets/" + deck.targetId + "/restart", { method: "POST" });
+          await waitForDeckTargets(deckId);
+          setMessage(deck.label + " を再起動しました。", "ok");
+        } catch (error) {
+          setMessage(error.message, "error");
+        } finally {
+          setBusy(false);
+          renderDecks();
+        }
+      };
+      const copyDeckUrl = async (deckId) => {
+        const deck = deckById(deckId);
+        const url = selectedDeckUrl(deckId);
+        if (!url) {
+          setMessage("コピーできる " + (deck?.label || deckId) + " URLがありません。", "error");
+          return;
+        }
+        rememberDeckSong(deckId);
+        try {
+          await copyText(url);
+          setMessage((deck?.label || deckId) + " URLをコピーしました。", "ok");
+        } catch (error) {
+          setMessage("URLコピーに失敗しました: " + error.message, "error");
+        }
+      };
+      const copyAllDeckUrls = async () => {
+        const lines = configuredDecks()
+          .map((deck) => {
+            const url = selectedDeckUrl(deck.id);
+            return url ? deck.label + ": " + url : "";
+          })
+          .filter(Boolean);
+        if (!lines.length) {
+          setMessage("コピーできるDeck URLがありません。", "error");
+          return;
+        }
+        try {
+          await copyText(lines.join("\\n"));
+          setMessage("Deck URLをまとめてコピーしました。", "ok");
+        } catch (error) {
+          setMessage("URLコピーに失敗しました: " + error.message, "error");
+        }
+      };
+      const stopAllDecks = async () => {
+        const decks = configuredDecks().filter((deck) => deck.targetId);
+        try {
+          setBusy(true);
+          setMessage("Deck A/Bだけを停止しています。Song Data Serverは停止しません。", "warn");
+          for (const deck of [...decks].reverse()) {
+            await call("/api/targets/" + deck.targetId + "/stop", { method: "POST" });
+          }
+          await refresh();
+          setMessage("Deck A/Bを停止しました。Song Data Serverは起動したままです。", "ok");
+        } catch (error) {
+          setMessage(error.message, "error");
+        } finally {
+          setBusy(false);
+          renderDecks();
+        }
+      };
+      const openDeck = async (deckId) => {
+        const deck = deckById(deckId);
+        const song = selectedSongForDeck(deckId);
+        const deckUrl = selectedDeckUrl(deckId);
+        if (!song || !deckUrl) {
           setMessage("再生できる曲JSONを選んでください。", "error");
           return;
         }
-        rememberSelectedSong();
+        rememberDeckSong(deckId);
         const pendingWindow = window.open("about:blank", "_blank");
         try {
           setBusy(true);
-          setMessage("必要なサーバーを起動しています...", "warn");
-          await startPlaybackTargets();
-          await waitForPlaybackTargets();
+          setMessage(deck.label + " に必要なサーバーを起動しています...", "warn");
+          await startDeckTargets(deckId);
+          await waitForDeckTargets(deckId);
           if (pendingWindow) {
             pendingWindow.opener = null;
-            pendingWindow.location.replace(song.playerUrl);
-            setMessage(formatSongLabel(song) + " を開きました。", "ok");
+            pendingWindow.location.replace(deckUrl);
+            setMessage(deck.label + "で " + formatSongLabel(song) + " を開きました。", "ok");
           } else {
             setMessage("再生画面へ移動します。", "ok");
-            window.location.href = song.playerUrl;
+            window.location.href = deckUrl;
           }
         } catch (error) {
           if (pendingWindow) pendingWindow.close();
           setMessage(error.message, "error");
         } finally {
           setBusy(false);
-          renderSelectedSong();
+          renderDecks();
         }
       };
       const renderTarget = (target) => {
@@ -1655,11 +1911,6 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       document.querySelectorAll("[data-sync-view]").forEach((button) => {
         button.addEventListener("click", () => setSyncView(button.dataset.syncView));
       });
-      byId("song-select").addEventListener("change", () => {
-        rememberSelectedSong();
-        renderSelectedSong();
-        if (state.status) renderSystemMap(state.status);
-      });
       byId("show-select").addEventListener("change", () => {
         rememberShowSelection();
         renderSelectedShow();
@@ -1681,10 +1932,8 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         rememberShowSelection();
         applySongSelection(item.songDirectoryName);
       });
-      byId("play-song").addEventListener("click", playSelectedSong);
-      byId("open-song").addEventListener("click", (event) => {
-        if (!selectedSong()?.playerUrl) event.preventDefault();
-      });
+      byId("stop-decks").addEventListener("click", stopAllDecks);
+      byId("copy-deck-urls").addEventListener("click", copyAllDeckUrls);
       refresh().catch((error) => setMessage(error.message, "error"));
       setInterval(() => {
         const readingLogs = document.querySelector(".tech-details:hover, .tech-details:focus-within");

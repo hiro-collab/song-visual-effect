@@ -69,15 +69,15 @@ Song Package Server
 
 各ポートはworktreeごとに起動時に自動割当されます。実際の値はLaunch Manager GUI下部と `.codex/runtime/ports.json` に記録されます。
 
-管理画面で曲JSONを選んで再生すると、再生画面と曲データサーバーが立ち上がり、選択した曲のfixture player URLを開きます。状態マップでは、Launch Manager、各target、選択中の曲JSONの関係をノードグラフとして確認でき、起動中のノードと連携線が光ります。詳細操作で `標準再生セット` を手動起動することもできます。GUIタブを閉じても起動中targetは止まりません。停止するにはTarget停止、Set停止、または全停止を使います。
+管理画面で曲JSONを選ぶと、Deck A/Bそれぞれの再生画面URLを生成し、必要なDeck playerと曲データサーバーを起動できます。状態マップでは、Launch Manager、Deck A/B、曲データサーバー、選択中の曲JSONの関係をノードグラフとして確認でき、起動中のノードと連携線が光ります。詳細操作で `標準再生セット` や `Deck A/B 再生セット` を手動起動することもできます。GUIタブを閉じても起動中targetは止まりません。停止するにはDeck停止、Target停止、Set停止、または全停止を使います。
 
-fixture player appは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定曲へ自動フォールバックせず、起動エラーとして扱います。
+player appは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。Deck A/Bは同じplayer appを別portで起動します。manifest URLがない場合、特定曲へ自動フォールバックせず、起動エラーとして扱います。
 
 ```text
-http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
+http://127.0.0.1:<deck-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
 ```
 
-並行worktreeで起動する場合、通常は手動でポートをずらす必要はありません。Launch Managerはworktree rootから安定した候補帯を作り、空きポートを探して `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` 相当の値を起動時に設定します。明示的に固定したい場合だけ環境変数を指定できます。song-pack serverを立てる場合、player portに合わせたCORS許可originをtarget環境変数として渡します。
+並行worktreeで起動する場合、通常は手動でポートをずらす必要はありません。Launch Managerはworktree rootから安定した候補帯を作り、空きポートを探して `DEV_MANAGER_PORT`、`DECK_A_PLAYER_PORT`、`DECK_B_PLAYER_PORT`、`SONG_PACK_PORT` 相当の値を起動時に設定します。`PLAYER_PORT` はDeck A互換値として残します。明示的に固定したい場合だけ環境変数を指定できます。song-pack serverを立てる場合、Deck A/Bのplayer portに合わせたCORS許可originをtarget環境変数として渡します。
 
 Launch Managerの非責務:
 

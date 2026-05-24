@@ -20,6 +20,29 @@ const targetById = (config, id) => config.targets.find((target) => target.id ===
 
 const firstUsableUrl = (target) => target?.urls?.open ?? null;
 
+const deckTargetSpecs = [
+  { id: "deck-a", label: "Deck A", targetId: "deck-a-player" },
+  { id: "deck-b", label: "Deck B", targetId: "deck-b-player" }
+];
+
+const listDecks = (config) => {
+  const decks = deckTargetSpecs
+    .map((spec) => {
+      const target = targetById(config, spec.targetId);
+      const playerBaseUrl = firstUsableUrl(target);
+      return target && playerBaseUrl ? { ...spec, playerBaseUrl } : null;
+    })
+    .filter(Boolean);
+
+  if (decks.length > 0) return decks;
+
+  const fixturePlayer = targetById(config, "fixture-player") ?? config.targets.find((target) => target.kind === "web-app");
+  const playerBaseUrl = firstUsableUrl(fixturePlayer);
+  return fixturePlayer && playerBaseUrl
+    ? [{ id: "deck-a", label: "Deck A", targetId: fixturePlayer.id, playerBaseUrl }]
+    : [];
+};
+
 const isInsidePath = (root, candidate) => {
   const path = relative(root, candidate);
   return path === "" || (!path.startsWith("..") && !isAbsolute(path));
@@ -39,7 +62,7 @@ const playerUrlFor = (playerBaseUrl, manifestUrl) => {
   return url.toString();
 };
 
-const readManifestSummary = async ({ songPacksRoot, songPacksRootReal, dirent, songServerBaseUrl, playerBaseUrl }) => {
+const readManifestSummary = async ({ songPacksRoot, songPacksRootReal, dirent, songServerBaseUrl, decks }) => {
   const directoryName = dirent.name;
   const manifestPath = resolve(songPacksRoot, directoryName, "manifest.json");
   const directoryPath = resolve(songPacksRoot, directoryName);
@@ -64,6 +87,8 @@ const readManifestSummary = async ({ songPacksRoot, songPacksRootReal, dirent, s
     ? new URL(`${encodeURIComponent(directoryName)}/manifest.json`, songServerBaseUrl).toString()
     : null;
 
+  const deckUrls = Object.fromEntries(decks.map((deck) => [deck.id, playerUrlFor(deck.playerBaseUrl, manifestUrl)]));
+
   return {
     id: asDisplayText(manifest.id, directoryName),
     directoryName,
@@ -72,20 +97,22 @@ const readManifestSummary = async ({ songPacksRoot, songPacksRootReal, dirent, s
     duration: asDuration(manifest.duration),
     manifestPath: normalizeSlashes(relative(resolve(songPacksRoot, ".."), manifestPath)),
     manifestUrl,
-    playerUrl: playerUrlFor(playerBaseUrl, manifestUrl)
+    playerUrl: deckUrls["deck-a"] ?? Object.values(deckUrls)[0] ?? null,
+    deckUrls
   };
 };
 
 export const listSongCatalog = async (config) => {
   const songPacksRoot = resolve(config.root, "song-packs");
-  const fixturePlayer = targetById(config, "fixture-player") ?? config.targets.find((target) => target.kind === "web-app");
   const songPackServer =
     targetById(config, "song-pack-server") ?? config.targets.find((target) => target.kind === "asset-server");
-  const playerBaseUrl = firstUsableUrl(fixturePlayer);
+  const decks = listDecks(config);
+  const deckA = decks.find((deck) => deck.id === "deck-a") ?? decks[0] ?? null;
   const songServerBaseUrl = urlWithTrailingSlash(firstUsableUrl(songPackServer));
-  const requiredTargetIds = [songPackServer?.id, fixturePlayer?.id].filter(Boolean);
+  const requiredTargetIds = [songPackServer?.id, deckA?.targetId].filter(Boolean);
   const launchSet =
     config.sets.find((set) => requiredTargetIds.every((targetId) => set.targets.includes(targetId))) ?? null;
+  const deckTargetIds = decks.map((deck) => deck.targetId);
 
   let dirents = [];
   let songPacksRootReal;
@@ -97,7 +124,10 @@ export const listSongCatalog = async (config) => {
       songs: [],
       errors: [`song-packs could not be read: ${error.message}`],
       requiredTargetIds,
-      launchSetId: launchSet?.id ?? null
+      launchSetId: launchSet?.id ?? null,
+      songPackTargetId: songPackServer?.id ?? null,
+      deckTargetIds,
+      decks
     };
   }
 
@@ -106,7 +136,7 @@ export const listSongCatalog = async (config) => {
   for (const dirent of dirents) {
     if (!dirent.isDirectory() || dirent.name.startsWith(".")) continue;
     try {
-      const song = await readManifestSummary({ songPacksRoot, songPacksRootReal, dirent, songServerBaseUrl, playerBaseUrl });
+      const song = await readManifestSummary({ songPacksRoot, songPacksRootReal, dirent, songServerBaseUrl, decks });
       if (song) songs.push(song);
     } catch (error) {
       errors.push(`${dirent.name}: ${error.message}`);
@@ -124,6 +154,9 @@ export const listSongCatalog = async (config) => {
     songs,
     errors,
     requiredTargetIds,
-    launchSetId: launchSet?.id ?? null
+    launchSetId: launchSet?.id ?? null,
+    songPackTargetId: songPackServer?.id ?? null,
+    deckTargetIds,
+    decks
   };
 };

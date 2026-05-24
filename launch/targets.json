@@ -1,21 +1,40 @@
 {
   "targets": [
     {
-      "id": "fixture-player",
-      "label": "再生画面",
+      "id": "deck-a-player",
+      "label": "Deck A 再生画面",
       "kind": "web-app",
       "cwd": ".",
       "command": "npm",
-      "args": ["run", "dev:player", "--", "--port", "${PLAYER_PORT:-5173}"],
-      "ports": ["${PLAYER_PORT:-5173}"],
+      "args": ["run", "dev:player", "--", "--port", "${DECK_A_PLAYER_PORT:-5173}"],
+      "ports": ["${DECK_A_PLAYER_PORT:-5173}"],
       "startupTimeoutMs": 60000,
       "urls": {
-        "open": "http://127.0.0.1:${PLAYER_PORT:-5173}/",
-        "workflowMap": "http://127.0.0.1:${PLAYER_PORT:-5173}/docs/workflows.html",
-        "fixture": "http://127.0.0.1:${PLAYER_PORT:-5173}/?song=http://127.0.0.1:${SONG_PACK_PORT:-5174}/shining-star/manifest.json"
+        "open": "http://127.0.0.1:${DECK_A_PLAYER_PORT:-5173}/",
+        "workflowMap": "http://127.0.0.1:${DECK_A_PLAYER_PORT:-5173}/docs/workflows.html",
+        "fixture": "http://127.0.0.1:${DECK_A_PLAYER_PORT:-5173}/?song=http://127.0.0.1:${SONG_PACK_PORT:-5174}/shining-star/manifest.json"
       },
       "health": {
-        "url": "http://127.0.0.1:${PLAYER_PORT:-5173}/",
+        "url": "http://127.0.0.1:${DECK_A_PLAYER_PORT:-5173}/",
+        "intervalMs": 5000
+      }
+    },
+    {
+      "id": "deck-b-player",
+      "label": "Deck B 再生画面",
+      "kind": "web-app",
+      "cwd": ".",
+      "command": "npm",
+      "args": ["run", "dev:player", "--", "--port", "${DECK_B_PLAYER_PORT:-5175}"],
+      "ports": ["${DECK_B_PLAYER_PORT:-5175}"],
+      "startupTimeoutMs": 60000,
+      "urls": {
+        "open": "http://127.0.0.1:${DECK_B_PLAYER_PORT:-5175}/",
+        "workflowMap": "http://127.0.0.1:${DECK_B_PLAYER_PORT:-5175}/docs/workflows.html",
+        "fixture": "http://127.0.0.1:${DECK_B_PLAYER_PORT:-5175}/?song=http://127.0.0.1:${SONG_PACK_PORT:-5174}/shining-star/manifest.json"
+      },
+      "health": {
+        "url": "http://127.0.0.1:${DECK_B_PLAYER_PORT:-5175}/",
         "intervalMs": 5000
       }
     },
@@ -29,7 +48,7 @@
       "env": {
         "SONG_PACK_HOST": "127.0.0.1",
         "SONG_PACK_PORT": "${SONG_PACK_PORT:-5174}",
-        "SONG_PACK_CORS_ORIGINS": "http://127.0.0.1:${PLAYER_PORT:-5173},http://localhost:${PLAYER_PORT:-5173}"
+        "SONG_PACK_CORS_ORIGINS": "http://127.0.0.1:${DECK_A_PLAYER_PORT:-5173},http://localhost:${DECK_A_PLAYER_PORT:-5173},http://127.0.0.1:${DECK_B_PLAYER_PORT:-5175},http://localhost:${DECK_B_PLAYER_PORT:-5175}"
       },
       "ports": ["${SONG_PACK_PORT:-5174}"],
       "startupTimeoutMs": 30000,
@@ -46,8 +65,14 @@
     {
       "id": "basic-fixture",
       "label": "標準再生セット",
-      "description": "再生画面と曲データサーバーを起動する標準セット。",
-      "targets": ["song-pack-server", "fixture-player"]
+      "description": "Deck A再生画面と曲データサーバーを起動する互換セット。",
+      "targets": ["song-pack-server", "deck-a-player"]
+    },
+    {
+      "id": "deck-preview",
+      "label": "Deck A/B 再生セット",
+      "description": "Deck A、Deck B、曲データサーバーを起動するライブ確認用セット。",
+      "targets": ["song-pack-server", "deck-a-player", "deck-b-player"]
     }
   ]
 }

@@ -26,7 +26,8 @@ test("Launch Manager auto ports avoid an occupied candidate and stay distinct", 
     await listen(server, occupied);
     const ports = await resolveLaunchPorts({ root });
     assert.notEqual(ports.manager, occupied);
-    assert.equal(new Set([ports.manager, ports.player, ports.songPack]).size, 3);
+    assert.equal(ports.player, ports.deckA);
+    assert.equal(new Set([ports.manager, ports.deckA, ports.deckB, ports.songPack]).size, 4);
   } finally {
     await close(server).catch(() => {});
     rmSync(root, { recursive: true, force: true });
@@ -41,8 +42,9 @@ test("Launch Manager rejects duplicate explicit ports", async () => {
         resolveLaunchPorts({
           root,
           requestedManagerPort: 53001,
-          requestedPlayerPort: 53001,
-          requestedSongPackPort: 53002
+          requestedDeckAPlayerPort: 53001,
+          requestedDeckBPlayerPort: 53002,
+          requestedSongPackPort: 53003
         }),
       /must be different/
     );
