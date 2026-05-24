@@ -194,6 +194,7 @@ Songle由来のJSONは、完全な音楽スコアではなく、演出のきっ�
 - tools: 歌詞タイミング編集などのoptional tool。
 - loader: manifestや素材URL解決。
 - song-owned time map: 曲側の追加JSONを `context.assets.readJson()` で読み、beat反応の強度や包絡を調整する。manifest標準スキーマへ昇格させず、値や語彙は曲側に残す。
+- song-owned composition map: ひとつのJSONへ全判断を詰め込みすぎる場合は、感情/強度/反応量のmapと、表示範囲/密度/視線誘導/主役構造のmapを曲側で分けてもよい。map名、ラベル、時刻、値は曲固有にする。
 - visual host: 曲adapter用の追加表示レイヤ、DPR/resize、fixture UIと重ならないsafe area。WebGLなどでcanvasを使う場合は2D contextを作らないレイヤも選べる。
 - content rect helper: Canvas2Dを選んだ曲だけが任意で使える、DPR resize、safe area clip、pointer正規化、文字サイズfitの小さな補助。全画面投影の主映像はviewport全体で構成し、contentRectはポインタ正規化やHUD/状態ラベルだけに使ってもよい。
 

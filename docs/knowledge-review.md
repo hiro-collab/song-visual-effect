@@ -141,11 +141,12 @@ system担当は、候補を小さな主張に分解してから分類します�
 
 ### 2026-05-24: song-owned time map
 
-元連絡: `#be904bd7af`
+元連絡: `#be904bd7af`, `#60a2d7317b`
 
 - conditional: 曲側の追加time mapは `context.assets.readJson()` で読み、beat反応の強度や包絡を調整する入力として使える。
+- conditional: mapが大きくなりすぎる場合は、感情/強度/反応量のmapと、表示範囲/密度/視線誘導/主役構造のmapを曲側で分ける選択肢がある。
 - common: manifest標準スキーマを増やさず、曲側adapterが必要なJSONを曲パック内で読む。
-- song-owned: mapの値、ラベル、感情語、表示語彙。これらは曲の解釈に属する。
+- song-owned: mapの値、ラベル、感情語、表示語彙、具体的な構図名や主役構造。これらは曲の解釈に属する。
 
 反映済み: `docs/song-authoring.md` のsystem補助説明へ、song-owned time mapの扱いを追記した。
 
