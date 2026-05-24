@@ -821,6 +821,13 @@
         },
         {
           "from": "deckPlaybackSpec",
+          "to": "visualSequencer",
+          "action": "visual time操作名を分ける",
+          "payload": "pause-visual、scrub-visual-to、set-visual-rate",
+          "note": "将来APIではplayerのpause/seekとvisualTime操作を混ぜません。MVPでは外部APIを作らず、player画面内optional panelで確認します。"
+        },
+        {
+          "from": "deckPlaybackSpec",
           "to": "contextDocs",
           "action": "責務境界を守る",
           "payload": "project-scope、launch-manager-spec、show-profile",
