@@ -21,6 +21,7 @@ export const isVisualSequencerToolEnabled = () => (
 const formatTime = (time: number) => `${time.toFixed(3)}s`;
 const formatOffset = (offsetMs: number) => `${offsetMs >= 0 ? "+" : ""}${Math.round(offsetMs)}ms`;
 const formatRate = (rate: number) => rate.toFixed(2);
+const clampRate = (rate: number) => Math.min(Math.max(rate, 0), 4);
 
 const wrapTime = (time: number, duration: number) => {
   const safeDuration = Math.max(0.001, duration);
@@ -85,7 +86,9 @@ export class VisualSequencerTool {
     this.offset.textContent = formatOffset(state.offsetMs);
     this.rateReadout.textContent = formatRate(state.rate);
     this.modeSelect.value = state.mode;
-    this.rateInput.value = String(state.rate);
+    if (document.activeElement !== this.rateInput) {
+      this.rateInput.value = String(state.rate);
+    }
     this.pauseButton.textContent = state.paused ? "Resume" : "Pause";
     this.pauseButton.setAttribute("aria-pressed", String(state.paused));
     this.rawScrubInput.value = String(clampTime(state.rawTime, this.duration));
@@ -113,6 +116,12 @@ export class VisualSequencerTool {
     const row = make("label", { className: "visual-sequencer-field" });
     row.append(make("span", { text: label }), input);
     return row;
+  }
+
+  private setRateFromInput() {
+    const nextRate = Number.parseFloat(this.rateInput.value);
+    if (!Number.isFinite(nextRate)) return this.sequencer.getState();
+    return this.sequencer.setRate(clampRate(nextRate));
   }
 
   private buildPanel() {
@@ -157,10 +166,25 @@ export class VisualSequencerTool {
     this.rateInput.min = "0";
     this.rateInput.max = "4";
     this.rateInput.step = "0.05";
+    this.rateInput.addEventListener("input", () => {
+      this.applyAndRender(() => this.setRateFromInput());
+    });
     this.rateInput.addEventListener("change", () => {
-      this.applyAndRender(() => this.sequencer.setRate(Number.parseFloat(this.rateInput.value)));
+      this.applyAndRender(() => this.setRateFromInput());
+      this.rateInput.value = String(this.sequencer.getState().rate);
+    });
+    this.rateInput.addEventListener("blur", () => {
+      this.rateInput.value = String(this.sequencer.getState().rate);
     });
     rateRow.append(this.rateInput);
+
+    const rateActions = make("div", { className: "visual-sequencer-actions" });
+    rateActions.append(
+      this.button("0.5x", () => this.sequencer.setRate(0.5)),
+      this.button("1x", () => this.sequencer.setRate(1)),
+      this.button("1.5x", () => this.sequencer.setRate(1.5)),
+      this.button("2x", () => this.sequencer.setRate(2))
+    );
 
     this.rawScrubInput = make("input", { className: "visual-sequencer-scrub", type: "range" });
     this.rawScrubInput.min = "0";
@@ -210,6 +234,7 @@ export class VisualSequencerTool {
       grid,
       modeRow,
       rateRow,
+      rateActions,
       this.rangeRow("Raw seek", this.rawScrubInput),
       rawActions,
       this.rangeRow("Visual", this.visualScrubInput),
