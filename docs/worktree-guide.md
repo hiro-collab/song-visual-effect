@@ -6,11 +6,27 @@
 ## 基本構成
 
 - `C:\Users\kawai\works\music-effect`
-  - 管理用のルート worktree、または通常作業用のworktree。
+  - 管理用のルート worktree。ここが常に最新基準とは限りません。
   - `_worktrees/` は `.gitignore` 済みなので、ルートの `git status` を汚しません。
+- `C:\Users\kawai\works\music-effect\_worktrees\system-main`
+  - 現在のメイン相当の統合基準です。
+  - branchは `codex/system-kit-refactor` です。
+  - 新しい作業や新しい曲のworktreeは、原則としてここから分岐します。
 - `C:\Users\kawai\works\music-effect\_worktrees\<name>`
   - 並行作業用の追加worktree。
   - 実際に存在するworktreeとbranchは `git worktree list` で確認します。
+
+## worktree名の目安
+
+新しいworktree名は、担当範囲が一目で分かる名前にします。
+
+- `system-main`: メイン相当の統合基準。通常は直接大きな実装を抱え込まない。
+- `feature-<topic>`: Launch Manager、保存API、検証ツールなどのシステム機能。
+- `song-<song-id>`: 曲ごとの映像、adapter、cue、design。
+- `security-<topic>`: セキュリティレビューや境界強化。
+- `retired-<topic>`: 参照だけ残す古い実装。新規作業の土台にしない。
+
+既存の古いworktree名はすぐに全部変えなくて構いません。ただし、新しく始める作業はこの命名に寄せてください。
 
 ## よく使う確認コマンド
 
@@ -28,6 +44,24 @@ npm run sync:inbox
 cd C:\Users\kawai\works\music-effect\_worktrees\download-security
 git status --short --branch
 ```
+
+## 新しい作業worktreeを作る
+
+新しい曲や新しい機能は、原則として `codex/system-kit-refactor` から分岐します。
+
+プロジェクトルート `C:\Users\kawai\works\music-effect` で実行する例:
+
+```powershell
+git worktree add _worktrees\song-new-song -b codex/song-new-song codex/system-kit-refactor
+```
+
+システム機能の場合:
+
+```powershell
+git worktree add _worktrees\feature-launch-gui -b codex/feature-launch-gui codex/system-kit-refactor
+```
+
+作成後は、そのworktreeへ移動して `git status --short --branch` と `npm run sync:brief` を確認します。
 
 ## 並行作業の通知
 
@@ -69,12 +103,28 @@ npm run sync:ack -- --id abc123def0 --from system
 
 ## 開発サーバーの注意
 
-現時点の開発サーバーは既定ポートを使うため、複数 worktree で同時に起動すると
-ポート衝突が起きる可能性があります。
+複数 worktree で同時に起動する場合も、通常は手でポート番号を割り当てません。`npm run dev` と `start-music-effect.cmd` はworktree rootから安定した候補帯を作り、Launch Manager、fixture player、song-pack server用の空きポートを自動で選びます。実際の値はGUI下部と `.codex/runtime/ports.json` に記録されます。
 
-当面は、実際にブラウザで動かす worktree を一つに絞ってください。
-並行作業で複数サーバーを同時起動したくなったら、次の改善として
-`launch-manager` 側でポート割り当てと一括停止を整備します。
+明示的に固定したい場合だけ、次のように環境変数を指定します。
+
+```powershell
+$env:DEV_MANAGER_PORT=5182
+$env:PLAYER_PORT=5183
+$env:SONG_PACK_PORT=5184
+npm run dev
+```
+
+`npm run dev` 経由で起動する場合、`launch/targets.json` がplayer portに合わせた `SONG_PACK_CORS_ORIGINS` を song-pack server へ渡します。
+
+個別に `npm run dev:songs` だけを起動する場合は、fixture player側のoriginに合わせて `SONG_PACK_CORS_ORIGINS` を手動で指定してください。
+
+```powershell
+$env:SONG_PACK_PORT=5184
+$env:SONG_PACK_CORS_ORIGINS="http://127.0.0.1:5183,http://localhost:5183"
+npm run dev:songs
+```
+
+Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけを止めます。別worktreeのサーバーや手動起動した外部プロセスは停止対象にしません。
 
 ## 依存関係
 

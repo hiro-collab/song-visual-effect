@@ -1,5 +1,5 @@
-import type { MusicMap, SongManifest } from "./types";
-import { fetchBoundedJson, fetchBoundedText, resolveWithinBaseUrl } from "./safeFetch";
+import type { MusicMap, SongManifest } from "../core/types";
+import { fetchBoundedJson, fetchBoundedText, resolveWithinBaseUrl } from "../core/safeFetch";
 
 type SongAssetReadOptions = {
   allowOutsidePackage?: boolean;

@@ -2,7 +2,7 @@
 
 この文書は、複数の曲用映像や補助サーバーを起動、停止、監視するための簡素版Launch Manager仕様です。
 
-レビュー用の見取り図HTMLは `docs/launch-manager-spec.html` です。
+レビュー用の見取り図HTMLは `docs/archive/working-notes/launch-manager-spec.html` です。
 
 目的は、高機能な統合運用システムを最初から作ることではありません。ライブや制作中に「どれが動いているか」「どのポートを使っているか」「止めたいものを確実に止められるか」を見やすくする、小さく使える起動管理ツールを作ることです。
 
@@ -24,6 +24,7 @@ PC上で動く起動管理の本体です。
 責任:
 
 - target定義を読む。
+- worktreeごとの空きポートを自動割当し、`.codex/runtime/ports.json` に記録する。
 - 起動、停止、再起動を実行する。
 - PID、port、URL、ログ場所、状態を持つ。
 - stdout/stderrを保存する。
@@ -37,8 +38,9 @@ PCブラウザや将来のスマホから開く操作画面です。
 責任:
 
 - target一覧を表示する。
+- `song-packs/*/manifest.json` を曲JSONメニューとして表示し、選択した曲のfixture player URLを作る。
 - 起動、停止、再起動、全停止をLaunch Serverへ依頼する。
-- 状態、PID、port、URL、CPU、memory、ログ末尾を表示する。
+- 状態マップ、PID、port、URL、CPU、memory、ログ末尾を表示する。
 
 UIは正本を持ちません。ブラウザタブを閉じても起動中targetは止まりません。
 
@@ -104,17 +106,17 @@ Song Visual Server
   "targets": [
     {
       "id": "fixture-player",
-      "label": "Fixture player",
+      "label": "再生画面",
       "kind": "web-app",
       "cwd": ".",
       "command": "npm",
-      "args": ["run", "dev:player", "--", "--port", "5173"],
-      "ports": [5173],
+      "args": ["run", "dev:player", "--", "--port", "${PLAYER_PORT:-5173}"],
+      "ports": ["${PLAYER_PORT:-5173}"],
       "urls": {
-        "open": "http://127.0.0.1:5173/"
+        "open": "http://127.0.0.1:${PLAYER_PORT:-5173}/"
       },
       "health": {
-        "url": "http://127.0.0.1:5173/",
+        "url": "http://127.0.0.1:${PLAYER_PORT:-5173}/",
         "intervalMs": 5000
       }
     }
@@ -122,7 +124,7 @@ Song Visual Server
   "sets": [
     {
       "id": "basic-fixture",
-      "label": "Basic fixture",
+      "label": "標準再生セット",
       "targets": ["fixture-player", "song-pack-server"]
     }
   ]
@@ -139,13 +141,13 @@ Song Visual Server
 
 ## ポート管理
 
-最初は賢くしすぎない。
+人間が担当ごとにport表を管理しない。
 
-- targetに固定portを書ける。
-- 起動前にportが空いているか確認する。
-- portが埋まっていたら自動変更せず、エラー表示する。
-- GUIに「どのportが衝突しているか」を出す。
-- 将来必要なら `autoPort: true` と代替rangeを追加する。
+- Launch Manager起動時に、worktree rootから安定した候補帯を作る。
+- `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` が未指定なら、空きportを自動で選ぶ。
+- 明示指定されたportは尊重し、重複や不正値は起動エラーにする。
+- 実際のportは `.codex/runtime/ports.json` とGUI下部に表示する。
+- target起動直前にもport衝突を確認し、割当後に別プロセスが使った場合はGUIにエラーを出す。
 
 理由:
 
@@ -194,7 +196,7 @@ GUIはログ末尾だけを表示します。詳細なイベント履歴やmetri
 3. Launch SetまたはLaunch Targetを選ぶ。
 4. 起動ボタンを押す。
 5. Launch Serverがtarget定義を検証する。
-6. port衝突を確認する。
+6. target起動直前にport衝突を確認する。
 7. stdout/stderrログファイルを用意する。
 8. processを起動する。
 9. health checkする。
@@ -215,12 +217,13 @@ GUIはログ末尾だけを表示します。詳細なイベント履歴やmetri
 
 MVP画面:
 
-- 上部: Launch Set選択。
-- 上部: 選択Setを起動、選択Setを停止、全停止。
-- 中央: targetカード一覧。
-- targetカード: 状態、PID、port、URL、CPU、memory、起動時刻。
-- targetカード操作: 起動、停止、再起動、開く。
-- 下部またはカード内: stdout/stderrの直近ログ。
+- 上部: 曲JSON選択。`song-packs/<song-id>/manifest.json` を選び、必要なtargetを起動して再生画面を開く。
+- 状態マップ: Launch Manager、各target、選択中の曲JSONをノードとして表示する。起動中ノードと関連線は発光し、サーバーが増えても連携関係を見渡せるようにする。
+- 詳細操作: Launch Set選択、選択Set起動、選択Set停止、全停止。全停止は二度押し確認にする。
+- 中央: サーバー状態カード一覧。
+- サーバーカード: 状態、port、起動時刻を先に表示する。
+- サーバーカード操作: 起動、停止、再起動。
+- 詳細欄: PID、ID、command、CWD、stdout/stderrの直近ログ。
 - 警告: port衝突、起動失敗、異常終了、health失敗。
 
 GUI上には、次の注意を表示します。
@@ -233,7 +236,7 @@ GUI上には、次の注意を表示します。
 
 MVP:
 
-- `GET /api/status`
+- `GET /api/status`。target状態に加え、曲JSONメニュー用の `songCatalog` を返す。
 - `POST /api/targets/:id/start`
 - `POST /api/targets/:id/stop`
 - `POST /api/targets/:id/restart`
@@ -254,6 +257,7 @@ MVP:
 - POST APIはsame-originだけ許可する。
 - 任意コマンド入力UIは作らない。
 - target定義はローカルファイルだけ。
+- 曲JSONメニューはローカル `song-packs/*/manifest.json` の最小メタデータだけを読む。音源解析、歌詞本文解析、外部URL由来のtarget定義読み込みは行わない。
 - targetの `cwd` とログ出力先がリポジトリまたは許可ディレクトリ内にあることを確認する。
 - 停止対象はLaunch Serverが起動したmanaged targetだけ。
 
@@ -283,8 +287,9 @@ MVP:
 ```text
 scripts/launch-manager/
   config.mjs       targets.json読み込みと検証
+  auto-ports.mjs   worktreeごとのport自動割当とports.json記録
   supervisor.mjs   spawn/stop/restart/process状態
-  ports.mjs        port衝突確認
+  ports.mjs        port空き確認と候補探索
   logs.mjs         stdout/stderr保存と末尾取得
   metrics.mjs      PID/CPU/memoryの簡易取得
   server.mjs       HTTP APIとHTML UI
@@ -299,8 +304,9 @@ launch/
 
 - `npm run build`
 - `npm run dev`
+- `/api/status` に root、launchPorts、portsFile が出る。
 - GUIから `basic-fixture` を起動/停止できる。
-- port衝突時に起動せず、GUIにエラーが出る。
+- target起動直前のport衝突時に起動せず、GUIにエラーが出る。
 - 起動中targetのPID、port、stdout/stderr、CPU/memoryが見える。
 - GUIタブを閉じてもtargetは止まらない。
 - Launch Server終了時にtargetが停止する。

@@ -4,7 +4,7 @@
 
 既存の曲パッケージは実例であって、次の曲の設計テンプレートではありません。新しい曲を作るときは、まずこの文書と `docs/song-authoring.md` を読み、既存の `song-packs/*` の構成を参照しないでください。
 
-同じ理由で、`examples/fixture-player` のsoft light rendererやeffect群も新曲の視覚テンプレートではありません。新しい曲の見た目を作る場合は、`docs/song-visual-independence.md` と `templates/neutral-song-app/` から始めてください。
+同じ理由で、`examples/fixtures/soft-light-player` のsoft light rendererやeffect群も新曲の視覚テンプレートではありません。新しい曲の見た目を作る場合は、`docs/song-visual-independence.md` と `templates/neutral-song-app/` から始めてください。
 
 ## 目的
 
@@ -65,8 +65,10 @@ npm run dev
 起動管理画面:
 
 ```text
-http://127.0.0.1:5172/
+http://127.0.0.1:<manager-port>/
 ```
+
+実際のportはworktreeごとに自動割当され、GUI下部と `.codex/runtime/ports.json` に表示されます。
 
 同梱のfixture playerは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定の曲を自動選択せず、起動エラーとして扱います。
 

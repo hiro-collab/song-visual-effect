@@ -14,35 +14,23 @@
 
 曲に依存しない補助ライブラリです。曲名、曲専用cue、描画方式を固定しません。
 
-- `system/kit/types.ts`: MusicMap、SongManifest、歌詞、beat、markersなどの型定義。
 - `system/kit/index.ts`: 曲アプリが参照しやすい公開API入口。必要なhelperだけをここから選んでimportできる。
-- `system/kit/assets.ts`: manifestと曲パッケージを読み、fixture playerや曲アプリで使う `MusicMap` に変換する。既存曲へ暗黙フォールバックしない。
-- `system/kit/safeFetch.ts`: manifestや曲素材を安全に読むためのURL検証、パッケージ境界チェック、サイズ上限つきfetch。
-- `system/kit/songAdapterContext.ts`: 曲アプリへ渡せる補助context。manifest、base URL、曲パッケージ内asset readerを持つ。
-- `system/kit/songApp.ts`: fixture playerと簡易adapterの最小インターフェース。
-- `system/kit/visualHost.ts`: 曲adapter向けの中立的な表示レイヤ作成、DPR/resize、safe area計算。
-- `system/kit/contentRect.ts`: Canvas2Dを選んだ曲adapter向けのcontent rect解決、DPR resize、clip、pointer正規化、文字fit補助。
-- `system/kit/transport.ts`: 再生、停止、シーク、現在時刻を扱う。
-- `system/kit/frameLoop.ts`: `requestAnimationFrame` によるフレーム更新。
-- `system/kit/timing.ts`: beat、chorus、lyricsなどの時刻検索。
-- `system/kit/manualTiming.ts`: 手動歌詞キーフレーム、全体/範囲補正、Export用JSON生成。
-- `system/kit/damping.ts`: `DampValue`、`clamp`、`smoothstep`、`decayPulse` などの数値制御。
-- `system/kit/palette.ts`: paletteから色rampを作る。fixture rendererでも使うが、曲固有の標準ではない。
+- `system/kit/core/`: 型、manifest読み込み、安全なfetch、Transport、frame loopなど、描画方式に依存しない土台。
+- `system/kit/timing/`: beat、chorus、lyricsの時刻検索、beat state helper、手動歌詞タイミングのデータ処理。
+- `system/kit/render/`: 表示レイヤ、content rect、DPR/clip/pointer/text fit、damping、palette、optional Three services型など、任意で使える描画補助。
+- `system/kit/song-app/`: fixtureや曲adapterをつなぐ最小インターフェースと、曲パッケージ内asset reader。
 
-## examples/fixture-player
+`system/kit` の中身を直接深掘りする前に、まず `system/kit/index.ts` の公開APIから必要なものだけ選んでください。
+
+## examples/fixtures/soft-light-player
 
 system kitを使った動作確認用アプリです。新しい曲のテンプレートではありません。
 
-- `examples/fixture-player/main.ts`: fixture playerの入口。DOM取得、起動、入力登録、transport、fixture adapter、optional toolを接続する。
-- `examples/fixture-player/README.md`: fixture playerが標準テンプレートではないことを明示する注意書き。
-- `examples/fixture-player/styles.css`: fixture playerの見た目。Canvas上の歌詞、操作バー、Lyric Timingパネル、シーケンスバーなど。
-- `examples/fixture-player/dom.ts`: fixture playerのDOM要素を取得する。
-- `examples/fixture-player/adapters/registry.ts`: fixture player内で使う中立的な `builtin:` adapter registry。曲固有adapterを直接importせず、必要な場合は `song-packs/local-adapters.ts` へ委譲する。
-- `examples/fixture-player/adapters/fixtureSoftLight.ts`: 既存soft light rendererをfixture adapterとして包む。
-- `examples/fixture-player/renderers/softLightRenderer.ts`: fixture用の柔らかい光表現。新しい曲のテンプレートではない。
-- `examples/fixture-player/effects/particles.ts`: fixture renderer用の背景粒子。
-- `examples/fixture-player/effects/lightNetwork.ts`: fixture renderer用の動点と光線ネットワーク。
-- `examples/fixture-player/tools/lyricTimingTool.ts`: fixture playerに載せている歌詞タイミング編集UI。system kitの必須UIではない。
+- `examples/fixtures/soft-light-player/main.ts`: fixtureの入口。DOM取得、起動、入力登録、transport、fixture adapter、optional toolを接続する。
+- `examples/fixtures/soft-light-player/README.md`: fixtureが標準テンプレートではないことを明示する注意書き。
+- `examples/fixtures/soft-light-player/adapters/registry.ts`: fixture内で使う `builtin:` adapter registry。曲固有adapterを直接importせず、必要な場合は `song-packs/local-adapters.ts` へ委譲する。
+- `examples/fixtures/soft-light-player/renderers/` と `effects/`: soft light確認用の見た目。新しい曲のテンプレートとして読まない。
+- `examples/fixtures/soft-light-player/tools/`: lyric timingやbeat stateなど、fixtureに載せているoptional tool。system kitの必須UIではない。
 
 ## song-packs
 
@@ -64,12 +52,14 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/create-song-pack.mjs`: 既存曲を読まずに中立的な曲パック雛形を作る補助スクリプト。
 - `scripts/validate-song-pack.mjs`: 曲パックの参照メモがURLメタデータだけになっているかなどを確認する補助スクリプト。
 - `scripts/serve-song-packs.mjs`: `song-packs` をCORSつきで配信する静的サーバー。
+- `scripts/preview-snapshot.mjs`: 指定曲と指定時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` に保存する。
 - `scripts/dev-manager.mjs`: 互換入口。内部では `scripts/launch-manager/server.mjs` を起動する。
 - `scripts/launch-manager/config.mjs`: `launch/targets.json` の読み込み、環境変数テンプレート展開、target/set検証。
+- `scripts/launch-manager/auto-ports.mjs`: worktreeごとのLaunch Manager/player/song-pack port自動割当と `.codex/runtime/ports.json` 記録。
 - `scripts/launch-manager/server.mjs`: Launch ManagerのHTTP API、origin検証、CSPつきHTML応答。
 - `scripts/launch-manager/ui.mjs`: Launch Manager管理画面のHTML、CSS、ブラウザ側JS。
 - `scripts/launch-manager/supervisor.mjs`: managed targetの起動、停止、再起動、状態管理。
-- `scripts/launch-manager/ports.mjs`: 起動前のport衝突確認。
+- `scripts/launch-manager/ports.mjs`: port空き確認、衝突確認、候補探索。
 - `scripts/launch-manager/logs.mjs`: stdout/stderr保存とログ末尾取得。
 - `scripts/launch-manager/metrics.mjs`: PIDごとのCPU/memory簡易取得。
 - `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知、brief/ack、note/inbox連絡を扱うローカル同期補助。
@@ -95,12 +85,12 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `docs/module-map.md`: このファイル。ディレクトリとファイルの役割。
 - `docs/decisions.md`: 設計判断と理由。
 - `docs/launch-manager-spec.md`: 複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様。
-- `docs/launch-manager-spec.html`: Launch Manager仕様をレビューしやすくした単一HTMLページ。
+- `docs/archive/working-notes/launch-manager-spec.html`: 旧レビュー用HTML。現在は `workflows.html` と `launch-manager-spec.md` を優先する。
 - `docs/security.md`: ローカル開発サーバー、manifest、曲素材、Songle取得ツールの信頼境界と対策。
 - `docs/library-candidates.md`: 各曲担当から出たライブラリ、ツール、エンジン候補と採用前チェック。
-- `docs/plans.md`: 今後の作業候補。
-- `docs/known-issues.md`: 既知の問題と注意点。
+- `docs/knowledge-review.md`: 各曲担当から出た共通ノウハウ候補を、共通/条件つき/曲固有/不採用へ振り分ける審議ルール。
 - `docs/handoff.md`: 次のCodexスレッドへ渡す要約。
+- `docs/archive/working-notes/`: 過去の作業候補、既知問題、詳細メモ。通常は読まない。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 - `docs/workflows.html`: `workflows.json` を可視化する単一HTMLページ。
 - `docs/worktree-guide.md`: local worktree構成の使い方。

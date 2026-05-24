@@ -1,6 +1,4 @@
-import type { PointerState } from "../../../system/kit/types";
-import { DampValue, clamp } from "../../../system/kit/damping";
-import { ColorRamp } from "../../../system/kit/palette";
+import { ColorRamp, DampValue, clamp, type PointerState } from "../../../../system/kit";
 
 type NodePoint = {
   x: DampValue;

@@ -18,14 +18,21 @@ npm run sync:inbox
 確認すること:
 
 - 自分がどのworktreeとbranchにいるか。
+- そのbranchが、現在の統合基準 `codex/system-kit-refactor` の最新readyを土台にしているか。
 - 未コミット変更があるか。
 - 他スレッドからready通知が来ているか。
 - 他スレッドから質問、ブロッカー、短い連絡が来ているか。
 - そのready通知が、今回の担当範囲に関係するか。
 
+現時点では、`codex/system-kit-refactor` がメイン相当の統合基準です。代表worktreeは `_worktrees/system-main` です。プロジェクトルート直下のworktreeは別branchである場合があるため、新しい曲作業の基準にしないでください。
+
+新しい曲や曲固有エフェクトを始める場合は、既存曲worktreeではなく、`codex/system-kit-refactor` の最新readyを取り込んだ新しいworktree/branchから始めます。既存曲の `song-packs/*` は参考元にしません。
+
 ready通知は「必ず取り込むもの」ではなく、「取り込み候補」です。設計方針に合うか確認してからmergeします。
 note通知は「連絡」です。merge可能なcommitを示すものではないため、必要なら返答や相談だけ行います。
 `sync:brief` は、自分宛ての未対応question/blocker、未merge ready、最近のinfo/doneをまとめて表示します。
+
+共通ノウハウ候補のnoteは、そのまま正本docsへ入れません。`docs/knowledge-review.md` に沿って、曲固有のモチーフ、構図、色、数値、カメラ、演出名を取り除き、複数曲で使える作法や確認観点だけを昇格します。
 
 ## 次に読むファイル
 
@@ -42,8 +49,8 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - `docs/architecture.md`
 - `docs/module-map.md`
 - `docs/decisions.md`
-- `docs/plans.md`
-- `docs/known-issues.md`
+- `docs/knowledge-review.md`
+- `docs/archive/working-notes/` は過去メモです。正本に必要な情報がない場合だけ確認します。
 
 新しい曲や曲固有エフェクトを作る場合:
 
@@ -51,15 +58,16 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - `docs/song-authoring.md`
 - `docs/song-visual-independence.md`
 - `templates/neutral-song-app/visual-brief.md`
+- 共通ノウハウ候補を共有する場合だけ `docs/knowledge-review.md`
 
-新しい曲作成では、既存の `song-packs/*`、`examples/fixture-player/renderers/*`、`examples/fixture-player/effects/*` を読まないでください。既存曲やfixture rendererに引っ張られないためです。
+新しい曲作成では、既存の `song-packs/*`、`examples/fixtures/soft-light-player/renderers/*`、`examples/fixtures/soft-light-player/effects/*` を読まないでください。既存曲やfixture rendererに引っ張られないためです。
 
 ## 担当範囲を分類する
 
 作業前に、自分の担当を次のどれかに分類します。
 
 - system kit: `system/kit/*` の補助機能。
-- fixture player: `examples/fixture-player/*` の動作確認用アプリ。
+- fixture: `examples/fixtures/soft-light-player/*` の動作確認用アプリ。
 - song package / song app: 曲ごとの素材、cue、演出コード。
 - launch / dev server: 起動管理、ポート、停止、CORS。
 - docs / workflow: `docs/*`、`AGENTS.md`、`workflows.json`。
@@ -69,7 +77,7 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - system kitに曲固有の見た目や曲専用adapterを入れない。
 - fixture playerは回帰確認用であり、新曲の標準UIや標準rendererではない。
 - 曲固有のcue文法、主役構造、演出判断は曲側が持つ。
-- 曲固有adapterを同一ビルドで試す場合も、直接 `examples/fixture-player/adapters/registry.ts` へ曲IDを追加せず、`song-packs/local-adapters.ts` に登録する。
+- 曲固有adapterを同一ビルドで試す場合も、直接 `examples/fixtures/soft-light-player/adapters/registry.ts` へ曲IDを追加せず、`song-packs/local-adapters.ts` に登録する。
 
 ## Launch Managerの停止範囲
 
@@ -82,16 +90,9 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - 他worktreeのLaunch Managerや、別portで起動しているtargetを止めない。
 - 同じLaunch Manager URLを複数スレッドで見ている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
 
-並行作業では、worktreeごとにportを分けます。
+並行作業では、通常はLaunch Managerの自動ポート割当を使います。実際のportはGUI下部と `.codex/runtime/ports.json` に表示されます。固定したい場合だけ `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` を明示します。
 
-```powershell
-$env:DEV_MANAGER_PORT=5182
-$env:PLAYER_PORT=5183
-$env:SONG_PACK_PORT=5184
-npm run dev
-```
-
-停止操作や起動管理の修正をする前に、Launch Manager画面下部の `config` / `runtime` と各targetのportを見て、自分のworktreeを操作していることを確認してください。
+停止操作や起動管理の修正をする前に、Launch Manager画面下部の `worktree` / `ports` / `config` / `runtime` と各targetのportを見て、自分のworktreeを操作していることを確認してください。
 
 ## ready通知への対応
 
@@ -147,6 +148,8 @@ npm run sync:note -- --from system --to traffic-jam-redo --level question --topi
 - `sync:ready`: 他worktreeに取り込ませてよいcommitの通知。cleanなworktreeが必要。
 - `sync:merge`: ready通知が指すcommitを取り込む操作。
 
+共通ノウハウ候補を送る場合は、`--topic knowledge-candidate` を使い、候補、適用範囲、曲固有リスク、置き場所案を短く書きます。system担当は `common` / `conditional` / `song-owned` / `reject` に分類してから反映します。
+
 `--from` を省略すると現在branch名が送信者として表示されます。担当名を明示したい場合は `system`、`beat-sync`、`security`、`mesmerizer` のように短い名前を入れてください。
 
 対応済み、または自分の担当では対応不要と判断した連絡は `sync:ack` で確認済みにします。`sync:brief` には各項目の `#id` が表示されます。
@@ -179,8 +182,7 @@ npm run sync:ready -- -m "short message"
 設計や運用に影響する変更をした場合は、次を更新します。
 
 - `docs/handoff.md`
-- `docs/plans.md`
-- `docs/known-issues.md`
+- `docs/archive/working-notes/` は必要時だけ参照する。
 - `docs/workflows.json`
 - 必要なら `.codex/shared_note.md` と `.codex/log.md`
 

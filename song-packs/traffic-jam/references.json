@@ -1,0 +1,14 @@
+{
+  "schema": "music-effect.references.v1",
+  "note": "URL metadata only. Do not store lyrics, article bodies, screenshots, images, or copied source content here.",
+  "items": [
+    {
+      "label": "Kenney Car Kit",
+      "type": "asset-source",
+      "url": "https://kenney.nl/assets/car-kit",
+      "purpose": "Source and license reference for the curated low-poly vehicle GLB subset used by the Traffic Jam visual adapter.",
+      "accessedAt": "2026-05-24",
+      "language": "en"
+    }
+  ]
+}

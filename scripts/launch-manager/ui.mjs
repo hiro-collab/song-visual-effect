@@ -26,6 +26,8 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         --warn: #ffd07d;
         --bad: #ffaaa5;
         --info: #9fd4ff;
+        --primary: #f5c35f;
+        --primary-text: #18130a;
         font-family: "Yu Gothic UI", "Yu Gothic", Meiryo, system-ui, sans-serif;
       }
       * { box-sizing: border-box; }
@@ -50,18 +52,227 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; }
       h2 { margin: 0; font-size: 18px; }
       p { margin: 0; color: var(--muted); line-height: 1.7; }
-      .toolbar, .target-actions, .links {
+      .toolbar, .target-actions, .links, .song-actions, .flow-steps, .map-legend {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
         align-items: center;
       }
-      .toolbar {
-        padding: 14px;
+      .song-launcher {
+        border: 1px solid rgba(255, 217, 138, 0.34);
+        border-radius: 8px;
+        padding: 18px;
+        margin-bottom: 16px;
+        background: linear-gradient(180deg, rgba(255, 217, 138, 0.1), rgba(255, 255, 255, 0.035));
+      }
+      .song-launcher h2 {
+        margin-bottom: 6px;
+        font-size: 22px;
+      }
+      .flow-steps {
+        margin: 16px 0;
+      }
+      .step {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 6px 10px;
         border: 1px solid var(--line);
         border-radius: 8px;
-        background: rgba(255, 255, 255, 0.035);
+        background: rgba(0, 0, 0, 0.16);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .step strong {
+        display: inline-grid;
+        place-items: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: rgba(245, 195, 95, 0.18);
+        color: var(--accent);
+        font-size: 12px;
+      }
+      .song-form {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) auto;
+        gap: 12px;
+        align-items: end;
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .song-meta {
+        margin-top: 12px;
+        color: var(--text);
+      }
+      .message {
+        min-height: 24px;
+        margin-top: 10px;
+        color: var(--muted);
+      }
+      .message.is-ok { color: var(--ok); }
+      .message.is-warn { color: var(--warn); }
+      .message.is-error { color: var(--bad); }
+      .runtime-strip {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .runtime-pill {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 5px 9px;
+        background: rgba(0, 0, 0, 0.15);
+      }
+      .system-map {
+        border: 1px solid rgba(159, 212, 255, 0.26);
+        border-radius: 8px;
         margin-bottom: 16px;
+        padding: 16px;
+        background:
+          linear-gradient(180deg, rgba(159, 212, 255, 0.08), rgba(255, 255, 255, 0.03)),
+          var(--panel);
+      }
+      .map-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+      .map-head h2 {
+        margin-bottom: 4px;
+        font-size: 20px;
+      }
+      .map-summary {
+        min-width: 128px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        background: rgba(0, 0, 0, 0.16);
+        color: var(--text);
+        text-align: right;
+        font-weight: 700;
+      }
+      .map-stage {
+        overflow-x: auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          rgba(0, 0, 0, 0.18);
+        background-size: 34px 34px;
+      }
+      .system-map svg {
+        display: block;
+        width: 100%;
+        min-width: 860px;
+        height: auto;
+      }
+      .map-edge {
+        fill: none;
+        stroke: rgba(184, 177, 168, 0.42);
+        stroke-width: 2;
+        stroke-linecap: round;
+      }
+      .map-edge.is-related { stroke: rgba(255, 217, 138, 0.52); }
+      .map-edge.is-active {
+        stroke: rgba(147, 230, 177, 0.82);
+        filter: drop-shadow(0 0 5px rgba(147, 230, 177, 0.52));
+      }
+      .map-node rect {
+        fill: rgba(26, 28, 36, 0.96);
+        stroke: rgba(255, 255, 255, 0.18);
+        stroke-width: 1.2;
+      }
+      .map-node text {
+        fill: var(--text);
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .map-node .node-subtitle {
+        fill: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+      }
+      .map-node .node-status {
+        fill: var(--muted);
+        font-size: 11px;
+        font-weight: 400;
+      }
+      .node-dot {
+        fill: var(--muted);
+      }
+      .map-node.is-running rect {
+        stroke: rgba(147, 230, 177, 0.9);
+        filter: drop-shadow(0 0 8px rgba(147, 230, 177, 0.28));
+      }
+      .map-node.is-running .node-dot {
+        fill: var(--ok);
+        filter: drop-shadow(0 0 6px rgba(147, 230, 177, 0.9));
+        animation: nodePulse 1.9s ease-in-out infinite;
+      }
+      .map-node.is-starting rect, .map-node.is-stopping rect {
+        stroke: rgba(255, 208, 125, 0.9);
+      }
+      .map-node.is-starting .node-dot, .map-node.is-stopping .node-dot {
+        fill: var(--warn);
+        animation: nodePulse 1.1s ease-in-out infinite;
+      }
+      .map-node.is-error rect {
+        stroke: rgba(255, 170, 165, 0.95);
+      }
+      .map-node.is-error .node-dot { fill: var(--bad); }
+      .map-node.is-song rect {
+        stroke: rgba(245, 195, 95, 0.66);
+        fill: rgba(60, 48, 26, 0.9);
+      }
+      .map-node.is-required rect {
+        stroke-width: 2;
+      }
+      .map-legend {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .legend-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--muted);
+      }
+      .legend-dot.is-running { background: var(--ok); box-shadow: 0 0 9px rgba(147, 230, 177, 0.9); }
+      .legend-dot.is-starting { background: var(--warn); }
+      .legend-dot.is-error { background: var(--bad); }
+      .manual-panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        background: rgba(255, 255, 255, 0.035);
+        overflow: hidden;
+      }
+      .manual-panel summary {
+        cursor: pointer;
+        padding: 13px 14px;
+        color: var(--info);
+      }
+      .toolbar {
+        padding: 14px;
+        border-top: 1px solid var(--line);
       }
       select, button, a.launch {
         min-height: 40px;
@@ -82,7 +293,22 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       }
       button:hover, a.launch:hover { border-color: rgba(255, 217, 138, 0.76); }
       button:disabled { opacity: 0.5; cursor: wait; }
+      .primary {
+        min-width: 180px;
+        border-color: rgba(245, 195, 95, 0.85);
+        background: var(--primary);
+        color: var(--primary-text);
+        font-weight: 700;
+      }
+      .secondary {
+        min-width: 134px;
+      }
       .danger { border-color: rgba(255, 170, 165, 0.45); }
+      .danger.armed {
+        border-color: rgba(255, 170, 165, 0.9);
+        background: rgba(255, 170, 165, 0.14);
+        color: var(--bad);
+      }
       .note {
         margin-bottom: 18px;
         border: 1px solid rgba(255, 208, 125, 0.32);
@@ -94,6 +320,16 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
         gap: 14px;
+      }
+      .status-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        margin: 20px 0 10px;
+      }
+      .status-heading h2 {
+        font-size: 20px;
       }
       .target {
         border: 1px solid var(--line);
@@ -127,6 +363,29 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       .is-running .dot { background: var(--ok); }
       .is-starting .dot, .is-stopping .dot { background: var(--warn); }
       .is-error .dot { background: var(--bad); }
+      .target-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .metric {
+        min-height: 54px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+        background: rgba(0, 0, 0, 0.12);
+      }
+      .metric-label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .metric-value {
+        margin-top: 4px;
+        color: var(--text);
+        font-size: 14px;
+        overflow-wrap: anywhere;
+      }
       dl {
         display: grid;
         grid-template-columns: 94px 1fr;
@@ -143,16 +402,16 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         color: var(--bad);
       }
       .target.has-error .error { display: block; }
-      details {
+      .target details {
         border-top: 1px solid var(--line);
         background: rgba(0, 0, 0, 0.16);
       }
-      summary {
+      .target summary {
         cursor: pointer;
         padding: 10px 14px;
         color: var(--info);
       }
-      pre {
+      .target pre {
         margin: 0;
         max-height: 240px;
         overflow: auto;
@@ -162,13 +421,34 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         line-height: 1.55;
         white-space: pre-wrap;
       }
+      .target h3 {
+        margin: 12px 14px 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
       .footer {
         margin-top: 18px;
         color: var(--muted);
         font-size: 12px;
       }
+      @keyframes nodePulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .map-node.is-running .node-dot,
+        .map-node.is-starting .node-dot,
+        .map-node.is-stopping .node-dot {
+          animation: none;
+        }
+      }
       @media (max-width: 760px) {
         header { display: block; }
+        .song-form { grid-template-columns: 1fr; }
+        .target-summary { grid-template-columns: 1fr; }
+        .status-heading { display: block; }
+        .map-head { display: block; }
+        .map-summary { margin-top: 10px; text-align: left; }
         .toolbar { align-items: stretch; }
         select, button, a.launch { width: 100%; }
       }
@@ -179,26 +459,78 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       <header>
         <div>
           <h1>${escapeHtml(title)}</h1>
-          <p>Launch Server が正本として managed target を起動・停止・監視します。曲ごとの映像設計やJSON文法はここでは決めません。</p>
+          <p>曲JSONを選ぶと、必要なローカルサーバーを起動して、その曲の再生画面を開けます。</p>
         </div>
         <p id="updated-at">status loading...</p>
       </header>
 
-      <section class="toolbar" aria-label="Launch set controls">
-        <select id="set-select" aria-label="Launch Set"></select>
-        <button id="start-set">選択Setを起動</button>
-        <button id="stop-set">選択Setを停止</button>
-        <button id="stop-all" class="danger">全停止</button>
-        <button id="refresh">更新</button>
+      <section class="song-launcher" aria-label="Song launcher">
+        <h2>曲を選んで再生</h2>
+        <p>URLを手で組み立てず、ここから曲パッケージの manifest.json を選んで開きます。</p>
+        <div class="flow-steps" aria-label="Playback flow">
+          <span class="step"><strong>1</strong> 曲JSONを選ぶ</span>
+          <span class="step"><strong>2</strong> サーバーを起動</span>
+          <span class="step"><strong>3</strong> 再生画面を開く</span>
+        </div>
+        <div class="song-form">
+          <label>
+            曲JSON
+            <select id="song-select" aria-label="Song manifest">
+              <option>曲JSONを読み込み中...</option>
+            </select>
+          </label>
+          <div class="song-actions">
+            <button id="play-song" class="primary" disabled>選択曲を再生</button>
+            <a id="open-song" class="launch secondary" href="#" target="_blank" rel="noreferrer" aria-disabled="true">開く</a>
+          </div>
+        </div>
+        <p id="song-meta" class="song-meta"></p>
+        <p id="message" class="message" role="status" aria-live="polite"></p>
+        <div id="runtime-strip" class="runtime-strip"></div>
       </section>
 
-      <p class="note">このタブを閉じても起動中のtargetは止まりません。停止するには各targetの停止、Set停止、または全停止を使ってください。</p>
+      <section class="system-map" aria-label="System status map">
+        <div class="map-head">
+          <div>
+            <h2>システム状態マップ</h2>
+            <p>Launch Manager、曲JSON、各サーバーのつながりを地図のように見ます。起動中のノードと線が光ります。</p>
+          </div>
+          <div id="map-summary" class="map-summary">読み込み中</div>
+        </div>
+        <div id="system-map-stage" class="map-stage" role="img" aria-label="サーバー起動状態のノードマップ"></div>
+        <div class="map-legend" aria-label="Map legend">
+          <span class="legend-item"><span class="legend-dot is-running"></span>起動中</span>
+          <span class="legend-item"><span class="legend-dot is-starting"></span>起動/停止中</span>
+          <span class="legend-item"><span class="legend-dot"></span>停止中</span>
+          <span class="legend-item"><span class="legend-dot is-error"></span>エラー</span>
+        </div>
+      </section>
 
+      <details class="manual-panel">
+        <summary>詳細操作</summary>
+        <section class="toolbar" aria-label="Launch set controls">
+          <select id="set-select" aria-label="起動セット">
+            <option>起動セットを読み込み中...</option>
+          </select>
+          <button id="start-set">セットを起動</button>
+          <button id="stop-set">セットを停止</button>
+          <button id="stop-all" class="danger">全サーバー停止</button>
+          <button id="refresh">更新</button>
+        </section>
+      </details>
+
+      <p class="note">このタブを閉じても起動中のサーバーは止まりません。停止するには詳細操作、または各サーバーの停止を使ってください。</p>
+
+      <section class="status-heading" aria-label="Server status heading">
+        <h2>サーバー状態</h2>
+        <p>通常は上の「選択曲を再生」だけで操作できます。</p>
+      </section>
       <section id="targets" class="grid" aria-label="Launch targets"></section>
       <p id="runtime" class="footer"></p>
     </main>
     <script nonce="${escapeHtml(nonce)}">
-      const state = { status: null, busy: false };
+      const state = { status: null, busy: false, stopAllArmed: false, stopAllTimer: null };
+      const svgNs = "http://www.w3.org/2000/svg";
       const byId = (id) => document.getElementById(id);
       const make = (tag, className, text) => {
         const node = document.createElement(tag);
@@ -206,6 +538,15 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         if (text !== undefined) node.textContent = text;
         return node;
       };
+      const makeSvg = (tag, attrs = {}, text) => {
+        const node = document.createElementNS(svgNs, tag);
+        for (const [key, value] of Object.entries(attrs)) {
+          if (value !== undefined && value !== null) node.setAttribute(key, value);
+        }
+        if (text !== undefined) node.textContent = text;
+        return node;
+      };
+      const selectedSongStorageKey = "music-effect.launch-manager.selectedSong";
       const call = async (url, options = {}) => {
         let response;
         try {
@@ -217,10 +558,32 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         if (!response.ok) throw new Error(data.error || "Request failed");
         return data;
       };
+      const statusLabel = (value) => ({
+        stopped: "停止中",
+        starting: "起動中",
+        running: "起動中",
+        stopping: "停止中",
+        error: "エラー"
+      })[value] || value;
+      const healthLabel = (value) => ({
+        ok: "正常",
+        fail: "確認失敗",
+        unknown: "確認中",
+        none: ""
+      })[value] || value;
       const statusText = (target) => {
-        const health = target.health && target.health !== "none" ? " / health " + target.health : "";
-        return target.status + health;
+        const health = target.health && target.health !== "none" ? " / " + healthLabel(target.health) : "";
+        return statusLabel(target.status) + health;
       };
+      const roleLabel = (kind) => ({
+        "web-app": "再生用ブラウザ画面",
+        "asset-server": "曲JSONと素材の配信"
+      })[kind] || "補助サーバー";
+      const linkLabel = (key) => ({
+        open: "開く",
+        workflowMap: "ワークフロー",
+        fixture: "サンプル曲"
+      })[key] || key;
       const stripAnsi = (value) => String(value || "").replace(/\\u001B\\[[0-?]*[ -/]*[@-~]/g, "");
       const formatDate = (value) => value ? new Date(value).toLocaleString() : "-";
       const formatMetrics = (metrics) => {
@@ -229,20 +592,59 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         const memory = Number.isFinite(metrics.memoryMb) ? metrics.memoryMb + " MB" : "-";
         return "CPU " + cpu + " / Memory " + memory;
       };
+      const formatLaunchPorts = (ports) => {
+        if (!ports) return "ports: unknown";
+        return "ports: manager " + ports.manager + " / player " + ports.player + " / songs " + ports.songPack + " (" + ports.mode + ")";
+      };
+      const truncate = (value, max) => {
+        const text = String(value || "");
+        return text.length > max ? text.slice(0, max - 1) + "..." : text;
+      };
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       const setBusy = (busy) => {
         state.busy = busy;
         document.querySelectorAll("button").forEach((button) => button.disabled = busy);
       };
+      const setMessage = (text, level = "") => {
+        const node = byId("message");
+        node.textContent = text;
+        node.className = "message" + (level ? " is-" + level : "");
+      };
+      const clearStopAllArm = () => {
+        state.stopAllArmed = false;
+        if (state.stopAllTimer) clearTimeout(state.stopAllTimer);
+        state.stopAllTimer = null;
+        const button = byId("stop-all");
+        if (button) {
+          button.classList.remove("armed");
+          button.textContent = "全サーバー停止";
+        }
+      };
       const post = async (url) => {
         try {
+          if (url !== "/api/stop-all") clearStopAllArm();
           setBusy(true);
           await call(url, { method: "POST" });
           await refresh();
+          setMessage("操作を反映しました。", "ok");
         } catch (error) {
-          alert(error.message);
+          setMessage(error.message, "error");
         } finally {
           setBusy(false);
         }
+      };
+      const confirmStopAll = async () => {
+        if (!state.stopAllArmed) {
+          state.stopAllArmed = true;
+          const button = byId("stop-all");
+          button.classList.add("armed");
+          button.textContent = "もう一度押して全停止";
+          setMessage("起動中の全サーバーを止めるには、もう一度「全停止」を押してください。", "warn");
+          state.stopAllTimer = setTimeout(clearStopAllArm, 5000);
+          return;
+        }
+        clearStopAllArm();
+        await post("/api/stop-all");
       };
       const renderSets = (sets) => {
         const select = byId("set-select");
@@ -256,41 +658,301 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         }
         if (sets.some((set) => set.id === current)) select.value = current;
       };
+      const selectedSong = () => {
+        const catalog = state.status?.songCatalog;
+        const value = byId("song-select").value;
+        return (catalog?.songs || []).find((song) => song.directoryName === value) || null;
+      };
+      const loadSelectedSongId = () => {
+        try {
+          return localStorage.getItem(selectedSongStorageKey) || "";
+        } catch {
+          return "";
+        }
+      };
+      const rememberSelectedSong = () => {
+        const value = byId("song-select").value;
+        if (!value) return;
+        try {
+          localStorage.setItem(selectedSongStorageKey, value);
+        } catch {}
+      };
+      const targetMap = () => new Map((state.status?.targets || []).map((target) => [target.id, target]));
+      const targetReady = (target) =>
+        target?.running &&
+        target.status === "running" &&
+        !target.error &&
+        (!target.health || target.health === "ok" || target.health === "none");
+      const requiredTargetsReady = () => {
+        const catalog = state.status?.songCatalog;
+        const ids = catalog?.requiredTargetIds || [];
+        const targets = targetMap();
+        return ids.length > 0 && ids.every((id) => targetReady(targets.get(id)));
+      };
+      const requiredTargetErrors = () => {
+        const catalog = state.status?.songCatalog;
+        const ids = catalog?.requiredTargetIds || [];
+        const targets = targetMap();
+        return ids
+          .map((id) => targets.get(id))
+          .filter((target) => target?.status === "error")
+          .map((target) => target.label + ": " + (target.error || "error"));
+      };
+      const formatSongLabel = (song) => song.title + (song.artist ? " / " + song.artist : "");
+      const renderRuntimeStrip = (catalog) => {
+        const root = byId("runtime-strip");
+        const targets = targetMap();
+        const pills = (catalog.requiredTargetIds || []).map((id) => {
+          const target = targets.get(id);
+          const label = target ? target.label : id;
+          const status = target ? statusText(target) : "missing";
+          return make("span", "runtime-pill", label + ": " + status);
+        });
+        root.replaceChildren(...pills);
+      };
+      const metricNode = (label, value) => {
+        const node = make("div", "metric");
+        node.append(make("div", "metric-label", label));
+        node.append(make("div", "metric-value", value));
+        return node;
+      };
+      const mapStateClass = (target) => {
+        if (!target) return "is-stopped";
+        if (target.status === "error" || target.error || target.health === "fail") return "is-error";
+        if (target.status === "starting") return "is-starting";
+        if (target.status === "stopping") return "is-stopping";
+        if (target.running && target.status === "running") return "is-running";
+        return "is-stopped";
+      };
+      const appendMapEdge = (svg, from, to, className = "") => {
+        const mid = Math.round((from.x + to.x) / 2);
+        const d = "M " + from.x + " " + from.y + " C " + mid + " " + from.y + ", " + mid + " " + to.y + ", " + to.x + " " + to.y;
+        svg.append(makeSvg("path", { class: "map-edge " + className, d }));
+      };
+      const appendMapNode = (svg, node) => {
+        const group = makeSvg("g", { class: "map-node " + node.className, tabindex: "0" });
+        group.append(makeSvg("title", {}, node.title + " / " + node.status));
+        group.append(makeSvg("rect", { x: node.x, y: node.y, width: node.w, height: node.h, rx: 8 }));
+        group.append(makeSvg("circle", { class: "node-dot", cx: node.x + 18, cy: node.y + 20, r: 5 }));
+        group.append(makeSvg("text", { x: node.x + 32, y: node.y + 25 }, truncate(node.title, 24)));
+        group.append(makeSvg("text", { class: "node-subtitle", x: node.x + 16, y: node.y + 46 }, truncate(node.subtitle, 30)));
+        group.append(makeSvg("text", { class: "node-status", x: node.x + 16, y: node.y + 64 }, truncate(node.status, 32)));
+        svg.append(group);
+      };
+      const renderSystemMap = (status) => {
+        const targets = status.targets || [];
+        const catalog = status.songCatalog || { requiredTargetIds: [] };
+        const requiredIds = new Set(catalog.requiredTargetIds || []);
+        const targetsById = new Map(targets.map((target) => [target.id, target]));
+        const rowGap = 88;
+        const height = Math.max(282, 112 + Math.max(targets.length, 2) * rowGap);
+        const width = 980;
+        const manager = { x: 28, y: Math.round(height / 2 - 38), w: 184, h: 76 };
+        const targetNodes = targets.map((target, index) => ({
+          target,
+          x: 318,
+          y: 56 + index * rowGap,
+          w: 224,
+          h: 76
+        }));
+        const song = selectedSong();
+        const songNode = {
+          x: 704,
+          y: Math.round(height / 2 - 38),
+          w: 228,
+          h: 76,
+          title: song ? song.title : "曲JSON未選択",
+          subtitle: song ? song.manifestPath : "song-packs/*/manifest.json",
+          status: song ? "選択中" : "未選択"
+        };
+        const svg = makeSvg("svg", { viewBox: "0 0 " + width + " " + height, "aria-hidden": "true" });
+
+        for (const item of targetNodes) {
+          const edgeClass = [
+            requiredIds.has(item.target.id) ? "is-related" : "",
+            item.target.running ? "is-active" : ""
+          ].filter(Boolean).join(" ");
+          appendMapEdge(
+            svg,
+            { x: manager.x + manager.w, y: manager.y + manager.h / 2 },
+            { x: item.x, y: item.y + item.h / 2 },
+            edgeClass
+          );
+        }
+
+        const songServer = targetsById.get("song-pack-server") || targets.find((target) => target.kind === "asset-server");
+        const player = targetsById.get("fixture-player") || targets.find((target) => target.kind === "web-app");
+        const songServerNode = targetNodes.find((item) => item.target.id === songServer?.id);
+        const playerNode = targetNodes.find((item) => item.target.id === player?.id);
+        if (songServerNode) {
+          appendMapEdge(
+            svg,
+            { x: songServerNode.x + songServerNode.w, y: songServerNode.y + songServerNode.h / 2 },
+            { x: songNode.x, y: songNode.y + 24 },
+            songServer?.running ? "is-related is-active" : "is-related"
+          );
+        }
+        if (playerNode) {
+          appendMapEdge(
+            svg,
+            { x: songNode.x, y: songNode.y + 56 },
+            { x: playerNode.x + playerNode.w, y: playerNode.y + playerNode.h / 2 },
+            player?.running ? "is-related is-active" : "is-related"
+          );
+        }
+
+        appendMapNode(svg, {
+          x: manager.x,
+          y: manager.y,
+          w: manager.w,
+          h: manager.h,
+          title: "Launch Manager",
+          subtitle: "起動と監視",
+          status: "管理画面は表示中",
+          className: "is-running"
+        });
+        for (const item of targetNodes) {
+          appendMapNode(svg, {
+            x: item.x,
+            y: item.y,
+            w: item.w,
+            h: item.h,
+            title: item.target.label,
+            subtitle: roleLabel(item.target.kind),
+            status: statusText(item.target),
+            className: mapStateClass(item.target) + (requiredIds.has(item.target.id) ? " is-required" : "")
+          });
+        }
+        appendMapNode(svg, {
+          x: songNode.x,
+          y: songNode.y,
+          w: songNode.w,
+          h: songNode.h,
+          title: songNode.title,
+          subtitle: songNode.subtitle,
+          status: songNode.status,
+          className: "is-song" + (song ? " is-required" : "")
+        });
+
+        byId("system-map-stage").replaceChildren(svg);
+        const runningCount = targets.filter((target) => target.running).length;
+        byId("map-summary").textContent = "起動中 " + runningCount + " / " + targets.length;
+      };
+      const renderSelectedSong = () => {
+        const song = selectedSong();
+        const meta = byId("song-meta");
+        const open = byId("open-song");
+        if (!song) {
+          meta.textContent = "曲JSONが見つかりません。song-packs/<song-id>/manifest.json を確認してください。";
+          open.href = "#";
+          open.setAttribute("aria-disabled", "true");
+          byId("play-song").disabled = true;
+          return;
+        }
+        const duration = song.duration ? " / " + Math.round(song.duration) + "秒" : "";
+        meta.textContent = formatSongLabel(song) + duration + " / " + song.manifestPath;
+        open.href = song.playerUrl || "#";
+        open.toggleAttribute("aria-disabled", !song.playerUrl);
+        byId("play-song").disabled = state.busy || !song.playerUrl;
+      };
+      const renderSongCatalog = (catalog = { songs: [], errors: [], requiredTargetIds: [] }) => {
+        const select = byId("song-select");
+        const current = select.value;
+        const stored = loadSelectedSongId();
+        select.replaceChildren();
+        if (!catalog.songs.length) {
+          select.append(make("option", "", "曲JSONがありません"));
+          select.disabled = true;
+        } else {
+          select.disabled = false;
+          for (const song of catalog.songs) {
+            const option = make("option", "", formatSongLabel(song));
+            option.value = song.directoryName;
+            option.title = song.manifestPath;
+            select.append(option);
+          }
+          if (catalog.songs.some((song) => song.directoryName === current)) {
+            select.value = current;
+          } else if (catalog.songs.some((song) => song.directoryName === stored)) {
+            select.value = stored;
+          }
+        }
+        renderSelectedSong();
+        renderRuntimeStrip(catalog);
+        if (catalog.errors?.length) {
+          setMessage("読み込めない曲JSONがあります: " + catalog.errors.join(" / "), "warn");
+        }
+      };
+      const startPlaybackTargets = async () => {
+        const catalog = state.status?.songCatalog;
+        if (!catalog) throw new Error("曲カタログをまだ読み込めていません。");
+        if (catalog.launchSetId) {
+          await call("/api/sets/" + catalog.launchSetId + "/start", { method: "POST" });
+          return;
+        }
+        for (const targetId of catalog.requiredTargetIds || []) {
+          await call("/api/targets/" + targetId + "/start", { method: "POST" });
+        }
+      };
+      const waitForPlaybackTargets = async () => {
+        const startedAt = Date.now();
+        while (Date.now() - startedAt < 25000) {
+          await refresh();
+          const errors = requiredTargetErrors();
+          if (errors.length) throw new Error(errors.join(" / "));
+          if (requiredTargetsReady()) return;
+          await sleep(800);
+        }
+        throw new Error("サーバーの起動待ちがタイムアウトしました。サーバー状態カードの詳細ログを確認してください。");
+      };
+      const playSelectedSong = async () => {
+        const song = selectedSong();
+        if (!song?.playerUrl) {
+          setMessage("再生できる曲JSONを選んでください。", "error");
+          return;
+        }
+        rememberSelectedSong();
+        const pendingWindow = window.open("about:blank", "_blank");
+        try {
+          setBusy(true);
+          setMessage("必要なサーバーを起動しています...", "warn");
+          await startPlaybackTargets();
+          await waitForPlaybackTargets();
+          if (pendingWindow) {
+            pendingWindow.opener = null;
+            pendingWindow.location.replace(song.playerUrl);
+            setMessage(formatSongLabel(song) + " を開きました。", "ok");
+          } else {
+            setMessage("再生画面へ移動します。", "ok");
+            window.location.href = song.playerUrl;
+          }
+        } catch (error) {
+          if (pendingWindow) pendingWindow.close();
+          setMessage(error.message, "error");
+        } finally {
+          setBusy(false);
+          renderSelectedSong();
+        }
+      };
       const renderTarget = (target) => {
         const article = make("article", "target is-" + target.status + (target.error ? " has-error" : ""));
         const head = make("div", "target-head");
         const title = make("div");
         title.append(make("h2", "", target.label));
-        title.append(make("p", "", target.kind + " / " + target.id));
+        title.append(make("p", "", roleLabel(target.kind)));
         const status = make("div", "status");
         status.append(make("span", "dot"));
         status.append(make("span", "", statusText(target)));
         head.append(title, status);
 
         const body = make("div", "target-body");
-        const dl = make("dl");
-        const rows = [
-          ["PID", target.pid || "-"],
-          ["Ports", target.ports.length ? target.ports.join(", ") : "-"],
-          ["Resource", formatMetrics(target.metrics)],
-          ["Started", formatDate(target.startedAt)],
-          ["Command", target.command + " " + target.args.join(" ")],
-          ["CWD", target.cwd]
-        ];
-        for (const [key, value] of rows) {
-          dl.append(make("dt", "", key), make("dd", "", value));
-        }
-        body.append(dl);
-
-        const links = make("div", "links");
-        for (const [key, url] of Object.entries(target.urls || {})) {
-          const link = make("a", "launch", key === "open" ? "開く" : key);
-          link.href = url;
-          link.target = "_blank";
-          link.rel = "noreferrer";
-          links.append(link);
-        }
-        body.append(links);
+        const summary = make("div", "target-summary");
+        summary.append(
+          metricNode("状態", statusText(target)),
+          metricNode("ポート", target.ports.length ? target.ports.join(", ") : "-"),
+          metricNode("起動時刻", formatDate(target.startedAt))
+        );
+        body.append(summary);
 
         const actions = make("div", "target-actions");
         actions.append(
@@ -301,16 +963,41 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         body.append(actions);
         body.append(make("p", "error", target.error || ""));
 
-        const logs = target.logs || {};
-        const stdout = make("details");
-        stdout.open = true;
-        stdout.append(make("summary", "", "stdout"));
-        stdout.append(make("pre", "", stripAnsi(logs.stdout) || "stdout log is empty."));
-        const stderr = make("details");
-        stderr.append(make("summary", "", "stderr"));
-        stderr.append(make("pre", "", stripAnsi(logs.stderr) || "stderr log is empty."));
+        const details = make("details", "tech-details");
+        details.open = target.status === "error";
+        details.append(make("summary", "", "詳細情報とログ"));
+        const dl = make("dl");
+        const rows = [
+          ["PID", target.pid || "-"],
+          ["ID", target.id],
+          ["Kind", target.kind],
+          ["Resource", formatMetrics(target.metrics)],
+          ["Started", formatDate(target.startedAt)],
+          ["Command", target.command + " " + target.args.join(" ")],
+          ["CWD", target.cwd]
+        ];
+        for (const [key, value] of rows) {
+          dl.append(make("dt", "", key), make("dd", "", value));
+        }
+        details.append(dl);
 
-        article.append(head, body, stdout, stderr);
+        const links = make("div", "links");
+        for (const [key, url] of Object.entries(target.urls || {})) {
+          const link = make("a", "launch", linkLabel(key));
+          link.href = url;
+          link.target = "_blank";
+          link.rel = "noreferrer";
+          links.append(link);
+        }
+        details.append(links);
+
+        const logs = target.logs || {};
+        details.append(make("h3", "", "stdout"));
+        details.append(make("pre", "", stripAnsi(logs.stdout) || "stdout log is empty."));
+        details.append(make("h3", "", "stderr"));
+        details.append(make("pre", "", stripAnsi(logs.stderr) || "stderr log is empty."));
+
+        article.append(head, body, details);
         return article;
       };
       const actionButton = (label, url) => {
@@ -320,8 +1007,15 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       };
       const render = (status) => {
         renderSets(status.sets || []);
+        renderSongCatalog(status.songCatalog);
+        renderSystemMap(status);
         byId("updated-at").textContent = "更新: " + new Date(status.updatedAt).toLocaleTimeString();
-        byId("runtime").textContent = "config: " + status.configPath + " / runtime: " + status.runtimeRoot;
+        byId("runtime").textContent =
+          "worktree: " + status.root +
+          " / " + formatLaunchPorts(status.launchPorts) +
+          " / config: " + status.configPath +
+          " / runtime: " + status.runtimeRoot +
+          (status.portsFile ? " / ports file: " + status.portsFile : "");
         const root = byId("targets");
         root.replaceChildren(...status.targets.map(renderTarget));
       };
@@ -331,9 +1025,18 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       };
       byId("start-set").addEventListener("click", () => post("/api/sets/" + byId("set-select").value + "/start"));
       byId("stop-set").addEventListener("click", () => post("/api/sets/" + byId("set-select").value + "/stop"));
-      byId("stop-all").addEventListener("click", () => post("/api/stop-all"));
+      byId("stop-all").addEventListener("click", confirmStopAll);
       byId("refresh").addEventListener("click", () => refresh());
-      refresh().catch((error) => alert(error.message));
+      byId("song-select").addEventListener("change", () => {
+        rememberSelectedSong();
+        renderSelectedSong();
+        if (state.status) renderSystemMap(state.status);
+      });
+      byId("play-song").addEventListener("click", playSelectedSong);
+      byId("open-song").addEventListener("click", (event) => {
+        if (!selectedSong()?.playerUrl) event.preventDefault();
+      });
+      refresh().catch((error) => setMessage(error.message, "error"));
       setInterval(() => {
         if (!state.busy) refresh().catch(() => {});
       }, 2000);

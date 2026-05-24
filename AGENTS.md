@@ -7,8 +7,12 @@
 - まず関連ファイルを調査し、既存の設計意図を確認する。
 - 変更が複数ファイルに及ぶ場合は、短い計画を立ててから実装する。
 - 実装は小さいステップに分け、既存挙動を壊さない。
+- 新しい作業や新しい曲の作業を始めるときは、現在の統合基準である `codex/system-kit-refactor` を土台にする。現時点の代表worktreeは `_worktrees/system-main`。
+- プロジェクトルート直下のworktreeが常に最新基準とは限らない。作業開始時に `git status --short --branch` と `git worktree list` で自分のbranchを確認する。
 - 並行 worktree 作業では、作業開始時と区切りごとに `npm run sync:brief` を確認する。必要なら詳細として `npm run sync:check` と `npm run sync:inbox` も見る。
 - 他担当への質問、ブロッカー、短い共有事項は `npm run sync:note -- --from <自分の担当> --to <相手> --level <info|question|blocker|done> -m "短い連絡"` で共有する。
+- 各曲担当から届いた共通ノウハウ候補は、すぐ正本docsへ入れず、まず `docs/knowledge-review.md` の分類で `common` / `conditional` / `song-owned` / `reject` に審議する。
+- 曲担当は作業中にもノウハウ候補を共有し、最終報告前に棚卸しする。候補がある場合は `knowledge-candidate`、ない場合は `knowledge-candidate: none` を明記する。
 - 対応済み、または自分の担当では対応不要と判断した連絡は `npm run sync:ack -- --id <id> --from <自分の担当>` で確認済みにする。
 - 他スレッドに取り込ませてよいコミットができたら `npm run sync:ready -- -m "短い説明"` を実行する。
 - 新しいスレッドで作業を始める場合は、`docs/thread-start.md` を読んで作業開始、ready確認、merge判断の流れを揃える。
@@ -24,6 +28,8 @@
 
 ### 新しい曲を作る場合
 
+まず、作業branchが `codex/system-kit-refactor` の最新readyを取り込んだ状態から分岐していることを確認する。既存曲のworktree、古い実験branch、プロジェクトルート直下のbranchを基準にしない。
+
 まず次だけを読む。
 
 - `docs/README.md`: docs内の正本と作業メモの読み分け。
@@ -36,9 +42,9 @@
 
 - `song-packs/*`
 - 既存曲のmanifest、analysis、design、adapter、演出コード
-- `examples/fixture-player/renderers/*`
-- `examples/fixture-player/effects/*`
-- `examples/fixture-player/adapters/fixtureSoftLight.ts`
+- `examples/fixtures/soft-light-player/renderers/*`
+- `examples/fixtures/soft-light-player/effects/*`
+- `examples/fixtures/soft-light-player/adapters/fixtureSoftLight.ts`
 - `README.md` のfixture節
 - `docs/handoff.md` のfixture確認URL
 
@@ -73,7 +79,7 @@
 - `全停止` は「このLaunch ServerがPIDを持って管理している子プロセス」だけに効く。
 - 別worktreeのLaunch Manager、別スレッドが別portで起動したtarget、手動起動した外部プロセスは停止対象にしない。
 - 複数スレッドが同じLaunch Manager URLを開いている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
-- 並行作業では `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` をworktreeごとに分ける。
+- 並行作業では、通常はLaunch Managerの自動ポート割当を使う。必要な場合だけ `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` を明示する。
 - 停止操作や実装変更の前に、GUI下部の `config` / `runtime` とtargetのportを見て、自分のworktreeを操作していることを確認する。
 
 ## 新しい曲を作るときのルール
@@ -83,6 +89,7 @@
 - まず `docs/system-overview.md` と `docs/song-authoring.md` だけで設計を始める。
 - 既存曲を参考にする必要がある場合は、ユーザーの明示許可を得てから読む。
 - 既存曲を読むことが許されるのは、その曲自体の修正、回帰確認、またはユーザーが明示した比較作業だけ。
+- 曲担当から共有されたノウハウでも、特定曲のモチーフ、構図、色、数値、カメラ、演出名はsystem側の共通ルールにしない。
 - 曲ごとのJSON文法、UI、描画方式、ライブ操作、adapter構成は曲側が自由に決める。
 - 既存fixture rendererの中央発光、放射線、光ネットワーク、粒子、グローを新曲のテンプレートにしない。
 - 曲アプリを作る場合は、まず `templates/neutral-song-app/visual-brief.md` で主役構造を決め、必要なら空の `templates/neutral-song-app/adapter.ts` から始める。
@@ -92,6 +99,6 @@
 
 - 音源ファイルはコミットしない。`.gitignore` の除外を維持する。
 - `music_src/` は廃止済み。`song-packs/` を曲データ本体として扱う。
-- `docs/handoff.md` と必要に応じて `docs/plans.md` / `docs/known-issues.md` を更新する。
+- `docs/handoff.md` と必要に応じて正本側のdocsを更新する。古い作業メモは `docs/archive/working-notes/` に置き、新しい恒久仕様の置き場にしない。
 - UIやフローを変えた場合は `docs/workflows.json` も更新する。
 - 恒久的な仕様変更は作業メモだけに置かず、`docs/README.md` で案内される正本側へ反映する。

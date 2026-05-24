@@ -4,7 +4,7 @@
 
 ## 背景
 
-「既存の `song-packs/*` を読まない」だけでは不十分な場合があります。曲パッケージを見なくても、`examples/fixture-player` のsoft light renderer、中央発光、放射線、光ネットワーク、粒子、グロー中心の構図に引っ張られることがあります。
+「既存の `song-packs/*` を読まない」だけでは不十分な場合があります。曲パッケージを見なくても、`examples/fixtures/soft-light-player` のsoft light renderer、中央発光、放射線、光ネットワーク、粒子、グロー中心の構図に引っ張られることがあります。
 
 新しい曲を作るときは、既存曲だけでなく、既存fixture rendererも視覚テンプレートとして扱わないでください。
 
@@ -28,10 +28,10 @@
 新しい曲の初期設計では読まないもの:
 
 - `song-packs/*`
-- `examples/fixture-player/renderers/*`
-- `examples/fixture-player/effects/*`
-- `examples/fixture-player/adapters/fixtureSoftLight.ts`
-- `examples/fixture-player/styles.css`
+- `examples/fixtures/soft-light-player/renderers/*`
+- `examples/fixtures/soft-light-player/effects/*`
+- `examples/fixtures/soft-light-player/adapters/fixtureSoftLight.ts`
+- `examples/fixtures/soft-light-player/styles.css`
 - 既存曲のmanifest、analysis、design、adapter、README
 
 例外:
@@ -46,6 +46,7 @@
 
 - この曲の主役構造は何か。
 - 画面で最初に見えるべきものは何か。
+- 曲の各パートで、画面構成、主役、文字位置、密度、色、動きがどう変わるか。
 - 色、構図、線、光、粒子のうち、今回は何を主役にしないか。
 - beat、chorus、歌詞、手動cueのうち、何をきっかけにするか。
 - 既存fixtureと似やすい表現をどう避けるか。
@@ -70,6 +71,7 @@ Canvas2D adapterとして始める場合は、`templates/neutral-song-app/adapte
 - 構図: 中央発光や放射線に寄っていないか。
 - 色: 前作の暖色グロー、淡い光、同じ背景階調に寄っていないか。
 - 主役: 曲ごとの主役オブジェクトや場が、光や線より先に見えるか。
+- パート差: Aメロ、サビ、間奏などが粒子量や明るさだけでなく、画面構成として違って見えるか。
 - 線: 視線、衝突、関係性をすぐ光線で表していないか。
 - カメラ: 前作と同じ正面固定、中央集中、全画面グローになっていないか。
 - リズム: beat同期の点滅や膨張だけで曲の個性を済ませていないか。

@@ -22,6 +22,8 @@
 
 ## 作り始める前に読むもの
 
+新しい曲の作業branchは、現在の統合基準 `codex/system-kit-refactor` の最新readyを取り込んだ状態から始めます。既存曲worktreeや古い実験branchを土台にしないでください。
+
 新しい曲を作るエージェントは、次の順に読みます。
 
 1. `AGENTS.md`
@@ -29,13 +31,46 @@
 3. `docs/song-authoring.md`
 4. `docs/song-visual-independence.md`
 5. 必要に応じて `docs/decisions.md`
+6. 共通ノウハウ候補を共有する場合だけ `docs/knowledge-review.md`
 
 既存曲のフォルダは読まないでください。
+
+## 曲担当の連絡確認フロー
+
+曲担当は、作業開始時、実装の区切り、最終報告前に次を確認します。
+
+```powershell
+npm run sync:brief
+npm run sync:check
+npm run sync:inbox
+```
+
+確認すること:
+
+- `codex/system-kit-refactor` からのreadyが来ているか。
+- 自分の曲作業に関係するセキュリティ、Launch Manager、Songle取得、検証ツールの連絡があるか。
+- 自分が共有したノウハウ候補に対して、system担当から分類結果が返っているか。
+- 作業中または実装の区切りで、今回の曲制作で得たノウハウ候補を共有したか。
+- 最終報告前に、未共有のノウハウ候補が残っていないか棚卸ししたか。
+
+曲制作中に「これは他の曲でも使えそう」と思った場合は、最終報告まで待たず、作業中または実装の区切りで共有します。すぐ正本docsを編集せず、まず `sync:note` でsystem担当へ候補として送ります。
+
+```powershell
+npm run sync:note -- --from song-example --to system --level question --topic knowledge-candidate -m "candidate: 区間ごとの画面構成を先に決める。scope: many songs. source: song-example. risk: 固定数値や特定構図は含めない。suggested home: docs/song-authoring.md"
+```
+
+system担当は `docs/knowledge-review.md` に沿って、`common` / `conditional` / `song-owned` / `reject` に分類します。曲担当は分類結果を確認し、`song-owned` と判断された内容は自分の曲パック側の `design/` に残してください。`common` と判断されたものだけがsystem側の正本docsへ昇格します。
+
+最終報告では、作業中に共有したものも含めて、共通ノウハウ候補について次のどちらかを明記します。
+
+- `knowledge-candidate`: system担当へ送った候補のidや要約。
+- `knowledge-candidate: none`: 今回は共通化候補なし。曲固有の判断は曲パック側に残した。
 
 ## 最初に決めること
 
 既存の曲構成から逆算せず、曲ごとに次を決めます。
 
+- MV、公式ページ、インタビュー、レビュー、考察などを背景理解に使うか。
 - この曲をどんな場で使うか。
 - ライブ操作が必要か。
 - 歌詞が必要か。
@@ -44,19 +79,29 @@
 - 描画方式を何にするか。
 - 同梱fixture playerを使うか、曲専用Webアプリを作るか、別ランタイムを使うか。
 - 曲側にどのデータ文法が必要か。
+- 曲のパートごとに、画面構成、主役、密度、色、動き、歌詞位置がどう変わるか。
 
 ## 設計の進め方
 
-1. 曲の演出意図を文章で書く。
-2. `templates/neutral-song-app/visual-brief.md` の項目に沿って、主役構造と避ける表現を決める。
-3. 入力、出力、きっかけ、ライブ操作を洗い出す。
-4. 曲専用のデータ構造を決める。
-5. 必要な場合だけ、`system/kit` の補助機能を選ぶ。
-6. 最小manifestを作る。
-7. 曲側の実装を作る。
-8. 最初のプレビュー後に `docs/song-visual-independence.md` で前作似チェックをする。
+1. 曲の背景、受容、MV、歌詞、Songle解析を調べ、URLと用途だけを `references.json` に記録する。
+2. 曲の演出意図を文章で書く。
+3. `templates/neutral-song-app/visual-brief.md` の項目に沿って、主役構造と避ける表現を決める。
+4. 曲のパート表を作り、各パートの画面構成を決める。
+5. 入力、出力、きっかけ、ライブ操作を洗い出す。
+6. 曲専用のデータ構造を決める。
+7. 必要な場合だけ、`system/kit` の補助機能を選ぶ。
+8. 最小manifestを作る。
+9. 曲側の実装を作る。
+10. 最初のプレビュー後に `docs/song-visual-independence.md` で前作似チェックをする。
 
 この順番を守ると、既存曲のフォルダ形状に寄りにくくなります。
+
+必要に応じて、実装前に次の2種類のメモを分けて作ります。
+
+- timeline-map: Songle、歌詞、手動cue、背景調査を、人間が読める時系列メモとして整理する。区間の意味、変化点、注意点を書く。
+- structure-map: 実装が読むためのデータ。時刻、cue名、強度、参照先など、曲側adapterが必要とする最小情報だけを書く。
+
+timeline-mapは考えるためのメモ、structure-mapは実装の入力です。片方に混ぜると、曲固有の解釈や比喩がデータ文法として固定されやすくなります。
 
 中立的な曲パックの雛形だけを作る場合は、既存曲を読まずに次のコマンドを使えます。
 
@@ -76,6 +121,61 @@ npm run song:validate -- --id song-id
 
 外部ライブラリや描画エンジンを追加したくなった場合は、まず `docs/library-candidates.md` の採用前チェックを見てください。system標準へ入れるのではなく、曲側の任意adapterや小さなhelperで済むかを先に検討します。
 
+## 曲の背景調査
+
+曲の背景調査は共通の作法として行ってよいです。ただし、調査結果は素材の転載ではなく、演出判断のための理解として扱います。
+
+- 公式MV、公式ページ、配信ページ、制作者コメント、インタビュー、レビュー、考察、ライブ映像の存在を確認する。
+- 歌詞は演出意図、区間の意味、文字表示の扱いを考えるために参照する。
+- ネット上の記事本文、歌詞全文、画像、スクリーンショット、動画素材を曲パックへ保存しない。
+- 参照したものは `references.json` にURL、参照用途、確認日だけを記録する。
+- 調査から得た解釈、モチーフ、避けたい表現は曲パック側の `design/` や `visual-brief.md` に自分の言葉で書く。
+- 感想、コメント、外部評価は、解釈の一次根拠ではなく受容確認として扱う。複数ソースで反復する感情語、誤読リスク、外部評価の方向だけを確認し、個別コメント、文体、UI形状、語句を演出モチーフに直結しない。
+
+共通化するのは調査の作法だけです。調査結果からどの画面構成にするか、どの文法を使うかは曲ごとに決めます。
+
+## 曲構成と画面構成
+
+実装前に、曲のパートごとの画面構成を短く決めてください。これは見た目のテンプレートではなく、曲ごとに自由な映像を作るための設計メモです。
+
+各パートで決めることは、固定の舞台やカメラ語彙ではなく、中立的な問いとして扱います。
+
+- パート名と時刻範囲、またはSongle/手動cue上の区切り。
+- 音楽的な役割。導入、説明、緊張、解放、転換、間奏、終止など。
+- 何を見る時間か。人物、場、記号、文字、オブジェクト、空間など、曲ごとに決める。
+- 表示範囲と配置。前景、中景、背景、余白、文字位置、視線誘導、投影時の安全領域。
+- 密度と動き。静か、詰まる、広がる、切り替わる、止まる、揺れるなど。
+- 色と明るさ。区間ごとの色相、明度、コントラスト、暗転、発光の扱い。
+- 次のパートへの遷移。カット、フェード、押し出し、回転、突然の断絶など。
+
+特にサビだけを派手にするのではなく、Aメロ、Bメロ、間奏、落ちサビ、アウトロなどで画面の「読み方」がどう変わるかを先に決めます。これにより、beat点滅や粒子量だけに頼る実装を避けやすくなります。
+
+`close` / `wide` / `stage` / `camera` のような語彙は、曲に合う場合だけ曲側メモで使います。共通ノウハウとして共有するときは、「表示範囲をどう変えるか」「視線誘導をどう作るか」「密度と余白をどう扱うか」のような問いに言い換えてください。
+
+## Songle URLの選び方
+
+Songle/Songriumから解析JSONを取得する場合は、曲パックごとにcanonical URLを1つ決めてください。
+
+- `nico.ms` や `youtu.be` などの短縮URLをcanonicalにしない。
+- できるだけ `www.nicovideo.jp/watch/<id>` や `www.youtube.com/watch?v=<id>` のような公式の通常URLを使う。
+- 同じ曲がNico版、YouTube版、別投稿版として複数登録されている場合は、別の解析ソースとして扱う。
+- 複数登録が見つかった場合は、beat、chorus、chord、melodyの有無、件数、更新履歴を軽く比較してから1つ選ぶ。
+- 選んだURL、確認した代替URL、選定理由は、曲パック側の `references.json` や `credits.md` にURLメタデータとして記録する。
+
+Songleの登録単位が違うと、同じ曲名でもbeatやchordの数、chorus区間、更新者、更新日が変わることがあります。曲側の演出は、選んだcanonical URLの解析結果に対して作ってください。
+
+## Songle解析JSONの見方
+
+Songle由来のJSONは、完全な音楽スコアではなく、演出のきっかけに使う補助データとして扱います。
+
+- `beat` は拍、downbeat、小節感のきっかけとして使う。
+- `chorus` や repeat segment は、盛り上がり区間や構成変化の候補として使う。
+- `chord` は色、緊張感、場面転換の補助ヒントとして使う。
+- `melody` は、手元のJSONに音高や音量カーブが含まれるとは限らない。`notes` のstart、duration、indexだけの場合は、音符密度、休符、長音、入りのタイミングのヒントとして使う。
+- `melody = ピッチ線` と決めつけない。pitch、volume、confidenceなどのフィールドが実際にあるかを確認してから使う。
+- 盛り上がり推定は、beat/downbeat、chorus、chord変化、melody note密度、休符、長音、手動design cuesを組み合わせて行う。
+- Songleのタイミング精度は曲や登録によってずれる。ライブ用に厳密な切り替えが必要なら、曲側で手動cueやタイミング補正を追加する。
+
 ## 使ってよいシステム補助
 
 曲ごとに必要なものだけ選んでください。
@@ -87,8 +187,9 @@ npm run song:validate -- --id song-id
 - storage: localStorageや将来の保存API。
 - tools: 歌詞タイミング編集などのoptional tool。
 - loader: manifestや素材URL解決。
+- song-owned time map: 曲側の追加JSONを `context.assets.readJson()` で読み、beat反応の強度や包絡を調整する。manifest標準スキーマへ昇格させず、値や語彙は曲側に残す。
 - visual host: 曲adapter用の追加表示レイヤ、DPR/resize、fixture UIと重ならないsafe area。WebGLなどでcanvasを使う場合は2D contextを作らないレイヤも選べる。
-- content rect helper: Canvas2Dを選んだ曲だけが任意で使える、DPR resize、safe area clip、pointer正規化、文字サイズfitの小さな補助。
+- content rect helper: Canvas2Dを選んだ曲だけが任意で使える、DPR resize、safe area clip、pointer正規化、文字サイズfitの小さな補助。全画面投影の主映像はviewport全体で構成し、contentRectはポインタ正規化やHUD/状態ラベルだけに使ってもよい。
 
 これらは文法ではなく部品です。曲側が全部使う必要はありません。
 
@@ -97,7 +198,7 @@ npm run song:validate -- --id song-id
 - 既存曲のmanifestをコピーしてから作り始める。
 - 既存曲の `analysis/` 構造を標準スキーマだと思い込む。
 - 既存曲のエフェクトを名前だけ変えて流用する。
-- `examples/fixture-player/renderers/` や `examples/fixture-player/effects/` を新曲の視覚テンプレートにする。
+- `examples/fixtures/soft-light-player/renderers/` や `examples/fixtures/soft-light-player/effects/` を新曲の視覚テンプレートにする。
 - soft light rendererの中央発光、放射線、光ネットワーク、粒子、グロー中心の構図を無意識に再利用する。
 - 曲側の自由なJSON構成を、システム側の都合で固定する。
 - Canvas2D前提で設計を始める。

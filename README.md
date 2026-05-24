@@ -6,30 +6,33 @@
 
 ## Setup
 
+Windowsで普段使う場合は、リポジトリ直下の `start-music-effect.cmd` をダブルクリックします。同じworktreeのLaunch Managerが既に起動中なら管理画面を開くだけです。別worktreeのLaunch Managerが起動中でも、そのポートへ誤接続せず、このworktree用の空きポートを自動で使います。初回だけ `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得します。
+
+手動で起動する場合:
+
 ```powershell
 npm install
 npm run dev
 ```
 
-`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、`Basic fixture` を選んで起動すると、fixture player app と song-pack server がまとめて起動します。
-
-```text
-http://127.0.0.1:5172/
-```
+`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、曲JSONを選んで再生すると、再生画面と曲データサーバーが起動し、選択した曲の再生画面を開きます。ポートはworktreeごとに自動割当され、起動後に `.codex/runtime/ports.json` とGUI下部へ表示されます。
 
 Launch Managerでできること:
 
-- `launch/targets.json` に書かれたTarget/Setだけを起動する。
-- Targetごとの起動、停止、再起動、Set起動/停止、全停止を行う。
+- 曲JSONメニューから `song-packs/*/manifest.json` を選び、選択曲を再生する。
+- Launch Manager、各サーバー、選択中の曲JSONを状態マップで見て、起動中のノードと連携線を視覚的に確認する。
+- `launch/targets.json` に書かれた起動対象だけを起動する。
+- サーバーごとの起動、停止、再起動、起動セットの起動/停止、全停止を行う。全停止は誤操作防止のため二度押し確認です。
 - PID、port、health、CPU、memory、stdout/stderr末尾を見る。
-- port衝突時は自動で別portに逃がさず、エラーとして表示する。
+- worktree、Launch Manager、再生画面、曲データサーバーの実ポートを見る。
+- 起動時に空きポートを自動割当し、既に起動している別worktreeの管理画面へ誤接続しない。
 
-GUIタブを閉じても起動中Targetは止まりません。停止するには、管理画面のTarget停止、Set停止、または全停止を使ってください。Launch Manager自体を終了すると、MVPでは管理中Targetを停止してから終了します。
+GUIタブを閉じても起動中サーバーは止まりません。停止するには、管理画面の各サーバー停止、起動セット停止、または全停止を使ってください。Launch Manager自体を終了すると、MVPでは管理中サーバーを停止してから終了します。
 
-fixture player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。
+fixture player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。実際のポートはGUIや `.codex/runtime/ports.json` を確認してください。
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
+http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
 ```
 
 manifest URLを指定しない場合、特定の曲へ自動フォールバックしません。これは、システムが既存曲に引っ張られないようにするためです。
@@ -41,7 +44,7 @@ npm run dev:player
 npm run dev:songs
 ```
 
-別worktreeで同時に起動する場合は、ポート衝突を避けるために環境変数でずらします。
+別worktreeで同時に起動する場合も、通常は手でポートを割り当てる必要はありません。必要な場合だけ、環境変数で明示できます。
 
 ```powershell
 $env:DEV_MANAGER_PORT=5182
@@ -68,7 +71,7 @@ docs/song-visual-independence.md
 - 既存の `song-packs/*` はテンプレートではありません。
 - 新しい曲を作るときは、既存曲のmanifest、analysis、design、adapter、演出コードを見ないでください。
 - 既存曲を見るのは、その曲自体を直すとき、回帰確認をするとき、またはユーザーが明示的に許可したときだけです。
-- `examples/fixture-player` のsoft light rendererやeffect群も、新曲の視覚テンプレートとして読まないでください。
+- `examples/fixtures/soft-light-player` のsoft light rendererやeffect群も、新曲の視覚テンプレートとして読まないでください。
 - 曲ごとの構成は自由です。既存曲の構成に合わせる必要はありません。
 
 曲アプリを作る場合は、空に近い出発点として `templates/neutral-song-app/` を使えます。最初のプレビュー後は `docs/song-visual-independence.md` で、構図、色、主役、線/光、カメラ視点が前作に寄りすぎていないか確認してください。
@@ -111,7 +114,7 @@ npm run song:validate -- --id song-id
 現在は動作確認用の曲パッケージとして、魔王魂「Shining Star」を同梱しています。
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
+http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-star/manifest.json
 ```
 
 これはfixtureであり、次の曲の標準構成ではありません。新しい曲を作るときは、この中身を見ずに `docs/song-authoring.md` から始めてください。
@@ -147,8 +150,8 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 - 開発サーバーはloopback hostだけで使い、外部ネットワークへ公開しないでください。
 - APIキー、秘密鍵、トークンを曲パッケージ、docs、プロンプト、ログに置かないでください。
 - manifest内の曲素材パスは、既定でその曲パッケージ配下だけを読みます。
-- fixture playerのoriginを変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
-- `npm run dev` で `PLAYER_PORT` を変えた場合は、起動管理サーバーがsong-pack serverのCORS許可originも合わせて渡します。
+- fixture playerのoriginを個別起動で変える場合は、song-pack serverの `SONG_PACK_CORS_ORIGINS` も明示してください。
+- `npm run dev` や `start-music-effect.cmd` で起動する場合は、Launch Managerがplayer portに合わせたCORS許可originをsong-pack serverへ渡します。
 - 詳細は `docs/security.md` を参照してください。
 
 ## Workflow Map
@@ -156,10 +159,20 @@ http://127.0.0.1:5173/?song=http://127.0.0.1:5174/shining-star/manifest.json
 主要な流れは `docs/workflows.html` で確認できます。
 
 ```text
-http://127.0.0.1:5173/docs/workflows.html
+http://127.0.0.1:<player-port>/docs/workflows.html
 ```
 
 表示内容は `docs/workflows.json` から読み込まれます。このJSONは、機能追加やバグ修正時にLLMへシステムの流れを説明するための共有資料としても使えます。
+
+## Preview Snapshot
+
+指定した曲と時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvasの簡易状態を `.codex/runtime/preview-snapshots/` へ保存できます。
+
+```powershell
+npm run preview:snapshot -- --song shining-star --time 48
+```
+
+既存のfixture player / song-pack serverが起動していればそれを使います。起動していない場合は一時的にローカルサーバーを起動し、このコマンド自身が起動したものだけ停止します。外部依存は追加せず、ローカルChromeまたはEdgeのDevTools Protocolを使います。
 
 ## Agent Context
 
@@ -188,10 +201,8 @@ docs/decisions.md
 ```text
 docs/architecture.md
 docs/module-map.md
-docs/plans.md
-docs/known-issues.md
 docs/handoff.md
 docs/workflows.json
 ```
 
-作業後は `docs/handoff.md` と、必要に応じて `docs/plans.md` / `docs/known-issues.md` / `docs/workflows.json` を更新してください。
+作業後は `docs/handoff.md` と、必要に応じて該当する正本docsや `docs/workflows.json` を更新してください。古い作業候補や既知問題は `docs/archive/working-notes/` に退避してあり、通常の入口にはしません。

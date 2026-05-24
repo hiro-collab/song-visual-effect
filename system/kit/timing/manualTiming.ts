@@ -1,4 +1,4 @@
-import type { LyricCue, LyricKeyframe, LyricTimingAdjustments, LyricTimingExport, MusicMap } from "./types";
+import type { LyricCue, LyricKeyframe, LyricTimingAdjustments, LyricTimingExport, MusicMap } from "../core/types";
 
 export const clampTime = (time: number, duration: number) => Math.min(Math.max(time, 0), duration);
 

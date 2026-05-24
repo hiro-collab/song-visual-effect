@@ -10,6 +10,8 @@ projector-oriented 3D traffic scene.
 - Visual adapter: `adapter.ts`
 - Effect timing/design: `design/effect.json`
 - Reimplementation brief: `design/reimplementation-brief.md`
+- Screen composition plan: `design/composition-map.md`
+- URL-only reference metadata: `references.json`
 - Lightweight analysis used by the effect: `analysis/markers.json`,
   `analysis/palette.json`
 - Vehicle model list: `assets/vehicle-proxies.json`
@@ -64,7 +66,7 @@ The GLB vehicle layer uses:
 - `three` 0.184.0, MIT license
 - `@types/three` 0.184.1, MIT license
 
-Audit command run on 2026-05-23 JST:
+Audit command run on 2026-05-24 JST:
 
 ```text
 npm audit --audit-level=moderate

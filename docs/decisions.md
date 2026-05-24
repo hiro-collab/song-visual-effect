@@ -52,7 +52,7 @@ Webシステムは曲ごとの演出を決める親ではなく、補助ラン�
 曲ごとに求められる構成、演出、JSON構造、文脈の持ち方が大きく変わることが予想されるため。システム側が文法や設定構成を固定すると、曲ごとの自由度を奪う。
 
 影響:
-fixture用の描画判断は `examples/fixture-player` に隔離する。システム本体は `transport`、`frame`、`assets`、`storage`、timing helper などのkitに留める。
+fixture用の描画判断は `examples/fixtures/soft-light-player` に隔離する。システム本体は `transport`、`frame`、`assets`、`storage`、timing helper などのkitに留める。
 
 ## D004b: 描画方式をCanvas2Dに固定しない
 
@@ -124,7 +124,7 @@ A/Dキーによる歌詞打刻や補正UIは、Lyric TimingモードがOnのと�
 ## D009: 単一親アプリ中心からkit中心へ移す
 
 決定:
-旧来の単一入口中心の構成から、`system/kit` と `examples/fixture-player` へ分ける。曲アプリは固定された親アプリに従うのではなく、必要なhelperだけを使う。
+旧来の単一入口中心の構成から、`system/kit` と `examples/fixtures/soft-light-player` へ分ける。曲アプリは固定された親アプリに従うのではなく、必要なhelperだけを使う。
 
 根拠:
 ユーザーの方針として「システムは手助けに留め、曲ごとの演出を束縛しない」ことが明確になっているため。親アプリが太ると曲を従わせるフレームワークになりやすい。
@@ -143,7 +143,7 @@ A/Dキーによる歌詞打刻や補正UIは、Lyric TimingモードがOnのと�
 ## D011: 既存fixture rendererも新曲の視覚テンプレートにしない
 
 決定:
-新しい曲の映像実装では、既存の `examples/fixture-player/renderers/*` や `examples/fixture-player/effects/*` を視覚テンプレートとして読まない。曲アプリを作る場合は、`templates/neutral-song-app/visual-brief.md` で主役構造を決め、必要なら空の `templates/neutral-song-app/adapter.ts` から始める。
+新しい曲の映像実装では、既存の `examples/fixtures/soft-light-player/renderers/*` や `examples/fixtures/soft-light-player/effects/*` を視覚テンプレートとして読まない。曲アプリを作る場合は、`templates/neutral-song-app/visual-brief.md` で主役構造を決め、必要なら空の `templates/neutral-song-app/adapter.ts` から始める。
 
 理由:
 既存の曲パッケージを読まなくても、fixture rendererの中央発光、放射線、光ネットワーク、粒子、グロー中心の構図に引っ張られることがあるため。曲ごとの自由な見た目を守るには、既存曲だけでなく既存fixtureの視覚文法からも距離を置く必要がある。
@@ -165,7 +165,7 @@ MVPではmanaged targetだけを扱う。Launch Manager UIは状態の正本を�
 ## D013: 曲固有データと曲固有adapterをsystem-wide領域へ置かない
 
 決定:
-曲固有のmanifest、analysis、design、再実装ブリーフ、演出コード、adapter登録は `song-packs/<song-id>/` または `song-packs/local-adapters.ts` に置く。`system/kit`、`examples/fixture-player`、`docs/` 直下には、曲IDを直書きした実装や曲専用ブリーフを増やさない。
+曲固有のmanifest、analysis、design、再実装ブリーフ、演出コード、adapter登録は `song-packs/<song-id>/` または `song-packs/local-adapters.ts` に置く。`system/kit`、`examples/fixtures/soft-light-player`、`docs/` 直下には、曲IDを直書きした実装や曲専用ブリーフを増やさない。
 
 理由:
 system kitとfixture playerは曲を束縛しない補助領域であり、特定曲の構成や演出を混ぜると、新しい曲が既存曲の文法へ引っ張られるため。

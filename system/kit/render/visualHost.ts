@@ -1,4 +1,4 @@
-import type { SongAppContentRect, SongVisualHost, SongVisualLayer, SongVisualLayerOptions } from "./songApp";
+import type { SongAppContentRect, SongVisualHost, SongVisualLayer, SongVisualLayerOptions } from "../song-app/songApp";
 
 type VisualHostOptions = {
   root?: HTMLElement;

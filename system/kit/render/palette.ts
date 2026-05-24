@@ -1,4 +1,4 @@
-import type { Palette } from "./types";
+import type { Palette } from "../core/types";
 import { clamp } from "./damping";
 
 export const DEFAULT_PALETTE: Palette = {

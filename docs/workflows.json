@@ -10,7 +10,11 @@
       "summary": "曲ごとの素材、cue文法、adapter、描画方式、演出UIを自由に設計する領域です。既存曲やfixture rendererの構成に合わせる必要はありません。",
       "role": "曲固有の意味、主役構造、表現、入力、出力を決める。",
       "boundary": "system kitへ曲固有の見た目やcue文法を押し込まない。",
-      "componentIds": ["manifest", "songPack", "songAdapter"]
+      "componentIds": [
+        "manifest",
+        "songPack",
+        "songAdapter"
+      ]
     },
     {
       "id": "system-kit",
@@ -18,7 +22,14 @@
       "summary": "多くの曲で使いうる読み込み、時刻、フレーム、手動タイミング調整などのhelper群です。曲の作り方を束縛せず、必要な補助だけを渡します。",
       "role": "素材読み込み、再生時刻、フレーム更新、標準ツールの小さな補助を提供する。",
       "boundary": "標準の演出文法、標準renderer、曲専用adapterをここに固定しない。",
-      "componentIds": ["assets", "transport", "frameLoop", "visualHost", "timingEditor", "storage"]
+      "componentIds": [
+        "assets",
+        "transport",
+        "frameLoop",
+        "visualHost",
+        "timingEditor",
+        "storage"
+      ]
     },
     {
       "id": "fixture-player",
@@ -26,7 +37,11 @@
       "summary": "system kitの動作確認とデモのためのアプリです。新曲のテンプレートではなく、回帰確認や道具の試用に使います。",
       "role": "起動確認、UI確認、手動タイミング編集、fixture adapterの検証を行う。",
       "boundary": "fixtureの見た目やUIを新曲制作の既定値として扱わない。",
-      "componentIds": ["main", "effects", "browser"]
+      "componentIds": [
+        "main",
+        "effects",
+        "browser"
+      ]
     },
     {
       "id": "support",
@@ -34,7 +49,18 @@
       "summary": "複数サーバーの起動停止、曲パック配信、worktree同期、担当間連絡、Codex作業引き継ぎを助ける領域です。",
       "role": "作業環境を整え、複数スレッドが同じ前提で作業できるようにする。",
       "boundary": "曲の演出判断や曲パッケージ構成をここで決めない。",
-      "componentIds": ["devManager", "songServer", "launchManagerSpec", "agents", "contextDocs", "threadStart", "songAuthoringDocs", "visualIndependence", "neutralTemplate"]
+      "componentIds": [
+        "devManager",
+        "songServer",
+        "previewSnapshot",
+        "launchManagerSpec",
+        "agents",
+        "contextDocs",
+        "threadStart",
+        "songAuthoringDocs",
+        "visualIndependence",
+        "neutralTemplate"
+      ]
     }
   ],
   "mapZones": [
@@ -105,7 +131,7 @@
       "label": "fixture player",
       "kind": "fixture-player",
       "group": "検証用アプリ",
-      "file": "examples/fixture-player/main.ts",
+      "file": "examples/fixtures/soft-light-player/main.ts",
       "x": 28,
       "y": 38,
       "description": "system kitを使った動作確認用プレイヤーです。起動、入力登録、再生状態、フレーム更新、歌詞表示、fixture adapter接続をまとめます。"
@@ -125,7 +151,7 @@
       "label": "assets.ts",
       "kind": "loader",
       "group": "system kit",
-      "file": "system/kit/assets.ts",
+      "file": "system/kit/core/assets.ts",
       "x": 50,
       "y": 38,
       "description": "manifestを読み、Songle JSON、歌詞、手動タイミング、palette、markersをMusicMapへ変換します。"
@@ -145,7 +171,7 @@
       "label": "visual host",
       "kind": "runtime-helper",
       "group": "system kit",
-      "file": "system/kit/visualHost.ts",
+      "file": "system/kit/render/visualHost.ts",
       "x": 37,
       "y": 42,
       "description": "曲adapterが任意で使えるsafe area、追加Canvas/DOMレイヤ、DPR/resize/cleanup補助です。曲の見た目や描画方式は決めません。"
@@ -155,7 +181,7 @@
       "label": "再生制御",
       "kind": "system-service",
       "group": "system kit",
-      "file": "system/kit/transport.ts",
+      "file": "system/kit/core/transport.ts",
       "x": 72,
       "y": 38,
       "description": "audio要素または内部クロックから現在時刻を作り、再生、停止、シークを制御するhelperです。"
@@ -165,7 +191,7 @@
       "label": "フレームループ",
       "kind": "system-service",
       "group": "system kit",
-      "file": "system/kit/frameLoop.ts",
+      "file": "system/kit/core/frameLoop.ts",
       "x": 28,
       "y": 66,
       "description": "requestAnimationFrame(tick)で毎フレーム更新するhelperです。fixture playerや曲アプリが必要に応じて使います。"
@@ -185,7 +211,7 @@
       "label": "エフェクト群",
       "kind": "visual",
       "group": "演出",
-      "file": "examples/fixture-player/effects",
+      "file": "examples/fixtures/soft-light-player/effects",
       "x": 55,
       "y": 66,
       "description": "fixture player用の粒子、光線ネットワーク、色ramp、ダンピング制御です。新しい曲のテンプレートではありません。"
@@ -195,7 +221,7 @@
       "label": "歌詞タイミング編集",
       "kind": "tool",
       "group": "ツール",
-      "file": "examples/fixture-player/tools/lyricTimingTool.ts / system/kit/manualTiming.ts",
+      "file": "examples/fixtures/soft-light-player/tools/lyricTimingTool.ts / system/kit/timing/manualTiming.ts",
       "x": 72,
       "y": 66,
       "description": "A/Dキー、全体補正、途中から補正、ストーン表示、Export用JSON生成を担当します。音声波形は解析しません。"
@@ -221,21 +247,31 @@
       "description": "song-packsを別ポートで配信します。CORSはfixture playerのoriginに限定し、manifestやJSONを読めるようにします。"
     },
     {
+      "id": "previewSnapshot",
+      "label": "preview snapshot",
+      "kind": "verification-tool",
+      "group": "検証ツール",
+      "file": "scripts/preview-snapshot.mjs",
+      "x": 10,
+      "y": 24,
+      "description": "指定曲と指定時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を.codex/runtimeへ保存する確認ツールです。"
+    },
+    {
       "id": "devManager",
       "label": "起動管理サーバー",
       "kind": "dev-server",
       "group": "サーバー",
-      "file": "scripts/dev-manager.mjs / scripts/launch-manager/server.mjs / scripts/launch-manager/ui.mjs / launch/targets.json",
+      "file": "start-music-effect.cmd / scripts/dev-manager.mjs / scripts/launch-manager/server.mjs / scripts/launch-manager/ui.mjs / launch/targets.json",
       "x": 28,
       "y": 14,
-      "description": "npm run devでLaunch Serverを起動します。server.mjsがAPIとCSPつき応答を担当し、ui.mjsが管理画面を担当します。GUI/APIからlaunch/targets.jsonのTarget/Setだけを起動、停止、監視します。"
+      "description": "npm run devでLaunch Serverを起動します。server.mjsがAPIとCSPつき応答を担当し、ui.mjsが曲選択、状態マップ、管理画面を担当します。GUI/APIからlaunch/targets.jsonのTarget/Setだけを起動、停止、監視します。"
     },
     {
       "id": "launchManagerSpec",
       "label": "Launch仕様",
       "kind": "spec",
       "group": "文脈",
-      "file": "docs/launch-manager-spec.md / docs/launch-manager-spec.html",
+      "file": "docs/launch-manager-spec.md / docs/archive/working-notes/launch-manager-spec.html",
       "x": 10,
       "y": 14,
       "description": "複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様です。HTMLはレビュー用の見取り図です。"
@@ -258,7 +294,7 @@
       "file": "docs/README.md / docs",
       "x": 28,
       "y": 86,
-      "description": "architecture、module-map、decisions、plans、known-issues、handoffで作業文脈を保持します。"
+      "description": "architecture、module-map、decisions、handoff、archive/working-notesで作業文脈を保持します。"
     },
     {
       "id": "threadStart",
@@ -342,7 +378,7 @@
       "id": "boot-with-manifest",
       "label": "曲パッケージを読み込んで起動",
       "summary": "URLの?song=からmanifestを読み、曲素材をMusicMapへ変換して画面を起動します。",
-      "trigger": "http://127.0.0.1:5173/?song=<manifest-url> を開く",
+      "trigger": "http://127.0.0.1:<player-port>/?song=<manifest-url> を開く",
       "steps": [
         {
           "from": "browser",
@@ -532,9 +568,52 @@
       ]
     },
     {
+      "id": "preview-snapshot",
+      "label": "指定時刻のプレビューを記録する",
+      "summary": "曲manifestと時刻を指定してfixture playerを開き、スクリーンショットとconsole状態をGit管理外へ保存します。曲の見た目の良し悪しは判定しません。",
+      "trigger": "npm run preview:snapshot -- --song <song-id> --time <seconds>",
+      "steps": [
+        {
+          "from": "threadStart",
+          "to": "previewSnapshot",
+          "action": "検証コマンドを実行",
+          "payload": "song id、manifest URL、previewTime、viewport、port",
+          "note": "曲の構成を縛らず、指定時刻で開けるかを確認します。"
+        },
+        {
+          "from": "previewSnapshot",
+          "to": "main",
+          "action": "fixture playerを用意",
+          "payload": "既存URLを使う。未起動なら一時起動する",
+          "note": "このコマンド自身が起動したローカルサーバーだけを終了時に停止します。"
+        },
+        {
+          "from": "previewSnapshot",
+          "to": "songServer",
+          "action": "曲パック配信を用意",
+          "payload": "manifest URL、song-pack origin、CORS origin",
+          "note": "loopback URLだけを対象にし、外部adapter読み込みは行いません。"
+        },
+        {
+          "from": "previewSnapshot",
+          "to": "browser",
+          "action": "ヘッドレスブラウザで撮影",
+          "payload": "Chrome/Edge DevTools Protocol、screenshot、console、Canvas audit",
+          "note": "Playwright等の追加依存を入れず、ローカルChrome/Edgeを使います。"
+        },
+        {
+          "from": "previewSnapshot",
+          "to": "storage",
+          "action": "結果を保存",
+          "payload": ".codex/runtime/preview-snapshots/<timestamp>/snapshot.png と summary.json",
+          "note": "出力はGit管理外です。マージ判断や曲担当への確認材料として使います。"
+        }
+      ]
+    },
+    {
       "id": "launch-manager-mvp",
       "label": "簡素版Launch Managerを使う",
-      "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/SetをGUIから起動・停止・監視します。",
+      "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/Setとsong-packsの曲JSONをGUIから起動・停止・再生します。",
       "trigger": "複数の曲用映像や補助サーバーを同時に管理したい",
       "steps": [
         {
@@ -556,20 +635,20 @@
           "to": "songServer",
           "action": "Targetとして扱う",
           "payload": "launch/targets.json",
-          "note": "fixture playerとsong-pack serverをまずTarget化しました。曲用映像や保存APIもTargetとして追加できます。"
+          "note": "再生画面と曲データサーバーをまずTarget化しました。曲用映像や保存APIもTargetとして追加できます。"
         },
         {
           "from": "devManager",
           "to": "browser",
           "action": "GUIから操作する",
-          "payload": "Target card、Set selector、start/stop/restart/all stop",
-          "note": "UIは正本を持たず、PC上のLaunch Serverへ操作要求を送ります。停止対象は、そのLaunch Serverが起動したmanaged targetだけです。"
+          "payload": "Song selector、system status map、server status cards、advanced Set controls、two-click all stop",
+          "note": "UIは正本を持たず、PC上のLaunch Serverへ操作要求を送ります。状態マップはLaunch Manager、各target、選択曲JSONの関係を視覚化します。停止対象はそのLaunch Serverが起動したmanaged targetだけです。"
         },
         {
           "from": "devManager",
           "to": "contextDocs",
           "action": "運用前提を共有する",
-          "payload": "docs/launch-manager-spec.md、docs/plans.md、docs/handoff.md、docs/workflows.json",
+          "payload": "docs/launch-manager-spec.md、docs/archive/working-notes/plans.md、docs/handoff.md、docs/workflows.json",
           "note": "Launch Managerは曲の構成を束縛しない補助ツールとして扱います。"
         }
       ]
@@ -577,22 +656,29 @@
     {
       "id": "split-server",
       "label": "起動管理で分離サーバーをまとめて起動",
-      "summary": "Launch Manager GUIからBasic fixture setを起動し、検証用プレイヤーは外部manifestを読むだけにします。",
-      "trigger": "npm run dev 後にBasic fixtureを起動する",
+      "summary": "Launch Manager GUIから曲JSONを選び、必要なtargetを起動して検証用プレイヤーで選択曲を開きます。",
+      "trigger": "start-music-effect.cmd をダブルクリック、または npm run dev 後に曲JSONを選んで再生する",
       "steps": [
         {
           "from": "browser",
           "to": "devManager",
           "action": "起動管理画面を開く",
-          "payload": "http://127.0.0.1:5172/",
-          "note": "複数サーバーを手作業で起動する運用を避けます。"
+          "payload": "start-music-effect.cmd または .codex/runtime/ports.json のurl",
+          "note": "ダブルクリック起動では同じworktreeの起動済みmanagerだけを再利用し、別worktreeが起動中なら空きポートで新しく起動します。複数サーバーを手作業で起動する運用を避けます。"
+        },
+        {
+          "from": "devManager",
+          "to": "songPack",
+          "action": "曲JSONメニューを作る",
+          "payload": "song-packs/*/manifest.json",
+          "note": "Launch Managerはmanifestの最小メタデータだけを読み、音源解析や歌詞本文解析は行いません。"
         },
         {
           "from": "devManager",
           "to": "main",
           "action": "fixture playerを起動",
           "payload": "launch/targets.json -> npm run dev:player -- --port <PLAYER_PORT>",
-          "note": "起動前にport衝突を確認し、衝突時は自動変更せずエラーにします。"
+          "note": "Launch Manager起動時にworktreeごとの空きポートを自動割当し、.codex/runtime/ports.json とGUI下部に記録します。"
         },
         {
           "from": "devManager",
@@ -605,7 +691,7 @@
           "from": "main",
           "to": "songServer",
           "action": "外部manifestを取得",
-          "payload": "http://127.0.0.1:5174/<song-id>/manifest.json",
+          "payload": "http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json",
           "note": "曲パックサーバーは許可originだけにCORSヘッダーを返します。"
         },
         {
@@ -677,7 +763,7 @@
           "from": "agents",
           "to": "contextDocs",
           "action": "詳細な文脈へ進む",
-          "payload": "architecture、module-map、decisions、plans、known-issues、handoff",
+          "payload": "architecture、module-map、decisions、handoff、必要時だけarchive/working-notes",
           "note": "長い会話の代わりに、リポジトリ内のファイルを共有記憶として扱います。"
         },
         {
@@ -691,7 +777,7 @@
           "from": "main",
           "to": "contextDocs",
           "action": "作業後に更新する",
-          "payload": "handoff、plans、known-issues、workflows.json",
+          "payload": "handoff、該当する正本docs、workflows.json",
           "note": "次の作業者が同じ文脈から再開できるようにします。"
         }
       ]

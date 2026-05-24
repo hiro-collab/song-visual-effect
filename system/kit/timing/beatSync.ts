@@ -1,4 +1,4 @@
-import type { Beat } from "./types";
+import type { Beat } from "../core/types";
 
 export type BeatSyncSource = {
   label: string;

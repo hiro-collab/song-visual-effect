@@ -1,4 +1,4 @@
-import type { SongAppContentRect, SongAppFrame, SongAppServices } from "./songApp";
+import type { SongAppContentRect, SongAppFrame, SongAppServices } from "../song-app/songApp";
 import { clamp } from "./damping";
 
 export type CanvasSceneOptions = {

@@ -23,7 +23,7 @@ system/kit
   timing helpers
   lyric timing data helpers
 
-examples/fixture-player
+examples/fixtures/soft-light-player
   small runnable player for regression checks
   optional lyric timing UI
   fixture renderer
@@ -37,32 +37,34 @@ song package or song app
 
 `system/kit` は曲を知りません。曲名、曲ごとのcue文法、演出思想、描画方式を固定しません。
 
-現在のブラウザ画面は `examples/fixture-player` です。これは動作確認用の小さなプレイヤーであり、すべての曲を従わせる本体ではありません。
+現在のブラウザ画面は `examples/fixtures/soft-light-player` です。これは動作確認用fixtureであり、すべての曲を従わせる本体ではありません。
 
 ## 起動管理
 
 分離構成では、複数のサーバーを手作業で起動するとトラブルが増えます。そのため `npm run dev` はLaunch Managerを立ち上げます。Launch ManagerはPC上のLaunch Serverを正本として、`launch/targets.json` に書かれたmanaged targetだけを起動、停止、監視します。
 
 ```text
-http://127.0.0.1:5172
+http://127.0.0.1:<manager-port>
   launch manager UI + API
 
-http://127.0.0.1:5173
+http://127.0.0.1:<player-port>
   fixture player app target
 
-http://127.0.0.1:5174
+http://127.0.0.1:<song-pack-port>
   song package server target
 ```
 
-管理画面で `Basic fixture` setを起動すると、fixture player app と song package server が立ち上がります。GUIタブを閉じても起動中targetは止まりません。停止するにはTarget停止、Set停止、または全停止を使います。
+各ポートはworktreeごとに起動時に自動割当されます。実際の値はLaunch Manager GUI下部と `.codex/runtime/ports.json` に記録されます。
+
+管理画面で曲JSONを選んで再生すると、再生画面と曲データサーバーが立ち上がり、選択した曲のfixture player URLを開きます。状態マップでは、Launch Manager、各target、選択中の曲JSONの関係をノードグラフとして確認でき、起動中のノードと連携線が光ります。詳細操作で `標準再生セット` を手動起動することもできます。GUIタブを閉じても起動中targetは止まりません。停止するにはTarget停止、Set停止、または全停止を使います。
 
 fixture player appは `?song=<manifest-url>` で曲パッケージの入口を受け取ります。manifest URLがない場合、特定曲へ自動フォールバックせず、起動エラーとして扱います。
 
 ```text
-http://127.0.0.1:5173/?song=http://127.0.0.1:5174/<song-id>/manifest.json
+http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/manifest.json
 ```
 
-並行worktreeで起動する場合は、`DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` でポートをずらせます。Launch Managerは起動前にport衝突を確認し、衝突した場合は自動変更せずエラーとして表示します。song-pack serverを立てる場合、`PLAYER_PORT` に合わせたCORS許可originをtarget環境変数として渡します。
+並行worktreeで起動する場合、通常は手動でポートをずらす必要はありません。Launch Managerはworktree rootから安定した候補帯を作り、空きポートを探して `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` 相当の値を起動時に設定します。明示的に固定したい場合だけ環境変数を指定できます。song-pack serverを立てる場合、player portに合わせたCORS許可originをtarget環境変数として渡します。
 
 Launch Managerの非責務:
 
@@ -95,9 +97,9 @@ Launch Managerの非責務:
 - 歌詞タイミング編集UIを全曲必須にすること。
 - 曲ごとのWebアプリを必ずこのfixture playerに載せること。
 
-## Fixture Player
+## Fixture
 
-`examples/fixture-player` は、system kitを使った動作確認用アプリです。
+`examples/fixtures/soft-light-player` は、system kitを使った動作確認用アプリです。新しい曲の設計時に読む入口ではありません。
 
 役割:
 
@@ -117,7 +119,7 @@ Launch Managerの非責務:
 
 ```text
 index.html
-  -> examples/fixture-player/main.ts
+  -> examples/fixtures/soft-light-player/main.ts
 ```
 
 ## Song Package
