@@ -20,7 +20,9 @@ clean なら、既に使える場合は次を実行します。
 npm run sync:brief -- --for <担当ラベル>
 ```
 
-`sync:brief` が表示する取り込みコマンドを正本として使います。分岐済み worktree で `merge commit may be needed` と表示された場合は、差分範囲を確認し、問題なければ `--allow-merge-commit` 付きのコマンドを使ってよいです。
+`sync:brief` が表示する取り込みコマンドを正本として使います。`sync:merge -- --from <branch>` は、その branch の生の最新HEADではなく、最後に `sync:ready` で通知された commit を取り込みます。生HEADを取り込む `--tip` は、system 担当が明示した場合だけ使います。
+
+分岐済み worktree で `merge commit may be needed` と表示された場合は、差分範囲を確認し、問題なければ `--allow-merge-commit` 付きのコマンドを使ってよいです。
 
 ```powershell
 npm run sync:merge -- --from codex/system-kit-refactor --allow-merge-commit
@@ -29,6 +31,8 @@ npm run sync:merge -- --from codex/system-kit-refactor --allow-merge-commit
 `sync:merge` 自体が存在しない、または失敗して判断できない場合は、raw `git merge` へ進まず `system` 担当へ連絡してください。
 
 曲担当が `codex/system-kit-refactor` を branch-wide merge するのは、自分の作業枝を最新の共通基盤へ追いつかせるためです。逆向きに、古い曲枝を system 側へ丸ごと merge する意味ではありません。曲実装を system へ取り込むときは、古い docs や他曲削除を混ぜないよう、曲所有ファイルだけの cherry-pick / 手動取り込みを優先します。
+
+曲担当は、他曲の ready を自分の worktree へ直接取り込まなくてよいです。他曲 ready は中央の `system` / `song-preview-lab` が扱います。security / support ready も、原則は system 側で統合された後に `codex/system-kit-refactor` 経由で取り込みます。例外的に直接取り込む必要がある場合は、system または該当担当から明示されます。
 
 ## まず確認する
 
@@ -66,7 +70,7 @@ npm run sync:inbox -- --open
 git status --short --branch
 ```
 
-`ready` は自動で取り込む命令ではありません。取り込む前に、差分範囲、曲固有素材の混入、古い system docs への巻き戻し、他曲削除がないか確認します。
+`ready` は自動で取り込む命令ではありません。取り込む前に、差分範囲、曲固有素材の混入、古い system docs への巻き戻し、他曲削除がないか確認します。曲担当が見るべき中心は、自分宛の question / blocker と、system から案内された共通基盤更新です。
 
 ## 新しい曲担当
 

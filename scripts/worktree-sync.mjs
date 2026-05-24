@@ -509,7 +509,7 @@ function commandBrief(args) {
     console.log("");
   }
 
-  console.log("Tip: use npm run sync:ack -- --id <id> --from <担当名> to hide an item from this brief for your worktree.");
+  console.log("Tip: use npm run sync:ack -- --id <id> --from <label> to hide an item from this brief for your worktree.");
 }
 
 function resolveMergeCommit(opts) {

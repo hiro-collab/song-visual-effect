@@ -119,9 +119,13 @@ git status --short --branch
 npm run sync:brief -- --for <担当ラベル>
 ```
 
+`sync:merge -- --from <branch>` は、その branch の生の最新HEADではなく、最後に `sync:ready` で通知された commit を取り込みます。生HEADを取り込む `--tip` は、system 担当が明示した場合だけ使います。
+
 `sync:brief` が `merge commit may be needed` と案内したときは、差分範囲を確認し、問題がない場合だけ `--allow-merge-commit` を付けます。`sync:merge` が存在しない、または失敗して理由が判断できないときは、raw `git merge` を使わず `system` 担当へ相談します。
 
 曲担当の worktree が `codex/system-kit-refactor` を branch-wide merge するのは、自分の作業枝を最新の共通基盤へ更新するためです。system 側が曲枝を取り込むときは別判断です。古い曲枝の branch-wide merge が他曲削除や docs 巻き戻しを含む場合、system 側では曲所有ファイルだけの cherry-pick / 手動取り込みを優先します。
+
+曲担当は、他曲の ready を自分の worktree へ直接取り込まなくてよいです。他曲 ready は中央の `system` / `song-preview-lab` が扱います。security / support ready も、原則は system 側で統合された後に `codex/system-kit-refactor` 経由で取り込みます。直接取り込む必要がある場合は、system または該当担当から明示します。
 
 注意:
 
