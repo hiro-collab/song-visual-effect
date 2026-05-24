@@ -87,6 +87,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `docs/archive/working-notes/launch-manager-spec.html`: 旧レビュー用HTML。現在は `workflows.html` と `launch-manager-spec.md` を優先する。
 - `docs/security.md`: ローカル開発サーバー、manifest、曲素材、Songle取得ツールの信頼境界と対策。
 - `docs/library-candidates.md`: 各曲担当から出たライブラリ、ツール、エンジン候補と採用前チェック。
+- `docs/knowledge-review.md`: 各曲担当から出た共通ノウハウ候補を、共通/条件つき/曲固有/不採用へ振り分ける審議ルール。
 - `docs/handoff.md`: 次のCodexスレッドへ渡す要約。
 - `docs/archive/working-notes/`: 過去の作業候補、既知問題、詳細メモ。通常は読まない。
 - `docs/workflows.json`: LLM共有用のフロー定義。

@@ -32,6 +32,8 @@ ready通知は「必ず取り込むもの」ではなく、「取り込み候補
 note通知は「連絡」です。merge可能なcommitを示すものではないため、必要なら返答や相談だけ行います。
 `sync:brief` は、自分宛ての未対応question/blocker、未merge ready、最近のinfo/doneをまとめて表示します。
 
+共通ノウハウ候補のnoteは、そのまま正本docsへ入れません。`docs/knowledge-review.md` に沿って、曲固有のモチーフ、構図、色、数値、カメラ、演出名を取り除き、複数曲で使える作法や確認観点だけを昇格します。
+
 ## 次に読むファイル
 
 共通入口:
@@ -47,6 +49,7 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - `docs/architecture.md`
 - `docs/module-map.md`
 - `docs/decisions.md`
+- `docs/knowledge-review.md`
 - `docs/archive/working-notes/` は過去メモです。正本に必要な情報がない場合だけ確認します。
 
 新しい曲や曲固有エフェクトを作る場合:
@@ -150,6 +153,8 @@ npm run sync:note -- --from system --to traffic-jam-redo --level question --topi
 - `sync:note`: 質問、ブロッカー、方針共有、確認依頼。commit不要。
 - `sync:ready`: 他worktreeに取り込ませてよいcommitの通知。cleanなworktreeが必要。
 - `sync:merge`: ready通知が指すcommitを取り込む操作。
+
+共通ノウハウ候補を送る場合は、`--topic knowledge-candidate` を使い、候補、適用範囲、曲固有リスク、置き場所案を短く書きます。system担当は `common` / `conditional` / `song-owned` / `reject` に分類してから反映します。
 
 `--from` を省略すると現在branch名が送信者として表示されます。担当名を明示したい場合は `system`、`beat-sync`、`security`、`mesmerizer` のように短い名前を入れてください。
 

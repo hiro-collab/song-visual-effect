@@ -12,6 +12,7 @@
 - `module-map.md`: ディレクトリと主要ファイルの役割。
 - `decisions.md`: 設計判断と理由。
 - `security.md`: ローカル開発サーバー、manifest、Songle取得、Launch Managerの信頼境界。
+- `knowledge-review.md`: 各曲担当から届く共通ノウハウ候補を審議し、共通化するものと曲側に戻すものを分けるルール。
 
 ## 新しい曲を作るとき
 
@@ -60,3 +61,4 @@
 - UIや処理フローを変えたら `workflows.json` も更新する。
 - Launch Managerの起動、停止、管理範囲を変えたら `launch-manager-spec.md`、`architecture.md`、`thread-start.md` を確認する。
 - 新しい曲の作成ルールを変えたら `song-authoring.md` と `song-visual-independence.md` を確認する。
+- 曲担当のノウハウを共通化する場合は、先に `knowledge-review.md` で分類してから正本へ反映する。

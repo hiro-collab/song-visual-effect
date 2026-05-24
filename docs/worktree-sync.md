@@ -12,6 +12,8 @@ commitを伴わない質問、ブロッカー、短い方針共有は `note` 通
 
 通知は Git の共通ディレクトリ内に保存されるため、ブランチには混ざらず、すべての local worktree から同じ通知板を読めます。
 
+曲担当から出る共通ノウハウ候補は、通常のnoteとして共有します。ただし、system側の正本docsへ入れる前に `docs/knowledge-review.md` で審議します。
+
 ## 使い方
 
 ### 1. 共有できる区切りを出す
@@ -93,6 +95,14 @@ npm run sync:note -- --from security --to mesmerizer-signal-lock --level blocker
 ```
 
 `--level` は `info`、`question`、`blocker`、`done` のいずれかです。
+
+共通ノウハウ候補を送る場合:
+
+```powershell
+npm run sync:note -- --from song-example --to system --level question --topic knowledge-candidate -m "candidate: 区間ごとの画面構成を先に決める。scope: any song. source: song-example. risk: 固定数値や特定構図は含めない。suggested home: docs/song-authoring.md"
+```
+
+system担当は、候補を `common` / `conditional` / `song-owned` / `reject` に分け、共通化してよいものだけを正本docsへ入れます。
 
 ### 2.7 対応済みにする
 
