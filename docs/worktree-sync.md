@@ -93,6 +93,8 @@ npm run build
 npm run song:validate -- --id <song-id>
 ```
 
+ready は「作業中の状態を見てください」ではなく、「他worktreeへ取り込んでよい、ひとまとまりのcommit」を知らせるものです。曲担当は、曲固有の変更を自分の `song-packs/<song-id>/` に閉じた状態でreadyにし、systemや他曲の未整理変更を混ぜないでください。
+
 ## ack する
 
 対応済み、確認済み、または自分の担当では対応不要の項目は ack します。
@@ -126,6 +128,13 @@ npm run sync:brief -- --for <担当ラベル>
 曲担当の worktree が `codex/system-kit-refactor` を branch-wide merge するのは、自分の作業枝を最新の共通基盤へ更新するためです。system 側が曲枝を取り込むときは別判断です。古い曲枝の branch-wide merge が他曲削除や docs 巻き戻しを含む場合、system 側では曲所有ファイルだけの cherry-pick / 手動取り込みを優先します。
 
 曲担当は、他曲の ready を自分の worktree へ直接取り込まなくてよいです。他曲 ready は中央の `system` / `song-preview-lab` が扱います。security / support ready も、原則は system 側で統合された後に `codex/system-kit-refactor` 経由で取り込みます。直接取り込む必要がある場合は、system または該当担当から明示します。
+
+中央統合の分担:
+
+- `system-main` は、system kit、Launch Manager、security、同期ツール、正本docsを統合します。
+- `song-preview-lab` は、複数曲のプレビューをまとめて動作確認するために、採用済みの曲パックを統合します。
+- 各曲worktreeは、自分の曲のreadyを出し、他曲readyを横取りmergeしません。
+- ある曲だけで例外的に他担当の支援機能を試したい場合は、system担当へ `sync:note` で相談します。system担当が、必要な範囲のcherry-pick、preview-lab取り込み、一時ブランチなどを仲介します。
 
 注意:
 

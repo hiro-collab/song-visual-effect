@@ -32,6 +32,8 @@ const TEXT_SCAN_EXTENSIONS = new Set([
 ]);
 const FORBIDDEN_AUDIO_EXTENSIONS = new Set([".aac", ".aiff", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav"]);
 const FORBIDDEN_SECRET_EXTENSIONS = new Set([".key", ".p12", ".pfx", ".pem"]);
+const README_USAGE_PATTERN = /起動方法|再生方法|使い方|How to use|Usage|Playback/i;
+const README_VERIFICATION_PATTERN = /確認結果|検証結果|動作確認|Verification|Verified|Validation/i;
 
 const isInside = (parent, child) => {
   const baseKey = process.platform === "win32" ? parent.toLowerCase() : parent;
@@ -214,6 +216,52 @@ const validateSongPackTree = (root, realRoot) => {
   }
 };
 
+const hasAnyFile = (root, names) => names.some((name) => fs.existsSync(path.join(root, name)));
+
+const readTextIfExists = (filePath) => (fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : "");
+
+const manifestHasReplayEntry = (manifest, root) => {
+  if (typeof manifest.webAdapter === "string" && manifest.webAdapter.trim()) return true;
+  if (fs.existsSync(path.join(root, "adapter.ts")) || fs.existsSync(path.join(root, "adapter.js"))) return true;
+  return false;
+};
+
+const validateSubmissionChecklist = (root, manifest) => {
+  const warnings = [];
+  const readmePath = path.join(root, "README.md");
+  const readme = readTextIfExists(readmePath);
+
+  if (!hasAnyFile(root, ["README.md"])) {
+    warnings.push("README.md not found. Add human-facing playback and integration notes before sharing the song pack.");
+  } else if (!README_USAGE_PATTERN.test(readme)) {
+    warnings.push("README.md does not seem to include usage/playback instructions.");
+  }
+
+  const creditsPath =
+    typeof manifest.credits === "string"
+      ? resolveInsideSongPack(root, fs.realpathSync(root), manifest.credits)
+      : path.join(root, "CREDITS.md");
+  if (!creditsPath || !fs.existsSync(creditsPath)) {
+    warnings.push("CREDITS.md or manifest.credits not found. Record source, license, and rights notes.");
+  }
+
+  const hasVerificationFile = hasAnyFile(root, ["verification.md", "VERIFICATION.md", "VERIFY.md", "verify.md"]);
+  if (!hasVerificationFile && !README_VERIFICATION_PATTERN.test(readme)) {
+    warnings.push("Verification notes not found. Add verification.md or a README verification section.");
+  }
+
+  if (!manifestHasReplayEntry(manifest, root) && !README_USAGE_PATTERN.test(readme)) {
+    warnings.push("No webAdapter/adapter file or clear alternate playback instructions found.");
+  }
+
+  const schema = manifest.schemaVersion ?? manifest.schema;
+  if (schema === undefined || schema === null || schema === "") {
+    warnings.push("manifest schema/schemaVersion not found. Missing schema is treated as v1 for compatibility, but new packs should declare it.");
+  }
+
+  return warnings;
+};
+
 const main = () => {
   const opts = parseArgs(process.argv.slice(2));
   const id = String(opts.id ?? opts.song ?? "").trim();
@@ -229,10 +277,13 @@ const main = () => {
   }
 
   const manifestPath = path.join(root, "manifest.json");
-  const manifest = fs.existsSync(manifestPath) ? readJson(manifestPath, 256 * 1024) : {};
+  if (!fs.existsSync(manifestPath)) {
+    throw new Error(`manifest.json not found: ${path.relative(repoRoot, manifestPath)}`);
+  }
+  const manifest = readJson(manifestPath, 256 * 1024);
   const referencesPath =
     resolveInsideSongPack(root, realRoot, manifest.references ?? "references.json") ?? path.join(root, "references.json");
-  const warnings = validateReferences(referencesPath);
+  const warnings = [...validateReferences(referencesPath), ...validateSubmissionChecklist(root, manifest)];
   validateSongPackTree(root, realRoot);
 
   for (const warning of warnings) console.warn(`Warning: ${warning}`);

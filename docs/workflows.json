@@ -148,6 +148,16 @@
       "description": "曲パッケージの入口です。歌詞、解析JSON、音源、クレジット、設計資料への相対パスを持ちます。"
     },
     {
+      "id": "showProfile",
+      "label": "show-profile",
+      "kind": "optional-operation-profile",
+      "group": "運用メモ",
+      "file": "show-profiles/<show-id>/show.json",
+      "x": 67,
+      "y": 24,
+      "description": "任意のイベント運用層です。セットリスト、再生確認メモ、外部ツール連携メモを置けますが、曲パッケージの構成や演出文法は束縛しません。未知項目は無視します。"
+    },
+    {
       "id": "assets",
       "label": "assets.ts",
       "kind": "loader",
@@ -657,6 +667,13 @@
         },
         {
           "from": "devManager",
+          "to": "showProfile",
+          "action": "任意セットリストを読む",
+          "payload": "show-profiles/*/show.json",
+          "note": "show-profileは任意です。Launch Managerは読めるsetlistだけを表示し、未知項目や曲ごとの連携方式は解釈しません。"
+        },
+        {
+          "from": "devManager",
           "to": "syncEvents",
           "action": "担当連絡を閲覧する",
           "payload": "GET /api/sync-events -> codex-sync/events.jsonl",
@@ -683,6 +700,13 @@
           "action": "起動管理画面を開く",
           "payload": "start-music-effect.cmd または .codex/runtime/ports.json のurl",
           "note": "ダブルクリック起動では同じworktreeの起動済みmanagerだけを再利用し、別worktreeが起動中なら空きポートで新しく起動します。複数サーバーを手作業で起動する運用を避けます。"
+        },
+        {
+          "from": "devManager",
+          "to": "showProfile",
+          "action": "任意セットリストを表示",
+          "payload": "show-profiles/<show-id>/show.json",
+          "note": "項目を曲JSON選択へ反映できます。show-profileがなくても曲JSONメニューとtarget起動は従来通り動きます。"
         },
         {
           "from": "devManager",

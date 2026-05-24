@@ -52,18 +52,22 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; }
       h2 { margin: 0; font-size: 18px; }
       p { margin: 0; color: var(--muted); line-height: 1.7; }
-      .toolbar, .target-actions, .links, .song-actions, .flow-steps, .map-legend, .sync-tabs, .sync-controls, .sync-summary, .participant-stats {
+      .toolbar, .target-actions, .links, .song-actions, .show-actions, .flow-steps, .map-legend, .sync-tabs, .sync-controls, .sync-summary, .participant-stats {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
         align-items: center;
       }
-      .song-launcher {
+      .song-launcher, .show-profile-panel {
         border: 1px solid rgba(255, 217, 138, 0.34);
         border-radius: 8px;
         padding: 18px;
         margin-bottom: 16px;
         background: linear-gradient(180deg, rgba(255, 217, 138, 0.1), rgba(255, 255, 255, 0.035));
+      }
+      .show-profile-panel {
+        border-color: rgba(159, 212, 255, 0.3);
+        background: linear-gradient(180deg, rgba(159, 212, 255, 0.075), rgba(255, 255, 255, 0.03));
       }
       .song-launcher h2 {
         margin-bottom: 6px;
@@ -100,16 +104,37 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         gap: 12px;
         align-items: end;
       }
+      .show-form {
+        display: grid;
+        grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 1.1fr) auto;
+        gap: 12px;
+        align-items: end;
+        margin-top: 12px;
+      }
       label {
         display: grid;
         gap: 6px;
         color: var(--muted);
         font-size: 13px;
       }
-      .song-meta {
+      .song-meta, .show-meta {
         margin-top: 12px;
         color: var(--text);
         overflow-wrap: anywhere;
+      }
+      .show-meta {
+        color: var(--muted);
+      }
+      .show-setlist {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .show-setlist button {
+        min-height: 32px;
+        padding: 6px 9px;
+        color: var(--info);
       }
       .message {
         min-height: 24px;
@@ -434,7 +459,11 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         color: var(--text);
         font: inherit;
       }
-      select { padding: 0 12px; min-width: 210px; }
+      select {
+        padding: 0 12px;
+        min-width: 210px;
+        color-scheme: dark;
+      }
       select option {
         background: #25262c;
         color: #fff7e6;
@@ -603,7 +632,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       }
       @media (max-width: 760px) {
         header { display: block; }
-        .song-form { grid-template-columns: 1fr; }
+        .song-form, .show-form { grid-template-columns: 1fr; }
         .sync-head { display: block; }
         .sync-summary { justify-content: flex-start; min-width: 0; margin-top: 10px; }
         .sync-controls { display: grid; }
@@ -657,6 +686,30 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         <p id="song-meta" class="song-meta"></p>
         <p id="message" class="message" role="status" aria-live="polite"></p>
         <div id="runtime-strip" class="runtime-strip"></div>
+      </section>
+
+      <section class="show-profile-panel" aria-label="Show profile setlist">
+        <h2>show-profile / セットリスト</h2>
+        <p>任意のイベント運用メモがある場合だけ、曲の並びを表示します。曲パッケージの構成や連携方式はここでは縛りません。</p>
+        <div class="show-form">
+          <label>
+            show-profile
+            <select id="show-select" aria-label="Show profile">
+              <option>show-profileを読み込み中...</option>
+            </select>
+          </label>
+          <label>
+            セットリスト項目
+            <select id="setlist-select" aria-label="Setlist item">
+              <option>セットリストを読み込み中...</option>
+            </select>
+          </label>
+          <div class="show-actions">
+            <button id="select-setlist-song" type="button">曲JSONへ反映</button>
+          </div>
+        </div>
+        <p id="show-meta" class="show-meta"></p>
+        <div id="show-setlist" class="show-setlist"></div>
       </section>
 
       <section class="system-map" aria-label="System status map">
@@ -747,6 +800,8 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         return node;
       };
       const selectedSongStorageKey = "music-effect.launch-manager.selectedSong";
+      const selectedShowStorageKey = "music-effect.launch-manager.selectedShow";
+      const selectedSetlistStorageKey = "music-effect.launch-manager.selectedSetlist";
       const call = async (url, options = {}) => {
         let response;
         try {
@@ -1004,6 +1059,50 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
           localStorage.setItem(selectedSongStorageKey, value);
         } catch {}
       };
+      const loadStoredValue = (key) => {
+        try {
+          return localStorage.getItem(key) || "";
+        } catch {
+          return "";
+        }
+      };
+      const storeValue = (key, value) => {
+        if (!value) return;
+        try {
+          localStorage.setItem(key, value);
+        } catch {}
+      };
+      const selectedShowProfile = () => {
+        const profiles = state.status?.showProfiles?.profiles || [];
+        const value = byId("show-select").value;
+        return profiles.find((profile) => profile.directoryName === value) || null;
+      };
+      const selectedSetlistItem = () => {
+        const profile = selectedShowProfile();
+        const index = Number(byId("setlist-select").value);
+        if (!profile || !Number.isInteger(index)) return null;
+        return (profile.setlist || []).find((item) => item.index === index) || null;
+      };
+      const rememberShowSelection = () => {
+        const showValue = byId("show-select").value;
+        const setlistValue = byId("setlist-select").value;
+        storeValue(selectedShowStorageKey, showValue);
+        storeValue(selectedSetlistStorageKey, showValue + ":" + setlistValue);
+      };
+      const applySongSelection = (songDirectoryName, { announce = true } = {}) => {
+        const catalog = state.status?.songCatalog || { songs: [] };
+        const song = (catalog.songs || []).find((item) => item.directoryName === songDirectoryName);
+        if (!song) {
+          if (announce) setMessage("セットリスト項目に対応する曲JSONが見つかりません: " + songDirectoryName, "warn");
+          return false;
+        }
+        byId("song-select").value = song.directoryName;
+        rememberSelectedSong();
+        renderSelectedSong();
+        if (state.status) renderSystemMap(state.status);
+        if (announce) setMessage(formatSongLabel(song) + " を曲JSON選択へ反映しました。", "ok");
+        return true;
+      };
       const targetMap = () => new Map((state.status?.targets || []).map((target) => [target.id, target]));
       const targetReady = (target) =>
         target?.running &&
@@ -1226,6 +1325,93 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
           setMessage("読み込めない曲JSONがあります: " + catalog.errors.join(" / "), "warn");
         }
       };
+      const renderSelectedShow = () => {
+        const profile = selectedShowProfile();
+        const setlistSelect = byId("setlist-select");
+        const meta = byId("show-meta");
+        const list = byId("show-setlist");
+        const button = byId("select-setlist-song");
+        const storedSetlist = loadStoredValue(selectedSetlistStorageKey);
+        const current = setlistSelect.value;
+        setlistSelect.replaceChildren();
+        list.replaceChildren();
+
+        if (!profile) {
+          setlistSelect.append(make("option", "", "セットリストなし"));
+          setlistSelect.disabled = true;
+          button.disabled = true;
+          meta.textContent = "show-profile は任意です。必要なイベント運用メモがある場合だけ show-profiles/<id>/show.json を置きます。";
+          return;
+        }
+
+        const setlist = profile.setlist || [];
+        if (!setlist.length) {
+          setlistSelect.append(make("option", "", "セットリストなし"));
+          setlistSelect.disabled = true;
+          button.disabled = true;
+        } else {
+          setlistSelect.disabled = false;
+          button.disabled = false;
+          for (const item of setlist) {
+            const option = make("option", "", String(item.index + 1) + ". " + item.label);
+            option.value = String(item.index);
+            option.title = item.manifestPath;
+            setlistSelect.append(option);
+          }
+          const storedParts = storedSetlist.split(":");
+          if (setlist.some((item) => String(item.index) === current)) {
+            setlistSelect.value = current;
+          } else if (storedParts[0] === profile.directoryName && setlist.some((item) => String(item.index) === storedParts[1])) {
+            setlistSelect.value = storedParts[1];
+          }
+        }
+
+        const selected = selectedSetlistItem();
+        const description = profile.description ? " / " + profile.description : "";
+        const selectedText = selected ? " / 選択: " + selected.label + " / " + selected.manifestPath : "";
+        meta.textContent = profile.title + description + " / " + profile.showPath + selectedText;
+
+        const chips = setlist.slice(0, 12).map((item) => {
+          const chip = make("button", "", String(item.index + 1) + ". " + item.label);
+          chip.type = "button";
+          chip.title = item.notes || item.manifestPath;
+          chip.addEventListener("click", () => {
+            setlistSelect.value = String(item.index);
+            rememberShowSelection();
+            renderSelectedShow();
+            applySongSelection(item.songDirectoryName);
+          });
+          return chip;
+        });
+        list.replaceChildren(...chips);
+      };
+      const renderShowProfiles = (showProfiles = { profiles: [], errors: [] }) => {
+        const select = byId("show-select");
+        const current = select.value;
+        const stored = loadStoredValue(selectedShowStorageKey);
+        select.replaceChildren();
+        if (!showProfiles.profiles.length) {
+          select.append(make("option", "", "show-profileなし"));
+          select.disabled = true;
+        } else {
+          select.disabled = false;
+          for (const profile of showProfiles.profiles) {
+            const option = make("option", "", profile.title);
+            option.value = profile.directoryName;
+            option.title = profile.showPath;
+            select.append(option);
+          }
+          if (showProfiles.profiles.some((profile) => profile.directoryName === current)) {
+            select.value = current;
+          } else if (showProfiles.profiles.some((profile) => profile.directoryName === stored)) {
+            select.value = stored;
+          }
+        }
+        renderSelectedShow();
+        if (showProfiles.errors?.length) {
+          setMessage("読み込めないshow-profile項目があります: " + showProfiles.errors.join(" / "), "warn");
+        }
+      };
       const startPlaybackTargets = async () => {
         const catalog = state.status?.songCatalog;
         if (!catalog) throw new Error("曲カタログをまだ読み込めていません。");
@@ -1358,6 +1544,7 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
       const render = (status) => {
         renderSets(status.sets || []);
         renderSongCatalog(status.songCatalog);
+        renderShowProfiles(status.showProfiles);
         renderSystemMap(status);
         byId("updated-at").textContent = "更新: " + new Date(status.updatedAt).toLocaleTimeString();
         byId("runtime").textContent =
@@ -1412,13 +1599,31 @@ export const managerHtml = ({ title, nonce }) => `<!doctype html>
         renderSelectedSong();
         if (state.status) renderSystemMap(state.status);
       });
+      byId("show-select").addEventListener("change", () => {
+        rememberShowSelection();
+        renderSelectedShow();
+      });
+      byId("setlist-select").addEventListener("change", () => {
+        rememberShowSelection();
+        renderSelectedShow();
+      });
+      byId("select-setlist-song").addEventListener("click", () => {
+        const item = selectedSetlistItem();
+        if (!item) {
+          setMessage("反映できるセットリスト項目を選んでください。", "warn");
+          return;
+        }
+        rememberShowSelection();
+        applySongSelection(item.songDirectoryName);
+      });
       byId("play-song").addEventListener("click", playSelectedSong);
       byId("open-song").addEventListener("click", (event) => {
         if (!selectedSong()?.playerUrl) event.preventDefault();
       });
       refresh().catch((error) => setMessage(error.message, "error"));
       setInterval(() => {
-        if (!state.busy) refresh().catch(() => {});
+        const readingLogs = document.querySelector(".tech-details:hover, .tech-details:focus-within");
+        if (!state.busy && !readingLogs) refresh().catch(() => {});
       }, 2000);
     </script>
   </body>

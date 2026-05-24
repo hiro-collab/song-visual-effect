@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "demo-show",
+  "title": "Demo Show",
+  "description": "Launch Managerで任意セットリスト表示を確認するための最小show-profileです。",
+  "setlist": [
+    {
+      "songId": "monitoring",
+      "manifest": "song-packs/monitoring/manifest.json",
+      "label": "DECO*27 - モニタリング",
+      "notes": "検証用。曲パックの構成や外部連携方式はここでは縛りません。"
+    },
+    {
+      "songId": "igaku",
+      "manifest": "song-packs/igaku/manifest.json",
+      "label": "イガク - 重音テト",
+      "notes": "任意のセットリスト項目例です。"
+    }
+  ]
+}
