@@ -54,6 +54,7 @@
 - soft light fixtureは `examples/fixtures/soft-light-player/` に移動した。新曲の見た目を作るときは読まない。
 - Launch ManagerのHTTP API本体と管理画面HTMLを分け、`scripts/launch-manager/server.mjs` と `scripts/launch-manager/ui.mjs` に整理した。
 - 並行worktree間の連絡整理として、`npm run sync:brief` / `sync:ack` / `sync:note` / `sync:inbox` を使う。`sync:brief` は要対応のquestion/blockerと未merge readyの要約、`sync:ack` は自分のworktreeで確認済みにする記録、`sync:ready` はmerge可能commit、`sync:note` は質問やブロッカー共有として使い分ける。
+- Launch Manager GUIに担当メッセージ閲覧を追加した。`/api/sync-events` がGit共通ディレクトリの `codex-sync/events.jsonl` を読み、ready/note/ackを要対応、担当、種別で絞り込んで表示する。GUIは読み取り専用で、note/ack/mergeは既存の `sync:*` CLIで行う。
 
 ## 新しいスレッドの開始手順
 
@@ -110,6 +111,7 @@ npm run dev
 
 `npm run dev` はLaunch Managerを立てます。管理画面で曲JSONを選び、`選択曲を再生` を押すと、再生画面と曲データサーバーが起動し、選択曲の再生画面を開きます。詳細操作として `標準再生セット` を手動起動することもできます。
 管理画面の状態マップでは、Launch Manager、各サーバー、選択中の曲JSONのつながりをノードグラフとして確認できます。
+担当メッセージ欄では、各worktree担当からのready通知、質問、ブロッカー、ackをブラウザで確認できます。
 
 実際のportはworktreeごとに自動割当され、GUI下部と `.codex/runtime/ports.json` に表示されます。
 

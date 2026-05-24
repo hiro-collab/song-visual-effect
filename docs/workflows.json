@@ -51,6 +51,7 @@
       "boundary": "曲の演出判断や曲パッケージ構成をここで決めない。",
       "componentIds": [
         "devManager",
+        "syncEvents",
         "songServer",
         "previewSnapshot",
         "launchManagerSpec",
@@ -261,10 +262,20 @@
       "label": "起動管理サーバー",
       "kind": "dev-server",
       "group": "サーバー",
-      "file": "start-music-effect.cmd / scripts/dev-manager.mjs / scripts/launch-manager/server.mjs / scripts/launch-manager/ui.mjs / launch/targets.json",
+      "file": "start-music-effect.cmd / scripts/dev-manager.mjs / scripts/launch-manager/server.mjs / scripts/launch-manager/ui.mjs / scripts/launch-manager/sync-events.mjs / launch/targets.json",
       "x": 28,
       "y": 14,
-      "description": "npm run devでLaunch Serverを起動します。server.mjsがAPIとCSPつき応答を担当し、ui.mjsが曲選択、状態マップ、管理画面を担当します。GUI/APIからlaunch/targets.jsonのTarget/Setだけを起動、停止、監視します。"
+      "description": "npm run devでLaunch Serverを起動します。server.mjsがAPIとCSPつき応答を担当し、ui.mjsが曲選択、状態マップ、担当メッセージ閲覧、管理画面を担当します。GUI/APIからlaunch/targets.jsonのTarget/Setだけを起動、停止、監視します。"
+    },
+    {
+      "id": "syncEvents",
+      "label": "担当メッセージ",
+      "kind": "status-view",
+      "group": "同期",
+      "file": "scripts/worktree-sync.mjs / scripts/launch-manager/sync-events.mjs / scripts/launch-manager/ui.mjs",
+      "x": 46,
+      "y": 14,
+      "description": "Git共通ディレクトリのcodex-sync/events.jsonlを読み、Launch Manager GUI上でready、note、ackを担当別・要対応別に表示します。書き込み操作は既存のsync:* CLIに残します。"
     },
     {
       "id": "launchManagerSpec",
@@ -641,8 +652,15 @@
           "from": "devManager",
           "to": "browser",
           "action": "GUIから操作する",
-          "payload": "Song selector、system status map、server status cards、advanced Set controls、two-click all stop",
-          "note": "UIは正本を持たず、PC上のLaunch Serverへ操作要求を送ります。状態マップはLaunch Manager、各target、選択曲JSONの関係を視覚化します。停止対象はそのLaunch Serverが起動したmanaged targetだけです。"
+          "payload": "Song selector、system status map、assigned message board、server status cards、advanced Set controls、two-click all stop",
+          "note": "UIは正本を持たず、PC上のLaunch Serverへ操作要求を送ります。状態マップはLaunch Manager、各target、選択曲JSONの関係を視覚化し、担当メッセージはsync通知を読み取り専用で表示します。停止対象はそのLaunch Serverが起動したmanaged targetだけです。"
+        },
+        {
+          "from": "devManager",
+          "to": "syncEvents",
+          "action": "担当連絡を閲覧する",
+          "payload": "GET /api/sync-events -> codex-sync/events.jsonl",
+          "note": "要対応、担当、種別でready/note/ackを絞り込みます。ack、note、mergeはCLIのsync:*を使います。"
         },
         {
           "from": "devManager",

@@ -6,6 +6,7 @@ import { applyLaunchPortsToEnv, resolvePortsFromEnv, writePortsFile } from "./au
 import { assertLoopbackHost, loadLaunchConfig } from "./config.mjs";
 import { LaunchSupervisor } from "./supervisor.mjs";
 import { listSongCatalog } from "./songs.mjs";
+import { readSyncEvents } from "./sync-events.mjs";
 import { managerHtml } from "./ui.mjs";
 
 const baseSecurityHeaders = {
@@ -56,6 +57,34 @@ const safeSongCatalog = async (config) => {
       errors: [`song catalog could not be read: ${error.message}`],
       requiredTargetIds: [],
       launchSetId: null
+    };
+  }
+};
+
+const safeSyncEvents = (config) => {
+  try {
+    return readSyncEvents({ root: config.root });
+  } catch (error) {
+    return {
+      updatedAt: new Date().toISOString(),
+      currentBranch: "",
+      currentHead: "",
+      labels: [],
+      syncDir: "",
+      eventsPath: "",
+      summary: {
+        totalEvents: 0,
+        shownEvents: 0,
+        participants: 0,
+        openItems: 0,
+        openActionNotes: 0,
+        pendingReady: 0
+      },
+      participants: [],
+      actionNotes: [],
+      readyUpdates: [],
+      recentEvents: [],
+      error: `sync events could not be read: ${error.message}`
     };
   }
 };
@@ -135,6 +164,10 @@ export const startLaunchManager = async ({
           ...(await supervisor.snapshot()),
           songCatalog: await safeSongCatalog(config)
         });
+        return;
+      }
+      if (request.method === "GET" && url.pathname === "/api/sync-events") {
+        sendJson(response, 200, safeSyncEvents(config));
         return;
       }
       if (request.method === "POST" && url.pathname.startsWith("/api/")) {
