@@ -176,7 +176,7 @@ http://127.0.0.1:<player-port>/docs/workflows.html
 npm run preview:snapshot -- --song shining-star --time 48
 ```
 
-任意のplayer queryを足したい場合は `--query` を使います。例えばVisual Sequencer panelの表示確認は次のようにできます。
+任意のplayer queryを足したい場合は `--query` を使います。例えばVisual Sequencer panelの表示確認は次のようにできます。このpanelでは検証用にraw timeのseek/nudgeとvisual timeのscrub/nudgeを分けて操作できます。
 
 ```powershell
 npm run preview:snapshot -- --song shining-star --time 10 --query visualSequencer=1

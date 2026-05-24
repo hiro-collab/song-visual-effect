@@ -208,7 +208,7 @@
       "file": "system/kit/core/visualSequencer.ts / examples/fixtures/soft-light-player/tools/visualSequencerTool.ts",
       "x": 82,
       "y": 48,
-      "description": "raw timeとnowMsから映像・歌詞・cue向けのvisual timeを作るDOM非依存helperです。fixtureでは?visualSequencer=1のoptional panelから確認できます。"
+      "description": "raw timeとnowMsから映像・歌詞・cue向けのvisual timeを作るDOM非依存helperです。fixtureでは?visualSequencer=1のoptional panelからraw timeとvisual timeを分けて確認できます。"
     },
     {
       "id": "frameLoop",

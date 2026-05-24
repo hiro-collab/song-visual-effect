@@ -30,7 +30,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `examples/fixtures/soft-light-player/README.md`: fixtureが標準テンプレートではないことを明示する注意書き。
 - `examples/fixtures/soft-light-player/adapters/registry.ts`: fixture内で使う `builtin:` adapter registry。曲固有adapterを直接importせず、必要な場合は `song-packs/local-adapters.ts` へ委譲する。
 - `examples/fixtures/soft-light-player/renderers/` と `effects/`: soft light確認用の見た目。新しい曲のテンプレートとして読まない。
-- `examples/fixtures/soft-light-player/tools/`: lyric timing、beat state、visual sequencer panelなど、fixtureに載せているoptional tool。system kitの必須UIではない。
+- `examples/fixtures/soft-light-player/tools/`: lyric timing、beat state、visual sequencer panelなど、fixtureに載せているoptional tool。visual sequencer panelは検証用にraw timeとvisual timeを分けて動かせる。system kitの必須UIではない。
 
 ## song-packs
 

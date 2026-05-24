@@ -6,6 +6,7 @@ import {
 
 type VisualSequencerToolOptions = {
   duration: number;
+  seekRawTime: (time: number) => void;
 };
 
 const isEnabledValue = (value: string | null | undefined) => {
@@ -26,6 +27,8 @@ const wrapTime = (time: number, duration: number) => {
   return ((time % safeDuration) + safeDuration) % safeDuration;
 };
 
+const clampTime = (time: number, duration: number) => Math.min(Math.max(0, time), duration);
+
 const make = <K extends keyof HTMLElementTagNameMap>(
   tagName: K,
   options: { className?: string; text?: string; slot?: string; type?: string; title?: string } = {}
@@ -43,6 +46,7 @@ export class VisualSequencerTool {
   private readonly sequencer = createVisualSequencer();
   private readonly panel = document.createElement("aside");
   private readonly duration: number;
+  private readonly seekRawTime: (time: number) => void;
   private lastRawTime = 0;
   private lastNowMs = 0;
   private raw!: HTMLElement;
@@ -52,10 +56,12 @@ export class VisualSequencerTool {
   private modeSelect!: HTMLSelectElement;
   private rateInput!: HTMLInputElement;
   private pauseButton!: HTMLButtonElement;
-  private scrubInput!: HTMLInputElement;
+  private rawScrubInput!: HTMLInputElement;
+  private visualScrubInput!: HTMLInputElement;
 
   constructor(options: VisualSequencerToolOptions) {
     this.duration = Math.max(0.001, options.duration);
+    this.seekRawTime = options.seekRawTime;
     this.buildPanel();
   }
 
@@ -82,7 +88,8 @@ export class VisualSequencerTool {
     this.rateInput.value = String(state.rate);
     this.pauseButton.textContent = state.paused ? "Resume" : "Pause";
     this.pauseButton.setAttribute("aria-pressed", String(state.paused));
-    this.scrubInput.value = String(wrapTime(state.visualTime, this.duration));
+    this.rawScrubInput.value = String(clampTime(state.rawTime, this.duration));
+    this.visualScrubInput.value = String(wrapTime(state.visualTime, this.duration));
   }
 
   private applyAndRender(action: () => VisualSequencerState) {
@@ -92,6 +99,20 @@ export class VisualSequencerTool {
   private resetToCurrentRaw() {
     this.sequencer.reset();
     return this.sequencer.update(this.lastRawTime, this.lastNowMs);
+  }
+
+  private seekRawTo(time: number) {
+    const target = clampTime(time, this.duration);
+    this.seekRawTime(target);
+    this.lastRawTime = target;
+    this.lastNowMs = performance.now();
+    return this.sequencer.update(target, this.lastNowMs);
+  }
+
+  private rangeRow(label: string, input: HTMLInputElement) {
+    const row = make("label", { className: "visual-sequencer-field" });
+    row.append(make("span", { text: label }), input);
+    return row;
   }
 
   private buildPanel() {
@@ -141,12 +162,28 @@ export class VisualSequencerTool {
     });
     rateRow.append(this.rateInput);
 
-    this.scrubInput = make("input", { className: "visual-sequencer-scrub", type: "range" });
-    this.scrubInput.min = "0";
-    this.scrubInput.max = String(this.duration);
-    this.scrubInput.step = "0.01";
-    this.scrubInput.addEventListener("input", () => {
-      this.applyAndRender(() => this.sequencer.scrubTo(Number.parseFloat(this.scrubInput.value)));
+    this.rawScrubInput = make("input", { className: "visual-sequencer-scrub", type: "range" });
+    this.rawScrubInput.min = "0";
+    this.rawScrubInput.max = String(this.duration);
+    this.rawScrubInput.step = "0.01";
+    this.rawScrubInput.addEventListener("input", () => {
+      this.applyAndRender(() => this.seekRawTo(Number.parseFloat(this.rawScrubInput.value)));
+    });
+
+    const rawActions = make("div", { className: "visual-sequencer-actions" });
+    rawActions.append(
+      this.button("-10s", () => this.seekRawTo(this.lastRawTime - 10)),
+      this.button("-1s", () => this.seekRawTo(this.lastRawTime - 1)),
+      this.button("+1s", () => this.seekRawTo(this.lastRawTime + 1)),
+      this.button("+10s", () => this.seekRawTo(this.lastRawTime + 10))
+    );
+
+    this.visualScrubInput = make("input", { className: "visual-sequencer-scrub", type: "range" });
+    this.visualScrubInput.min = "0";
+    this.visualScrubInput.max = String(this.duration);
+    this.visualScrubInput.step = "0.01";
+    this.visualScrubInput.addEventListener("input", () => {
+      this.applyAndRender(() => this.sequencer.scrubTo(Number.parseFloat(this.visualScrubInput.value)));
     });
 
     const offsetActions = make("div", { className: "visual-sequencer-actions" });
@@ -168,7 +205,17 @@ export class VisualSequencerTool {
       this.button("Reset", () => this.resetToCurrentRaw())
     );
 
-    this.panel.replaceChildren(head, grid, modeRow, rateRow, this.scrubInput, offsetActions, mainActions);
+    this.panel.replaceChildren(
+      head,
+      grid,
+      modeRow,
+      rateRow,
+      this.rangeRow("Raw seek", this.rawScrubInput),
+      rawActions,
+      this.rangeRow("Visual", this.visualScrubInput),
+      offsetActions,
+      mainActions
+    );
     this.raw = this.slot("raw");
     this.visual = this.slot("visual");
     this.offset = this.slot("offset");

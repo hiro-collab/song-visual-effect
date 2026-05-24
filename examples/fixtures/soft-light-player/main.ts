@@ -200,7 +200,12 @@ const boot = async () => {
       beatStateTool.mount(document.querySelector("#app") ?? document.body);
     }
     if (isVisualSequencerToolEnabled()) {
-      visualSequencerTool = new VisualSequencerTool({ duration: musicMap.duration });
+      visualSequencerTool = new VisualSequencerTool({
+        duration: musicMap.duration,
+        seekRawTime: (time) => {
+          transport.seek(time, musicMap.duration);
+        }
+      });
       visualSequencerTool.mount(document.querySelector("#app") ?? document.body);
     }
     timingTool?.bindControls();
