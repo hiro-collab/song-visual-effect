@@ -17,6 +17,8 @@ npm run dev
 
 `npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、曲JSONを選んで再生すると、再生画面と曲データサーバーが起動し、選択した曲の再生画面を開きます。ポートはworktreeごとに自動割当され、起動後に `.codex/runtime/ports.json` とGUI下部へ表示されます。
 
+ライブ/VJ運用では、今後Deck A/Bを標準の再生単位として扱います。2つのplayer serverを別portで起動し、TouchDesigner、OBS、Unityなどの外部ツールがそれぞれのURLを読み込みます。詳細は `docs/deck-playback.md` を参照してください。
+
 Launch Managerでできること:
 
 - 曲JSONメニューから `song-packs/*/manifest.json` を選び、選択曲を再生する。

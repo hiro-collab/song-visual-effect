@@ -70,12 +70,14 @@ Launch Managerは、制作、検証、当日確認のための軽い起動補助
 
 - `song-pack` を選んで単体起動確認する。
 - `show-profile` があれば、セットリストを表示する。
+- ライブ/VJ確認では、`docs/deck-playback.md` に従ってDeck A/BのURL、起動、停止、状態確認を補助する。
 - サーバー状態、port、health、ログ、起動待ち上限を確認する。
 
 やりすぎないこと:
 
 - 本番VJ卓の中心にしない。
 - TouchDesigner専用やUnity専用の操作卓にしない。
+- Deck A/B間のクロスフェード、音声ミックス、program/previewの最終切替を背負わない。
 - 外部入力プロトコルを曲やイベントへ強制しない。
 - 曲ごとの演出編集や複雑なタイムライン編集を背負わない。
 
@@ -84,6 +86,8 @@ Launch Managerは、制作、検証、当日確認のための軽い起動補助
 外部連携は、特定ツール固定ではなく、曲ごとまたはshow-profileごとに決めます。
 
 TouchDesigner、Unity、OSC、WebSocket、HTTP、JSON file pollingなど、連携方法はいくつもあります。system側はすべての連携方法を本体に抱え込まないでください。
+
+Deck A/Bを使う場合も、system側が保証するのはDeckごとのWeb URLを起動、表示、コピーしやすくするところまでです。外部ツールはそれぞれのDeck URLを別入力として読み込み、合成や切替はイベント側で決めます。
 
 共通化する場合も、重い統一ランタイムではなく、薄いcontrol eventの型やbridgeのサンプルとして扱います。曲映像は、必要なら曲パック側で専用adapterや連携メモを持ちます。イベント全体で共通の連携方法を使う場合は、show-profile側にまとめます。
 

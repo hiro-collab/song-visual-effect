@@ -65,6 +65,7 @@
 - `docs/handoff.md`: 現在状態と次にやるべきこと。
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: ディレクトリと主要ファイルの役割。
+- `docs/deck-playback.md`: ライブ/VJ運用でDeck A/Bを使う再生仕様。
 - `docs/workflows.json`: LLM共有用のフロー定義。
 - `docs/worktree-sync.md`: 並行 worktree 間の ready/check/merge 運用。
 
@@ -82,6 +83,7 @@
 ## Launch Managerの並行作業ルール
 
 - `全停止` は「このLaunch ServerがPIDを持って管理している子プロセス」だけに効く。
+- ライブ/VJ運用でDeck A/Bを扱う場合は、`docs/deck-playback.md` を正本にする。Deck停止とSong Data Server停止を混同しない。
 - 別worktreeのLaunch Manager、別スレッドが別portで起動したtarget、手動起動した外部プロセスは停止対象にしない。
 - 複数スレッドが同じLaunch Manager URLを開いている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
 - 並行作業では、通常はLaunch Managerの自動ポート割当を使う。必要な場合だけ `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` を明示する。

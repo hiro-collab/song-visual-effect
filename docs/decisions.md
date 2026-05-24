@@ -216,3 +216,14 @@ Launch Managerへ追加する機能は、制作、検証、当日確認に寄せ
 
 影響:
 `schemaVersion` を置き、無い場合は `1` として扱う。未知の項目は無視し、既存項目の意味を変えない。必要に応じてloader正規化、`song:validate` 警告、migration scriptを追加する。
+
+## D018: ライブ/VJ再生はDeck A/Bを標準にする
+
+決定:
+ライブ/VJ運用では、標準の再生単位としてDeck A/Bを使う。Deckは曲そのものではなく、独立したplayer server、選択中の曲manifest、output URL、将来のDeck-local stateを持つ再生台です。標準サポートは2つのDeckとし、内部実装は将来Deck C/Dへ広げやすい配列/map構造を推奨する。
+
+理由:
+一方の映像を出しながら、もう一方の映像を準備し、TouchDesigner、OBS、Unity、自作VJツールなど外部側で合成やクロスフェードを行う運用が想定されるため。映像時間、歌詞補正、ライブ操作を将来入れる場合も、Deckごとに状態を分ける方が混乱しにくい。
+
+影響:
+Launch ManagerはDeckごとの起動、停止、曲選択、URL copy/open、status表示を補助する。Song Data Serverは共有でよい。Music Effect標準はクロスフェード、音声ミックス、program/previewの最終切替を背負わない。現在の単一player flowはDeck A互換として扱い、詳細仕様は `docs/deck-playback.md` に置く。

@@ -13,6 +13,7 @@
 - 曲用映像サーバーはLaunch Serverそのものではない。Launch Serverから起動される対象の1つです。
 - 起動対象は曲に限らず、fixture player、song-pack server、保存API、外部ツールなども同じLaunch Targetとして扱う。
 - 曲ごとの映像構成、描画方式、JSON文法、UIはLaunch Manager側で決めない。
+- ライブ/VJ運用で2つの再生台を使う場合は、`docs/deck-playback.md` のDeck A/B仕様を正本にする。
 - 最初はmanaged targetだけを扱う。attached/delegatedや複数Launch Serverの調停は後回しにする。
 
 ## 用語
@@ -56,6 +57,8 @@ UIは正本を持ちません。ブラウザタブを閉じても起動中target
 
 - 曲Aの映像サーバー
 - 曲Bの映像サーバー
+- Deck A player
+- Deck B player
 - fixture player
 - song-pack server
 - 保存API
@@ -69,8 +72,11 @@ UIは正本を持ちません。ブラウザタブを閉じても起動中target
 
 - `basic-fixture`: fixture player + song-pack server
 - `live-preview`: 曲A映像 + 曲B映像 + song-pack server
+- `deck-preview`: Deck A player + Deck B player + song-pack server
 
 Profileという大きい概念にはせず、最初はsetとして軽く扱います。
+
+Deck A/Bはライブ/VJ向けの標準再生単位です。Deckは曲そのものではなく、独立したplayer server、選択曲、output URL、将来のDeck-local stateを持つ再生台です。詳細は `docs/deck-playback.md` を参照してください。
 
 ## 正本
 
@@ -242,6 +248,7 @@ GUIはログ末尾だけを表示します。詳細なイベント履歴やmetri
 MVP画面:
 
 - 上部: 曲JSON選択。`song-packs/<song-id>/manifest.json` を選び、必要なtargetを起動して再生画面を開く。
+- Deck表示: Deck A/Bを使う実装では、Deckごとに曲JSON選択、URL copy/open、start/stop/restart、statusを表示する。標準の「選択曲を再生」はDeck A互換として扱ってよい。
 - show-profile / セットリスト: `show-profiles/<show-id>/show.json` がある場合だけ、イベントや検証会用の曲順を表示する。項目を曲JSON選択へ反映できるが、曲パックの文法や外部連携方式は決めない。
 - 状態マップ: Launch Manager、各target、選択中の曲JSONをノードとして表示する。起動中ノードと関連線は発光し、サーバーが増えても連携関係を見渡せるようにする。
 - 担当メッセージ: `sync:ready`、`sync:note`、`sync:ack` の履歴を、要対応、担当、種別で絞り込み表示する。書き込みやack操作はCLIの `sync:*` に残し、GUIは読み取り専用にする。
@@ -308,6 +315,7 @@ MVP:
 - WebSocket/SSEのリアルタイム通知。
 - 任意コマンド入力GUI。
 - 本格的なLAN操作卓とスマホ専用UI。
+- Deck A/B間のクロスフェード、音声ミックス、program/previewの最終切替。
 - 曲ごとの映像設計やadapter実装。
 
 ## 実装準備

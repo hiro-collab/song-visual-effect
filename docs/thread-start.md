@@ -59,6 +59,7 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - `docs/architecture.md`
 - `docs/module-map.md`
 - `docs/decisions.md`
+- `docs/deck-playback.md`。Launch Managerやライブ/VJ再生を触る場合。
 - `docs/knowledge-review.md`
 - `docs/archive/working-notes/` は過去メモです。正本に必要な情報がない場合だけ確認します。
 
@@ -99,6 +100,7 @@ note通知は「連絡」です。merge可能なcommitを示すものではな�
 - PC全体から同名プロセスを探して止めない。
 - 他worktreeのLaunch Managerや、別portで起動しているtargetを止めない。
 - 同じLaunch Manager URLを複数スレッドで見ている場合は、同じLaunch Serverを共同操作している。誰かの停止操作は、そのLaunch Serverのmanaged targetに効く。
+- Deck A/Bを扱う場合、Deck停止は該当Deckのplayer serverだけを止め、Song Data Server停止とは分けて考える。Deck仕様の正本は `docs/deck-playback.md`。
 
 並行作業では、通常はLaunch Managerの自動ポート割当を使います。実際のportはGUI下部と `.codex/runtime/ports.json` に表示されます。固定したい場合だけ `DEV_MANAGER_PORT`、`PLAYER_PORT`、`SONG_PACK_PORT` を明示します。
 

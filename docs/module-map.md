@@ -88,6 +88,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `docs/module-map.md`: このファイル。ディレクトリとファイルの役割。
 - `docs/decisions.md`: 設計判断と理由。
 - `docs/launch-manager-spec.md`: 複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様。
+- `docs/deck-playback.md`: ライブ/VJ運用でDeck A/Bを使う再生仕様。Deckごとのplayer server、output URL、外部ツールとの責務分担を定義する。
 - `docs/archive/working-notes/launch-manager-spec.html`: 旧レビュー用HTML。現在は `workflows.html` と `launch-manager-spec.md` を優先する。
 - `docs/security.md`: ローカル開発サーバー、manifest、曲素材、Songle取得ツールの信頼境界と対策。
 - `docs/library-candidates.md`: 各曲担当から出たライブラリ、ツール、エンジン候補と採用前チェック。

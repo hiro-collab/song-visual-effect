@@ -55,6 +55,8 @@
         "songServer",
         "previewSnapshot",
         "launchManagerSpec",
+        "deckPlaybackSpec",
+        "externalTool",
         "agents",
         "contextDocs",
         "threadStart",
@@ -296,6 +298,26 @@
       "x": 10,
       "y": 14,
       "description": "複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様です。HTMLはレビュー用の見取り図です。"
+    },
+    {
+      "id": "deckPlaybackSpec",
+      "label": "Deck再生仕様",
+      "kind": "spec",
+      "group": "文脈",
+      "file": "docs/deck-playback.md",
+      "x": 18,
+      "y": 24,
+      "description": "ライブ/VJ運用でDeck A/Bを使う再生仕様です。Deckごとにplayer serverとoutput URLを分け、外部ツール側で合成や切替を行う方針を定義します。"
+    },
+    {
+      "id": "externalTool",
+      "label": "外部ツール",
+      "kind": "external-runtime",
+      "group": "外部連携",
+      "file": "TouchDesigner / OBS / Unity / custom VJ tool",
+      "x": 91,
+      "y": 38,
+      "description": "Deck A/BのURLを別入力として読み込み、合成、クロスフェード、program outputを担当する外部環境です。Music Effect標準はこの役割を背負いません。"
     },
     {
       "id": "agents",
@@ -677,15 +699,15 @@
     {
       "id": "launch-manager-mvp",
       "label": "簡素版Launch Managerを使う",
-      "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/Setとsong-packsの曲JSONをGUIから起動・停止・再生します。",
+      "summary": "PC上に1つのLaunch Serverを置き、launch/targets.jsonのTarget/Set、Deck A/B、song-packsの曲JSONをGUIから起動・停止・再生します。",
       "trigger": "複数の曲用映像や補助サーバーを同時に管理したい",
       "steps": [
         {
           "from": "threadStart",
           "to": "launchManagerSpec",
           "action": "仕様を読む",
-          "payload": "docs/launch-manager-spec.md",
-          "note": "MVPではmanaged targetだけ。複数Launch Server、attached/delegated、本格的なLAN運用は含めません。LAN公開は必要時だけ明示opt-inと警告表示つきで扱います。"
+          "payload": "docs/launch-manager-spec.md / docs/deck-playback.md",
+          "note": "MVPではmanaged targetだけ。ライブ/VJ運用ではDeck A/Bを標準の再生台として扱います。複数Launch Server、attached/delegated、本格的なLAN運用は含めません。"
         },
         {
           "from": "launchManagerSpec",
@@ -699,7 +721,7 @@
           "to": "songServer",
           "action": "Targetとして扱う",
           "payload": "launch/targets.json",
-          "note": "再生画面と曲データサーバーをまずTarget化しました。曲用映像や保存APIもTargetとして追加できます。"
+          "note": "再生画面と曲データサーバーをまずTarget化しました。Deck A/Bは同じplayerを別portで起動するTargetとして追加できます。曲用映像や保存APIもTargetとして追加できます。"
         },
         {
           "from": "devManager",
@@ -726,8 +748,58 @@
           "from": "devManager",
           "to": "contextDocs",
           "action": "運用前提を共有する",
-          "payload": "docs/launch-manager-spec.md、docs/archive/working-notes/plans.md、docs/handoff.md、docs/workflows.json",
-          "note": "Launch Managerは曲の構成を束縛しない補助ツールとして扱います。"
+          "payload": "docs/launch-manager-spec.md、docs/deck-playback.md、docs/project-scope.md、docs/workflows.json",
+          "note": "Launch Managerは曲の構成を束縛しない補助ツールです。外部ツールでの合成、クロスフェード、program outputはMusic Effect標準の責務にしません。"
+        }
+      ]
+    },
+    {
+      "id": "deck-playback-live",
+      "label": "Deck A/Bでライブ再生を準備する",
+      "summary": "Deck AとDeck Bを独立したplayer serverとして起動し、それぞれのURLを外部ツールへ渡して合成や切替を行います。",
+      "trigger": "ライブ/VJ運用で片方の映像を表示しながら、もう片方の映像を準備したい",
+      "steps": [
+        {
+          "from": "threadStart",
+          "to": "deckPlaybackSpec",
+          "action": "Deck仕様を読む",
+          "payload": "docs/deck-playback.md",
+          "note": "Deckは曲ではなく、独立したplayer server、選択曲、output URL、将来のDeck-local stateを持つ再生台です。"
+        },
+        {
+          "from": "deckPlaybackSpec",
+          "to": "devManager",
+          "action": "Deck A/Bを管理対象にする",
+          "payload": "Deck A player、Deck B player、shared song data server",
+          "note": "標準サポートは2Deckです。内部は将来Deck C/Dへ広げやすい配列/map構造を推奨します。"
+        },
+        {
+          "from": "devManager",
+          "to": "main",
+          "action": "別portのplayerを起動",
+          "payload": "npm run dev:player -- --port <deck-port>",
+          "note": "同じplayerアプリをDeckごとに別portで起動し、ライブ操作や映像時間状態を混ぜないようにします。"
+        },
+        {
+          "from": "devManager",
+          "to": "songServer",
+          "action": "曲データを共有配信",
+          "payload": "npm run dev:songs",
+          "note": "Song Data ServerはDeck A/Bで共有します。停止操作はDeck停止と分けて扱います。"
+        },
+        {
+          "from": "devManager",
+          "to": "externalTool",
+          "action": "Deck URLを渡す",
+          "payload": "Deck A URL、Deck B URL",
+          "note": "TouchDesigner、OBS、Unity、自作ツールなどが各URLを別入力として読み込み、合成、クロスフェード、program outputを担当します。"
+        },
+        {
+          "from": "deckPlaybackSpec",
+          "to": "contextDocs",
+          "action": "責務境界を守る",
+          "payload": "project-scope、launch-manager-spec、show-profile",
+          "note": "Music Effect標準はクロスフェード、音声ミックス、最終切替、特定外部ツール専用連携を背負いません。"
         }
       ]
     },

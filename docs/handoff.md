@@ -47,6 +47,7 @@
 - Launch Manager GUIは、Launch Manager、各target、選択中の曲JSONを二次元ノードグラフとして見せる状態マップを持つ。起動中ノードと関連線は光り、サーバーが増えたときも連携関係を把握しやすくする。
 - Windowsでは `start-music-effect.cmd` をダブルクリックするとLaunch Managerを起動できる。同じworktreeで既に起動中なら管理画面を開くだけで、別worktreeが起動中でも誤接続せず、このworktree用の空きポートを自動で使う。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeでは自動ポート割当を使い、GUI下部の `worktree` / `ports` / `config` / `runtime` とtarget portを確認してから操作する。
+- ライブ/VJ運用の次の実装方針として、Deck A/Bを標準再生単位にする仕様を `docs/deck-playback.md` に追加した。現在の単一player flowはDeck A互換として扱い、Deck B実装では別player portと共有Song Data Serverを使う。
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
 - 追加セキュリティレビューで、Launch ManagerのLAN公開を `LAUNCH_MANAGER_ALLOW_LAN=1` の明示opt-inにし、LAN公開時の警告バナーとcontrol token検証を追加した。曲パック/show-profileの任意 `capabilities` と `security-notes.md` 方針は `docs/security.md` を正本にする。
 - docsの読み分けを `docs/README.md` に集約し、`examples/fixtures/soft-light-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
@@ -166,6 +167,7 @@ http://127.0.0.1:<player-port>/docs/workflows.html
 - `templates/neutral-song-app/`: 新曲向けの空scaffoldとvisual brief。
 - `docs/security.md`: 信頼境界と運用ルール。
 - `docs/launch-manager-spec.md`: 次に実装する簡素版Launch Manager仕様。
+- `docs/deck-playback.md`: Deck A/Bを使うライブ/VJ再生仕様。
 - `docs/library-candidates.md`: ライブラリ、ツール、エンジン候補と採用前チェック。
 - `docs/knowledge-review.md`: 曲担当からの共通ノウハウ候補を審議し、共通化するものと曲側へ戻すものを分けるルール。
 - `docs/workflows.json`: LLM共有用のフロー定義。
@@ -176,13 +178,14 @@ http://127.0.0.1:<player-port>/docs/workflows.html
 
 1. fixture playerが新しい曲のテンプレートに見えないよう、docsとUI文言を維持する。
 2. 新曲実装担当が `templates/neutral-song-app/visual-brief.md` を先に埋める運用を定着させる。
-3. Launch ManagerのTargetに、曲ごとの映像サーバーや保存APIを追加する設計を進める。
+3. `docs/deck-playback.md` に沿って、Launch ManagerをDeck A/BのURL管理、起動、停止、状態表示へ拡張する。
 4. 保存APIを検討し、ライブ中に調整したタイミングを安全に曲パッケージへ保存できるようにする。
 
 Launch Managerを変更する場合:
 
-- まず `docs/launch-manager-spec.md` を読む。
+- まず `docs/launch-manager-spec.md` と `docs/deck-playback.md` を読む。
 - 最初はmanaged targetだけを扱う。
+- Deck A/Bを追加する場合、Deck停止とSong Data Server停止を分ける。クロスフェード、音声ミックス、program/previewの最終切替はMusic Effect標準の責務にしない。
 - 複数Launch Server調停、attached/delegated、自動port再割当、本格的なLAN運用、スマホ専用UIはMVPに含めない。Launch ManagerのLAN公開は明示opt-inと警告表示つきの補助に留める。
 - GUIから任意コマンドを入力させない。起動可能なものはローカルの `launch/targets.json` に書かれたTargetだけ。
 - 停止対象はLaunch Serverが起動してPIDを持つtargetだけ。PC全体の同名プロセスや他worktreeのtargetを停止対象にしない。

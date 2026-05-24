@@ -8,6 +8,7 @@
 - `sync-onboarding.md`: 新しい担当や久しぶりに戻った担当が最初に使う短い導線。
 - `team-roster.md`: 担当名、branch、worktree、宛先ラベルの対応表。
 - `project-scope.md`: song-pack、system kit、show-profile、互換性方針の境界。
+- `deck-playback.md`: ライブ/VJ運用でDeck A/Bを使う再生仕様。
 - `system-overview.md`: 曲に依存しないシステムの考え方。
 - `song-authoring.md`: 新しい曲を作るときの手順と注意。
 - `song-visual-independence.md`: 既存曲やfixtureの見た目に引っ張られないための確認表。
@@ -45,6 +46,7 @@
 - `architecture.md`
 - `module-map.md`
 - `launch-manager-spec.md`
+- `deck-playback.md`
 - `sync-onboarding.md`
 - `worktree-sync.md`
 - `thread-start.md`
@@ -67,7 +69,7 @@
 - 一時的な引き継ぎは `handoff.md` へ書く。
 - 曲固有の設計メモ、再実装ブリーフ、演出方針は `song-packs/<song-id>/` 配下へ置く。
 - UIや処理フローを変えたら `workflows.json` も更新する。
-- Launch Managerの起動、停止、管理範囲を変えたら `launch-manager-spec.md`、`architecture.md`、`thread-start.md` を確認する。
+- Launch Managerの起動、停止、管理範囲を変えたら `launch-manager-spec.md`、`deck-playback.md`、`architecture.md`、`thread-start.md` を確認する。
 - 新しい曲の作成ルールを変えたら `song-authoring.md` と `song-visual-independence.md` を確認する。
 - 曲担当のノウハウを共通化する場合は、先に `knowledge-review.md` で分類してから正本へ反映する。
 - 共有ノウハウを各曲映像へ反映できるか確認する場合は、`visual-authoring-feedback.md` のtopicと返答フォーマットを使う。

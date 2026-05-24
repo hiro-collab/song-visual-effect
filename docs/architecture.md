@@ -54,6 +54,19 @@ http://127.0.0.1:<song-pack-port>
   song package server target
 ```
 
+ライブ/VJ運用で2つの映像を準備、切替する場合は、Deck A/Bを標準の再生単位として扱います。Deckは曲ではなく、独立したplayer serverとoutput URLを持つ再生台です。標準ではDeck AとDeck Bの2つを使い、Song Package Serverは共有します。外部ツールはDeckごとのURLを読み込み、合成、クロスフェード、program outputは外部側で決めます。詳細は `docs/deck-playback.md` を参照してください。
+
+```text
+Deck A player
+  http://127.0.0.1:<deck-a-port>/?song=<manifest-url>
+
+Deck B player
+  http://127.0.0.1:<deck-b-port>/?song=<manifest-url>
+
+Song Package Server
+  http://127.0.0.1:<song-pack-port>/
+```
+
 各ポートはworktreeごとに起動時に自動割当されます。実際の値はLaunch Manager GUI下部と `.codex/runtime/ports.json` に記録されます。
 
 管理画面で曲JSONを選んで再生すると、再生画面と曲データサーバーが立ち上がり、選択した曲のfixture player URLを開きます。状態マップでは、Launch Manager、各target、選択中の曲JSONの関係をノードグラフとして確認でき、起動中のノードと連携線が光ります。詳細操作で `標準再生セット` を手動起動することもできます。GUIタブを閉じても起動中targetは止まりません。停止するにはTarget停止、Set停止、または全停止を使います。
