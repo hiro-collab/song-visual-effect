@@ -39,7 +39,9 @@
 - Windows上の `npm` / `npx` target は `cmd.exe /c` を介すため、target引数にshellメタ文字が含まれる場合は起動前に拒否します。
 - 同一ビルド内の曲固有adapterは `song-packs/local-adapters.ts` の `song:` 静的登録だけを使います。`builtin:` はfixture player側、`song:` は曲パック側のIDとして分け、外部URLや任意文字列からの動的importは行いません。
 - Songle取得スクリプトは `SongId`、対象URL、取得target、保存先、サイズ、JSON構文を検証します。
-- song-pack scaffold は `song-packs/` 外へ出る実パスやシンボリックリンク上書きを拒否します。
+- song-pack scaffold は対象の `song-packs/<song-id>/` 外へ出る実パスやシンボリックリンク上書きを拒否します。
+- song-pack validation は `references.json` 参照が対象曲パッケージ外へ出る場合を拒否します。
+- preview snapshot の出力先はリポジトリ配下に限定し、シンボリックリンク出力先を拒否します。
 - `references.json` はURLと参照用途だけを記録するメタデータとして扱い、`npm run song:validate` で歌詞本文、記事本文、画像データ、base64埋め込み、HTML断片の混入を拒否します。
 
 ## 運用ルール
