@@ -24,3 +24,9 @@
 ```
 
 Launch Manager は `show-profiles/*/show.json` を読み、`setlist` の曲を曲JSONメニューへ反映できるようにします。未知の項目は無視してよい扱いです。
+
+保存しないもの:
+
+- 音源、歌詞全文、記事本文、画像データ、スクリーンショット、base64/data URI。
+- APIキー、トークン、秘密鍵、`.env` に相当する値。
+- 外部URLや絶対パスのmanifest。setlistの `manifest` は `song-packs/<song-id>/manifest.json` の形にしてください。

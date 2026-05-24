@@ -2,6 +2,12 @@ import { realpath, readdir, readFile, stat } from "node:fs/promises";
 import { isAbsolute, relative, resolve } from "node:path";
 
 const SHOW_PROFILE_MAX_BYTES = 256 * 1024;
+const SHOW_PROFILE_ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/;
+const SHOW_PROFILE_MAX_SETLIST_ITEMS = 200;
+const FORBIDDEN_KEY_PATTERN = /lyrics?|body|content|image|screenshot|base64|datauri|html|markdown|transcript|quote|fulltext|secret|token|password|api[_-]?key/i;
+const FORBIDDEN_VALUE_PATTERN = /data:image\/|data:audio\/|data:video\/|base64,|<img\b|<script\b|<iframe\b/i;
+const SECRET_VALUE_PATTERN =
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{20,}|ghp_[0-9A-Za-z_]{20,}|hf_[0-9A-Za-z]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}/;
 
 const normalizeSlashes = (value) => value.replace(/\\/g, "/");
 
@@ -9,6 +15,38 @@ const asDisplayText = (value, fallback) => {
   if (typeof value !== "string") return fallback;
   const trimmed = value.trim();
   return trimmed ? trimmed.slice(0, 180) : fallback;
+};
+
+const assertShortString = (value, label, maxLength) => {
+  if (value === undefined || value === null) return;
+  if (typeof value !== "string") {
+    throw new Error(`${label} must be a string.`);
+  }
+  if (value.length > maxLength) {
+    throw new Error(`${label} is too long.`);
+  }
+  if (FORBIDDEN_VALUE_PATTERN.test(value) || SECRET_VALUE_PATTERN.test(value)) {
+    throw new Error(`${label} contains embedded data, active markup, or secret-like text.`);
+  }
+};
+
+const scanProfileValue = (value, label) => {
+  if (value === null || value === undefined) return;
+  if (typeof value === "string") {
+    assertShortString(value, label, 4096);
+    return;
+  }
+  if (typeof value !== "object") return;
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => scanProfileValue(item, `${label}[${index}]`));
+    return;
+  }
+  for (const [key, nestedValue] of Object.entries(value)) {
+    if (FORBIDDEN_KEY_PATTERN.test(key)) {
+      throw new Error(`${label}.${key} is not allowed in show-profile metadata.`);
+    }
+    scanProfileValue(nestedValue, `${label}.${key}`);
+  }
 };
 
 const targetById = (config, id) => config.targets.find((target) => target.id === id) ?? null;
@@ -79,6 +117,9 @@ const readShowProfileSummary = async ({
   playerBaseUrl
 }) => {
   const directoryName = dirent.name;
+  if (!SHOW_PROFILE_ID_PATTERN.test(directoryName)) {
+    throw new Error(`${directoryName} is not a valid show-profile directory name.`);
+  }
   const directoryPath = resolve(showProfilesRoot, directoryName);
   const showPath = resolve(directoryPath, "show.json");
   const directoryRealPath = await realpath(directoryPath);
@@ -98,14 +139,27 @@ const readShowProfileSummary = async ({
   }
 
   const profile = JSON.parse(await readFile(showRealPath, "utf8"));
+  scanProfileValue(profile, "show");
+  assertShortString(profile.id, "show.id", 80);
+  assertShortString(profile.title, "show.title", 180);
+  assertShortString(profile.description, "show.description", 600);
   const itemErrors = [];
   const setlist = [];
 
-  for (const [index, item] of setlistFromProfile(profile).entries()) {
+  const rawSetlist = setlistFromProfile(profile);
+  if (rawSetlist.length > SHOW_PROFILE_MAX_SETLIST_ITEMS) {
+    throw new Error(`setlist has too many entries. Max ${SHOW_PROFILE_MAX_SETLIST_ITEMS}.`);
+  }
+
+  for (const [index, item] of rawSetlist.entries()) {
     try {
       if (!item || typeof item !== "object" || Array.isArray(item)) {
         throw new Error(`setlist[${index}] must be an object.`);
       }
+      assertShortString(item.songId, `setlist[${index}].songId`, 80);
+      assertShortString(item.manifest ?? item.manifestPath, `setlist[${index}].manifest`, 240);
+      assertShortString(item.label ?? item.title, `setlist[${index}].label`, 180);
+      assertShortString(item.notes, `setlist[${index}].notes`, 600);
       const songId = asDisplayText(item.songId, "");
       const manifestValue = item.manifest ?? item.manifestPath ?? (songId ? `song-packs/${songId}/manifest.json` : "");
       const resolved = await resolveSongManifest({

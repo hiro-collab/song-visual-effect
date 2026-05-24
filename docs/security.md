@@ -35,6 +35,7 @@
 - dev manager のログ表示は `textContent` / DOM生成で行い、HTMLとして解釈しません。
 - Launch Manager の管理画面はCSP、frame拒否、権限拒否ヘッダーを付け、同一originのAPIだけに接続します。
 - Launch Manager のsync message viewerは `codex-sync/events.jsonl` の末尾だけを読み、イベント由来のcommit/ref文字列をgit引数に使う前に形式検証します。
+- Launch Manager のshow-profile読み込みは `show-profiles/<show-id>/show.json` に限定し、実パスが `show-profiles/` 外へ出る項目、外部URL/絶対パスのmanifest、巨大JSON、埋め込みdata URI、HTML断片、秘密情報らしき文字列、歌詞本文や画像本文を示すキーを拒否します。
 - Launch Manager のtarget定義は、作業ディレクトリをリポジトリ配下に限定し、commandを単純なコマンド名に限定します。
 - Launch Manager のtarget定義では、`PATH`、`COMSPEC`、`SYSTEMROOT`、`NODE_OPTIONS` などrunner側の重要環境変数を上書きできません。
 - Windows上の `npm` / `npx` target は `cmd.exe /c` を介すため、target引数にshellメタ文字が含まれる場合は起動前に拒否します。
