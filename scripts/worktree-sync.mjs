@@ -638,6 +638,43 @@ function commandList() {
   }
 }
 
+function commandOnboard(args) {
+  const opts = parseArgs(args);
+  const currentBranch = branchName();
+  const currentHead = headCommit();
+  const labels = [...currentLabels(currentBranch, opts)].filter((label) => label !== "*" && label !== "all");
+
+  console.log("Music Effect onboarding");
+  console.log("=======================");
+  console.log(`Worktree: ${cwd}`);
+  console.log(`Branch: ${currentBranch}`);
+  console.log(`HEAD: ${shortSha(currentHead)} ${subject(currentHead)}`);
+  console.log(`Clean: ${isClean() ? "yes" : "no - commit/stash before merge or ready"}`);
+  console.log(`Recipient labels: ${labels.join(", ")}`);
+  console.log("");
+  console.log("Read first:");
+  console.log("- docs/README.md");
+  console.log("- docs/sync-onboarding.md");
+  console.log("- docs/thread-start.md");
+  console.log("- docs/worktree-sync.md");
+  console.log("- docs/preview-lab.md when doing central preview checks");
+  console.log("");
+  console.log("If you are creating a new song:");
+  console.log("- Read docs/system-overview.md, docs/song-authoring.md, docs/song-visual-independence.md.");
+  console.log("- Do not use existing song-packs/* or fixture renderers as templates unless the user explicitly asks.");
+  console.log("- Share reusable know-how with --topic knowledge-candidate before treating it as a common rule.");
+  console.log("");
+  console.log("Useful commands:");
+  console.log("  npm run sync:brief -- --for <your-label>");
+  console.log("  npm run sync:check");
+  console.log("  npm run sync:inbox -- --open");
+  console.log('  npm run sync:note -- --from <you> --to system --level question --topic knowledge-candidate -m "candidate: ... scope: ... source: ... risk: ... suggested home: ..."');
+  console.log('  npm run sync:ready -- -m "what is ready, checks run, assets/deps, knowledge-candidates"');
+  console.log("");
+  console.log("Current brief:");
+  commandBrief(args);
+}
+
 async function commandWatch(args) {
   const opts = parseArgs(args);
   for (;;) {
@@ -650,6 +687,7 @@ async function commandWatch(args) {
 
 function usage() {
   console.log(`Usage:
+  npm run sync:onboard -- --for <your-label>
   npm run sync:ready -- -m "short message"
   npm run sync:brief
   npm run sync:check
@@ -684,6 +722,8 @@ try {
     commandInbox(rest);
   } else if (command === "list") {
     commandList();
+  } else if (command === "onboard") {
+    commandOnboard(rest);
   } else if (command === "watch") {
     await commandWatch(rest);
   } else {

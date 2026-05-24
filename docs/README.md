@@ -5,6 +5,7 @@
 
 ## 正本として読むもの
 
+- `sync-onboarding.md`: 新しい担当や久しぶりに戻った担当が最初に使う短い導線。
 - `system-overview.md`: 曲に依存しないシステムの考え方。
 - `song-authoring.md`: 新しい曲を作るときの手順と注意。
 - `song-visual-independence.md`: 既存曲やfixtureの見た目に引っ張られないための確認表。
@@ -40,6 +41,7 @@
 - `architecture.md`
 - `module-map.md`
 - `launch-manager-spec.md`
+- `sync-onboarding.md`
 - `worktree-sync.md`
 - `thread-start.md`
 - `worktree-guide.md`
