@@ -1,0 +1,26 @@
+{
+  "schema": "music-effect.song-manifest.v1",
+  "id": "monitoring",
+  "title": "DECO*27 - モニタリング",
+  "artist": "DECO*27",
+  "duration": 181.33,
+  "credits": "credits.md",
+  "references": "references.json",
+  "lyrics": null,
+  "analysis": {
+    "song": "analysis/song.json",
+    "beat": "analysis/beat.json",
+    "chord": null,
+    "melody": null,
+    "chorus": "analysis/chorus.json",
+    "timing": null,
+    "markers": "analysis/markers.json",
+    "palette": "analysis/palette.json"
+  },
+  "audio": null,
+  "design": {
+    "effect": "design/effect.md",
+    "cues": "design/cues.json"
+  },
+  "webAdapter": "song:monitoring"
+}

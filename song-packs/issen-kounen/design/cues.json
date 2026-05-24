@@ -1,0 +1,28 @@
+{
+  "schema": "music-effect.design-cues.v1",
+  "title": "一千光年",
+  "songleUrl": "https://songle.jp/songs/www.nicovideo.jp%2Fwatch%2Fsm41951611",
+  "sourceUrl": "https://www.nicovideo.jp/watch/sm41951611",
+  "duration": 242.5,
+  "voiceCards": [
+    { "label": "初音ミク", "short": "Miku", "color": "#b9d8ff", "lane": 1, "offset": 0.03 },
+    { "label": "v flower", "short": "flower", "color": "#d7c2ff", "lane": 3, "offset": 0.13 },
+    { "label": "歌愛ユキ", "short": "Yuki", "color": "#f2a7c4", "lane": 0, "offset": 0.22 },
+    { "label": "GUMI", "short": "GUMI", "color": "#bfe9a6", "lane": 4, "offset": 0.31 },
+    { "label": "可不", "short": "KAFU", "color": "#f4efe4", "lane": 2, "offset": 0.41 },
+    { "label": "星界", "short": "SEKAI", "color": "#99d3be", "lane": 1, "offset": 0.5 },
+    { "label": "足立レイ", "short": "Rei", "color": "#f0c46d", "lane": 4, "offset": 0.58 },
+    { "label": "裏命", "short": "RIME", "color": "#dd8b8c", "lane": 2, "offset": 0.67 },
+    { "label": "花隈千冬", "short": "Chifuyu", "color": "#ffe08a", "lane": 0, "offset": 0.76 },
+    { "label": "VY1", "short": "VY1", "color": "#a8c7ff", "lane": 3, "offset": 0.85 },
+    { "label": "SOLARIA", "short": "SOLARIA", "color": "#ffd0a1", "lane": 1, "offset": 0.94 }
+  ],
+  "sections": [
+    { "label": "window thaws", "start": 3.04, "end": 31.0, "intensity": 0.35 },
+    { "label": "beside walk", "start": 31.0, "end": 56.21, "intensity": 0.58 },
+    { "label": "light-year chorus 1", "start": 56.21, "end": 79.95, "intensity": 0.98 },
+    { "label": "quiet room", "start": 100.0, "end": 124.0, "intensity": 0.5 },
+    { "label": "light-year chorus 2", "start": 147.45, "end": 171.19, "intensity": 1.0 },
+    { "label": "future afterimage", "start": 190.0, "end": 229.5, "intensity": 0.78 }
+  ]
+}

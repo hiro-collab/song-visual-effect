@@ -1,9 +1,19 @@
 import type { SongAppFactory } from "../system/kit";
+import { createIgakuSongApp } from "./igaku/adapter";
+import { createSongApp as createIssenKounenApp } from "./issen-kounen/adapter";
+import { createMesmerizerSignalLockApp } from "./mesmerizer-signal-lock/adapter";
+import { createSongApp as createMonitoringApp } from "./monitoring/adapter";
+import { createSongApp as createOpeApp } from "./ope/adapter";
 import { createSongApp as createTrafficJamApp } from "./traffic-jam/adapter";
 
 const SONG_ADAPTER_ID_PATTERN = /^song:[a-z0-9][a-z0-9._-]{0,63}$/;
 
 const LOCAL_SONG_ADAPTERS: Record<string, SongAppFactory> = Object.assign(Object.create(null), {
+  "song:igaku": createIgakuSongApp,
+  "song:issen-kounen": createIssenKounenApp,
+  "song:mesmerizer-signal-lock": createMesmerizerSignalLockApp,
+  "song:monitoring": createMonitoringApp,
+  "song:ope": createOpeApp,
   "song:traffic-jam": createTrafficJamApp
 });
 

@@ -1,0 +1,54 @@
+{
+  "schema": "music-effect.references.v1",
+  "note": "URL metadata only. Do not store lyrics, article bodies, screenshots, images, comments, or copied source content here.",
+  "items": [
+    {
+      "label": "Original NicoNico page",
+      "type": "official-source",
+      "url": "https://www.nicovideo.jp/watch/sm43708803",
+      "purpose": "Canonical source URL used for Songle registration and song identity checks.",
+      "accessedAt": "2026-05-24",
+      "language": "ja"
+    },
+    {
+      "label": "Songle analysis page",
+      "type": "analysis-source",
+      "url": "https://songle.jp/songs/www.nicovideo.jp%2Fwatch%2Fsm43708803",
+      "purpose": "Source reference for beat, chord, chorus, melody timing, and metadata JSON used by this pack.",
+      "accessedAt": "2026-05-24",
+      "language": "ja"
+    },
+    {
+      "label": "NicoNico News article",
+      "type": "public-reception",
+      "url": "https://origin.originalnews.nico/461059",
+      "purpose": "Reception reference for the bright pop surface, hypnosis reading, and later unsettling movement notes.",
+      "accessedAt": "2026-05-24",
+      "language": "ja"
+    },
+    {
+      "label": "UtaTen special article",
+      "type": "public-interpretation",
+      "url": "https://utaten.com/specialArticle/index/8593",
+      "purpose": "Interpretation reference for hypnosis, escape, SOS, and false-surface motifs; URL metadata only.",
+      "accessedAt": "2026-05-24",
+      "language": "ja"
+    },
+    {
+      "label": "note interpretation article",
+      "type": "public-interpretation",
+      "url": "https://note.com/ruca_ruka/n/n7eb489e6114e",
+      "purpose": "Interpretation reference for eye-state, SOS, and two-character contrast motifs; URL metadata only.",
+      "accessedAt": "2026-05-24",
+      "language": "ja"
+    },
+    {
+      "label": "Karaoke highscore comment roundup",
+      "type": "public-reception",
+      "url": "https://karaoke-highscore.com/post-3382",
+      "purpose": "Reception reference for commonly noticed hidden details such as SOS and eye-state changes; URL metadata only.",
+      "accessedAt": "2026-05-24",
+      "language": "ja"
+    }
+  ]
+}
