@@ -37,6 +37,7 @@
 - `npm run preview:snapshot` で、指定した曲manifestと時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` へ保存できる。
 - メイン相当の統合基準worktreeを `_worktrees/system-main` として明示した。branchは `codex/system-kit-refactor`。新しい曲や機能worktreeはここを土台にする。
 - 各曲担当から届く共通ノウハウ候補は、`docs/knowledge-review.md` で `common` / `conditional` / `song-owned` / `reject` に分類してから正本docsへ反映する。曲固有のモチーフ、構図、色、数値、カメラ、演出名はsystem側へ昇格しない。
+- 曲担当は作業中にもノウハウ候補を共有し、最終報告前に未共有候補を棚卸しする。候補がある場合は `knowledge-candidate`、ない場合は `knowledge-candidate: none` を明記する。
 - Canvas2Dを選んだ曲adapter向けに `system/kit/render/contentRect.ts` を追加した。DPR resize、safe area clip、pointer正規化、文字fitを任意で使える補助で、曲の見た目は決めない。
 - 各曲担当から出たライブラリ/ツール候補は `docs/library-candidates.md` に集約する。system標準依存を増やす前に、曲側任意依存、小さいhelper、time-drivenな再現性、bundle/securityを確認する。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。

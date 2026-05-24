@@ -33,9 +33,10 @@ npm run sync:note -- --from song-example --to system --level question --topic kn
 曲担当は、次のタイミングで連絡板を確認します。
 
 - 作業開始時: system-mainのready、セキュリティ、起動方法、Songle取得まわりの更新を確認する。
-- 実装の区切り: 自分の作業に影響するsystem更新が来ていないか確認する。
+- 実装の区切り: 自分の作業に影響するsystem更新が来ていないか確認する。作業中に共通化できそうなノウハウを見つけた場合は、この時点で `--topic knowledge-candidate` として共有する。
 - 共通ノウハウ候補を送った後: system担当の分類結果を確認する。
 - 最終報告前: 自分の候補が `common` として昇格したか、`song-owned` として曲側へ戻されたか確認する。
+- 最終報告時: `knowledge-candidate` または `knowledge-candidate: none` を明記する。
 
 確認コマンド:
 
@@ -46,6 +47,10 @@ npm run sync:inbox
 ```
 
 `song-owned` と判断された内容は、曲パック側の `design/` や `visual-brief.md` に残します。system側の正本docsには移しません。
+
+候補共有は最終報告まで待たず、作業中に気づいた時点、または実装の区切りで送ります。最終報告は漏れ確認です。
+
+候補がない場合も、最終報告で `knowledge-candidate: none` と書きます。これにより、ノウハウ棚卸しを省略したのではなく、確認したうえで共通化候補なしと分かります。
 
 ## 審議の分類
 

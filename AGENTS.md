@@ -12,6 +12,7 @@
 - 並行 worktree 作業では、作業開始時と区切りごとに `npm run sync:brief` を確認する。必要なら詳細として `npm run sync:check` と `npm run sync:inbox` も見る。
 - 他担当への質問、ブロッカー、短い共有事項は `npm run sync:note -- --from <自分の担当> --to <相手> --level <info|question|blocker|done> -m "短い連絡"` で共有する。
 - 各曲担当から届いた共通ノウハウ候補は、すぐ正本docsへ入れず、まず `docs/knowledge-review.md` の分類で `common` / `conditional` / `song-owned` / `reject` に審議する。
+- 曲担当は作業中にもノウハウ候補を共有し、最終報告前に棚卸しする。候補がある場合は `knowledge-candidate`、ない場合は `knowledge-candidate: none` を明記する。
 - 対応済み、または自分の担当では対応不要と判断した連絡は `npm run sync:ack -- --id <id> --from <自分の担当>` で確認済みにする。
 - 他スレッドに取り込ませてよいコミットができたら `npm run sync:ready -- -m "短い説明"` を実行する。
 - 新しいスレッドで作業を始める場合は、`docs/thread-start.md` を読んで作業開始、ready確認、merge判断の流れを揃える。

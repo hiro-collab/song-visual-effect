@@ -80,6 +80,7 @@
 - 候補:
 - 適用できそうな範囲:
 - この曲固有かもしれない部分:
-- system担当へ `--topic knowledge-candidate` で送ったか:
+- 作業中または実装の区切りで、system担当へ `--topic knowledge-candidate` として送ったか:
+- 最終報告で `knowledge-candidate` または `knowledge-candidate: none` を明記したか:
 
 固定の構図、色、数値、モチーフ、演出名は、この曲固有として扱う。共通化してよいかは `docs/knowledge-review.md` の分類で審議する。
