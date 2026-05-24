@@ -1,16 +1,18 @@
-# Worktree Sync Notices
+# Worktree Sync
 
-並行している Codex スレッド同士で、取り込み可能な区切りを共有するためのローカル通知板です。
+複数の Codex スレッド / 担当が別々の worktree で作業するための連絡板です。
 
-## 何を解決するか
+ready 通知は「この commit は取り込み候補です」という合図であり、自動 merge 命令ではありません。note 通知は質問、ブロッカー、方針共有、作業報告に使います。
 
-複数 worktree で作業していると、ある担当が小さな改善を終えても、他の担当がそれに気づかないまま古い前提で作業し続けることがあります。
+## 担当を確認する
 
-このリポジトリでは、各担当が「このコミットは今取り込んでよい」と判断した時点で `ready` 通知を出します。他の担当は `brief` / `check` で確認し、必要なものだけ `merge` します。ready通知は取り込み候補であり、自動的に取り込む命令ではありません。
+まず担当名簿を確認します。
 
-commitを伴わない質問、ブロッカー、短い方針共有は `note` 通知として出します。他の担当は `brief` / `inbox` で確認します。note通知はmerge対象ではありません。対応済みや担当外と判断した項目は `ack` で自分のbriefから隠せます。
+```powershell
+npm run sync:roster
+```
 
-通知は Git の共通ディレクトリ内に保存されるため、ブランチには混ざらず、すべての local worktree から同じ通知板を読めます。
+正本は `config/sync-participants.json` です。人間向けの説明は `docs/team-roster.md` です。
 
 Launch Managerを起動している場合は、管理画面の「担当メッセージ」欄でも同じ通知板を閲覧できます。GUIは読み取り専用です。note、ack、ready、mergeなどの書き込み操作はこの文書のCLI手順を使います。
 
@@ -21,149 +23,129 @@ Launch Managerを起動している場合は、管理画面の「担当メッセ
 ### 0. 初回確認をまとめて見る
 
 新しく作業を始める担当は、まず `sync:onboard` を使います。
+作業開始時は、自分の担当ラベルで onboarding します。
 
 ```powershell
 npm run sync:onboard -- --for <担当ラベル>
 ```
 
-現在のworktree、branch、HEAD、未コミット変更の有無、担当ラベル、読むべきdocs、未処理のnote/readyがまとめて表示されます。
-
-### 1. 共有できる区切りを出す
-
-作業をコミットし、ビルドや最低限の確認が終わったら、その worktree で実行します。
+例:
 
 ```powershell
-npm run sync:ready -- -m "download script validation is ready"
+npm run sync:onboard -- --for system
+npm run sync:onboard -- --for igaku-effect
 ```
 
-この通知は現在の `HEAD` コミットを指します。未コミット変更がある場合は通知できません。
+## 状況を見る
 
-### 2. 他の担当の更新を見る
-
-まず、要対応だけをまとめて確認します。
+要対応だけを短く見る:
 
 ```powershell
-npm run sync:brief
+npm run sync:brief -- --for <担当ラベル>
 ```
 
-`brief` は次をまとめて表示します。
-
-- 自分宛て、または全員宛ての未対応 `question` / `blocker`。
-- 未merge、かつ自分のworktreeで未ackの `ready`。
-- 最近の `info` / `done`。
-
-担当名の自動判定が合わない場合は `--for` で明示できます。
-
-```powershell
-npm run sync:brief -- --for system
-```
-
-詳細なready通知だけを見る場合は、従来どおり `check` を使います。
-
-各 worktree で、作業開始時や実装の区切りごとに実行します。
+ready 全体を見る:
 
 ```powershell
 npm run sync:check
 ```
 
-まだ自分のブランチに取り込まれておらず、自分のworktreeで `ack` していない `ready` 通知が表示されます。
-
-ack済みのreadyも含めて確認したい場合:
+自分宛の note を見る:
 
 ```powershell
-npm run sync:check -- --all
+npm run sync:inbox -- --for <担当ラベル>
+npm run sync:inbox -- --for <担当ラベル> --open
 ```
 
-### 2.5 他の担当からの連絡を見る
-
-自分宛て、または全員宛ての `note` 通知を確認します。
-
-```powershell
-npm run sync:inbox
-npm run sync:inbox -- --open
-```
-
-すべての連絡を見たい場合:
+全 note を見る:
 
 ```powershell
 npm run sync:inbox -- --all
 ```
 
-### 2.6 他の担当へ連絡する
+## 連絡する
 
-commit不要の短い連絡は `sync:note` を使います。未コミット変更があっても送れます。
-
-```powershell
-npm run sync:note -- --from system --to traffic-jam-redo --level question --topic "adapter境界" -m "fixture registryへの曲ID直importを避けられるか確認してください"
-```
-
-`--from` には送信者の担当名を入れます。省略した場合は現在branch名が送信者として記録されます。
-
-`--to` には `all`、branch名、またはbranch末尾の短い名前を使えます。
+commit を伴わない短い連絡は `sync:note` を使います。
 
 ```powershell
-npm run sync:note -- --from system --to all --level info -m "system-kit-refactorに共通方針を取り込みました"
-npm run sync:note -- --from security --to mesmerizer-signal-lock --level blocker -m "three依存を共通方針commitに混ぜないでください"
+npm run sync:note -- --from <自分の担当ラベル> --to <相手の担当ラベル> --level <info|question|blocker|done> --topic <topic> -m "短い連絡"
 ```
 
-`--level` は `info`、`question`、`blocker`、`done` のいずれかです。
-
-共通ノウハウ候補を送る場合:
+例:
 
 ```powershell
-npm run sync:note -- --from song-example --to system --level question --topic knowledge-candidate -m "candidate: 区間ごとの画面構成を先に決める。scope: any song. source: song-example. risk: 固定数値や特定構図は含めない。suggested home: docs/song-authoring.md"
+npm run sync:note -- --from system --to igaku-effect --level question --topic visual-authoring-feedback -m "docs/visual-authoring-feedback.md を見て、自分の曲だけ確認してください"
 ```
 
-system担当は、候補を `common` / `conditional` / `song-owned` / `reject` に分け、共通化してよいものだけを正本docsへ入れます。
+`--to` には、担当名簿の `label`、`branch`、または `aliases` を使えます。迷ったら `label` を使います。
 
-### 2.7 対応済みにする
+## ready を出す
 
-`brief` や `inbox` に表示される `#id` を使って、対応済みまたは自分の担当では対応不要と判断した項目を確認済みにできます。
+取り込んでよい commit ができたら、その worktree で ready を出します。
 
 ```powershell
-npm run sync:ack -- --id abc123def0 --from system -m "確認済み。system側の追加対応なし。"
+npm run sync:ready -- -m "何がreadyか、確認したこと、asset/dependency、注意点"
 ```
 
-`ack` は現在のworktree / 担当のbriefとcheckから隠すための記録です。他担当のbrief/checkから同じ項目を消すものではありません。ack済みreadyも見直したい場合は `sync:check -- --all` を使います。
-
-### 3. 取り込む
-
-表示されたブランチを取り込む場合は、現在の worktree で実行します。
+ready 前に最低限確認するもの:
 
 ```powershell
-npm run sync:merge -- --from codex/download-security
+npm run sync:brief -- --for <担当ラベル>
+npm run build
 ```
 
-このコマンドは、そのブランチの最新 `ready` 通知が指すコミットだけを取り込みます。ブランチの先端に未通知の追加コミットがあっても、勝手には取り込みません。
-
-履歴が分岐していて merge commit が必要な場合は、明示的に許可します。
+曲担当は加えて:
 
 ```powershell
-npm run sync:merge -- --from codex/download-security --allow-merge-commit
+npm run song:validate -- --id <song-id>
 ```
 
-衝突した場合は通常の Git merge と同じ状態で止まります。その場合は衝突を解消するか、必要なら作業担当に確認してください。
+## ack する
 
-## 作業中に見る
-
-長めの作業では、別端末で次を動かすと定期確認できます。
+対応済み、確認済み、または自分の担当では対応不要の項目は ack します。
 
 ```powershell
-npm run sync:watch -- --interval 20
+npm run sync:ack -- --id <event-id> --from <自分の担当ラベル>
 ```
 
-`watch` は `sync:brief` の内容を定期表示します。ただし Codex スレッドでは、長時間の watch よりも作業の節目で `npm run sync:brief` を実行する運用の方が扱いやすいです。
+ack は自分の brief/check から隠すための記録です。他担当の表示から同じ項目を消すものではありません。
 
-## 運用ルール
+## merge する
 
-- `ready` は「他ブランチに取り込まれてもよい」と判断したコミットにだけ出します。
-- `note` は質問、ブロッカー、方針共有、確認依頼に使います。noteを受け取っても自動mergeしません。
-- `ack` は対応済み、確認済み、または自分の担当では対応不要という記録に使います。
-- `ready` 前には、可能なら `npm run build` など最低限の確認をします。
-- 各スレッドは作業開始時、実装途中の区切り、最終報告前に `sync:brief` を見ます。必要に応じて `sync:check` と `sync:inbox` も見ます。
-- 新しいスレッドは `docs/thread-start.md` を読み、担当範囲とmerge判断の基準を確認します。
-- `sync:merge` は未コミット変更がある worktree では実行できません。
-- 大きな衝突が出たら無理に解消せず、担当範囲を確認します。
-- Launch Managerの停止範囲や並行port運用を変えた場合は、`docs/thread-start.md` と `AGENTS.md` を更新し、`sync:ready` で他スレッドに通知します。
-- 曲固有adapter、曲固有renderer、既存fixtureの見た目をsystem kitへ入れる変更は、ready通知があってもそのままmergeしません。
-- `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても、その実装は破棄予定です。取り込まず、`song-packs/traffic-jam/design/reimplementation-brief.md` を参照してください。
+ready を取り込む前に、差分範囲を見ます。古い branch の全体 merge で system docs や他曲を巻き戻しそうな場合は、cherry-pick または手動取り込みを使います。
+
+```powershell
+npm run sync:merge -- --from <branch>
+npm run sync:merge -- --from <branch> --allow-merge-commit
+```
+
+注意:
+
+- `traffic-jam-effect` は不採用の古い実装です。明示指示なしに merge しません。
+- `live-beat-sync-prototype` は参考実装です。明示指示なしに直 merge しません。
+- 曲固有の manifest / analysis / design / adapter / asset は `song-packs/<song-id>/` に置きます。
+- 曲固有の見た目を system docs へ昇格させる前に、`docs/knowledge-review.md` で分類します。
+
+## 共通ノウハウ候補
+
+曲担当は、作業中にも共通化できそうな知見を共有します。
+
+```powershell
+npm run sync:note -- --from <担当ラベル> --to system --level question --topic knowledge-candidate -m "candidate: ... scope: ... source: ... risk: ... suggested home: ..."
+```
+
+system 担当は `common` / `conditional` / `song-owned` / `reject` に分類してから、必要なものだけ正本 docs へ反映します。
+
+## visual-authoring-feedback
+
+system から `visual-authoring-feedback` が来た場合、曲担当は自分の曲だけを確認して返します。
+
+```powershell
+npm run sync:note -- --from <担当ラベル> --to system --level info --topic visual-authoring-feedback -m "song: <song-id>; apply: ...; no-apply: ...; song-owned: ...; need-system-help: ...; checks: ..."
+```
+
+他曲の見た目、構図、色、比喩、演出名はテンプレートにしません。
+
+## Launch Manager GUI
+
+Launch Manager の「担当メッセージ」欄でも同じ通知板を読めます。GUI は読み取り専用です。note / ack / ready / merge はこの CLI で行います。

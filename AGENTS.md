@@ -10,8 +10,10 @@
 - 新しい作業や新しい曲の作業を始めるときは、現在の統合基準である `codex/system-kit-refactor` を土台にする。現時点の代表worktreeは `_worktrees/system-main`。
 - プロジェクトルート直下のworktreeが常に最新基準とは限らない。作業開始時に `git status --short --branch` と `git worktree list` で自分のbranchを確認する。
 - 並行 worktree 作業では、作業開始時に `npm run sync:onboard -- --for <自分の担当>` を実行する。区切りごとに `npm run sync:brief` を確認し、必要なら詳細として `npm run sync:check` と `npm run sync:inbox` も見る。
+- 担当名、branch、worktree、宛先ラベルの対応は `config/sync-participants.json` と `docs/team-roster.md` を正本にする。迷ったら `npm run sync:roster` を実行する。
 - 他担当への質問、ブロッカー、短い共有事項は `npm run sync:note -- --from <自分の担当> --to <相手> --level <info|question|blocker|done> -m "短い連絡"` で共有する。
 - 各曲担当から届いた共通ノウハウ候補は、すぐ正本docsへ入れず、まず `docs/knowledge-review.md` の分類で `common` / `conditional` / `song-owned` / `reject` に審議する。
+- 共有ノウハウを各曲映像へ反映できるか確認する場合は、`--topic visual-authoring-feedback` と `docs/visual-authoring-feedback.md` を使う。
 - 曲担当は作業中にもノウハウ候補を共有し、最終報告前に棚卸しする。候補がある場合は `knowledge-candidate`、ない場合は `knowledge-candidate: none` を明記する。
 - 対応済み、または自分の担当では対応不要と判断した連絡は `npm run sync:ack -- --id <id> --from <自分の担当>` で確認済みにする。
 - 他スレッドに取り込ませてよいコミットができたら `npm run sync:ready -- -m "短い説明"` を実行する。

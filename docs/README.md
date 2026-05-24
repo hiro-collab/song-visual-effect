@@ -6,6 +6,7 @@
 ## 正本として読むもの
 
 - `sync-onboarding.md`: 新しい担当や久しぶりに戻った担当が最初に使う短い導線。
+- `team-roster.md`: 担当名、branch、worktree、宛先ラベルの対応表。
 - `system-overview.md`: 曲に依存しないシステムの考え方。
 - `song-authoring.md`: 新しい曲を作るときの手順と注意。
 - `song-visual-independence.md`: 既存曲やfixtureの見た目に引っ張られないための確認表。
@@ -14,6 +15,7 @@
 - `decisions.md`: 設計判断と理由。
 - `security.md`: ローカル開発サーバー、manifest、Songle取得、Launch Managerの信頼境界。
 - `knowledge-review.md`: 各曲担当から届く共通ノウハウ候補を審議し、共通化するものと曲側に戻すものを分けるルール。
+- `visual-authoring-feedback.md`: 共有ノウハウを各曲映像へ戻し、反映可否やsystem支援要望を集める運用。
 - `preview-lab.md`: 複数曲を中央検証用worktreeでまとめて確認する運用。
 
 ## 新しい曲を作るとき
@@ -66,3 +68,4 @@
 - Launch Managerの起動、停止、管理範囲を変えたら `launch-manager-spec.md`、`architecture.md`、`thread-start.md` を確認する。
 - 新しい曲の作成ルールを変えたら `song-authoring.md` と `song-visual-independence.md` を確認する。
 - 曲担当のノウハウを共通化する場合は、先に `knowledge-review.md` で分類してから正本へ反映する。
+- 共有ノウハウを各曲映像へ反映できるか確認する場合は、`visual-authoring-feedback.md` のtopicと返答フォーマットを使う。

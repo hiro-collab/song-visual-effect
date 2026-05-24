@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { branchShortName, labelsForBranch } from "../sync-roster.mjs";
 
 const defaultLimit = 160;
 const maxLimit = 400;
@@ -123,37 +124,13 @@ const isAncestor = (root, older, newer) =>
 const commitExists = (root, commit) =>
   isSafeCommit(commit) && gitMaybe(root, ["cat-file", "-e", `${commit}^{commit}`]).ok;
 
-const branchShortName = (branch) => {
-  const parts = String(branch || "").split("/");
-  return parts[parts.length - 1] || branch || "";
-};
-
 const splitTargets = (value) =>
   String(value || "all")
     .split(",")
     .map((target) => target.trim())
     .filter(Boolean);
 
-const currentLabels = (currentBranch) => {
-  const labels = new Set(["*", "all", currentBranch, branchShortName(currentBranch)]);
-  const short = branchShortName(currentBranch);
-  const branch = currentBranch.toLowerCase();
-  const lowerShort = short.toLowerCase();
-  if (lowerShort.includes("system")) labels.add("system");
-  if (lowerShort.includes("security") || branch.includes("download-security")) labels.add("security");
-  if (lowerShort.includes("beat-sync")) labels.add("beat-sync");
-  if (lowerShort.includes("traffic-jam")) {
-    labels.add("traffic-jam");
-    labels.add("traffic-jam-redo");
-  }
-  if (lowerShort.includes("mesmerizer")) {
-    labels.add("mesmerizer");
-    labels.add("mesmerizer-signal-lock");
-  }
-  if (lowerShort.includes("launch-manager")) labels.add("launch-manager");
-  if (lowerShort.includes("message-viewer")) labels.add("message-viewer");
-  return labels;
-};
+const currentLabels = (root, currentBranch) => labelsForBranch(currentBranch, { root });
 
 const isNoteForCurrentBranch = (event, currentBranch, labels) => {
   const targets = splitTargets(event.to);
@@ -290,7 +267,7 @@ export const readSyncEvents = ({ root, limit = defaultLimit } = {}) => {
   const resolvedRoot = path.resolve(root ?? process.cwd());
   const currentBranch = branchName(resolvedRoot);
   const currentHead = headCommit(resolvedRoot);
-  const labels = currentLabels(currentBranch);
+  const labels = currentLabels(resolvedRoot, currentBranch);
   const rawEvents = readEvents(resolvedRoot);
   const events = rawEvents.map(normalizeEvent);
   const ackedIds = ackedIdsForCurrentBranch(events, currentBranch, labels);

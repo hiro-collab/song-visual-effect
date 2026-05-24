@@ -765,6 +765,42 @@
       ]
     },
     {
+      "id": "visual-authoring-feedback",
+      "label": "共有ノウハウを各映像へ戻す",
+      "summary": "system担当が中立的なレビュー観点を投げ、各曲担当が自分の映像に反映するか、反映しない理由を返します。",
+      "trigger": "共有ノウハウを既存または作業中の曲映像へ反映できるか確認する",
+      "steps": [
+        {
+          "from": "contextDocs",
+          "to": "threadStart",
+          "action": "レビュー観点を共有",
+          "payload": "docs/visual-authoring-feedback.md / sync:note --topic visual-authoring-feedback",
+          "note": "見た目の答えではなく、曲のパート、主役構造、視線誘導、密度、余白、検証方法などの問いを共有します。"
+        },
+        {
+          "from": "threadStart",
+          "to": "songPack",
+          "action": "自分の曲だけを確認",
+          "payload": "song-packs/<song-id>/design、adapter、manifest",
+          "note": "既存曲やsong-preview-labの他曲をテンプレートにせず、自分の曲に合うかだけを判断します。"
+        },
+        {
+          "from": "songPack",
+          "to": "contextDocs",
+          "action": "反映可否を返す",
+          "payload": "apply / no-apply / song-owned / need-system-help / checks",
+          "note": "反映しない判断も有効です。system側に必要な支援があればここで返します。"
+        },
+        {
+          "from": "contextDocs",
+          "to": "songAuthoringDocs",
+          "action": "必要な共通改善だけを審議",
+          "payload": "docs/knowledge-review.md",
+          "note": "曲固有のモチーフ、色、数値、構図、タイミングは正本docsへ昇格しません。"
+        }
+      ]
+    },
+    {
       "id": "agent-handoff",
       "label": "Codex作業の引き継ぎ",
       "summary": "会話に閉じた記憶ではなく、AGENTS.mdとdocs群を読ませてから調査、計画、実装へ進みます。",
