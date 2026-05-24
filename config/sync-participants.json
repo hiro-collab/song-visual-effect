@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-24",
+  "participants": [
+    {
+      "label": "system",
+      "role": "system",
+      "branch": "codex/system-kit-refactor",
+      "worktree": "_worktrees/system-main",
+      "aliases": ["system-main", "system-kit-refactor", "codex/system-kit-refactor"],
+      "status": "active",
+      "note": "System kit integration owner. Use this as the main baseline for shared system work."
+    },
+    {
+      "label": "song-preview-lab",
+      "role": "preview",
+      "branch": "codex/song-preview-lab",
+      "worktree": "_worktrees/song-preview-lab",
+      "aliases": ["preview-lab", "central-preview", "codex/song-preview-lab"],
+      "status": "active",
+      "note": "Central verification branch for collecting song visuals without making them templates."
+    },
+    {
+      "label": "security",
+      "role": "system",
+      "branch": "codex/download-security",
+      "worktree": "_worktrees/download-security",
+      "aliases": ["download-security", "codex/download-security"],
+      "status": "active",
+      "note": "Security and validation hardening."
+    },
+    {
+      "label": "beat-sync",
+      "role": "system",
+      "branch": "codex/beat-sync-kit",
+      "worktree": ".",
+      "aliases": ["beat-sync-kit", "codex/beat-sync-kit"],
+      "status": "active",
+      "note": "Beat sync helper worktree. Do not use the project root as the integration baseline."
+    },
+    {
+      "label": "launch-menu-gui",
+      "role": "support",
+      "branch": "codex/launch-menu-gui",
+      "worktree": "_worktrees/launch-menu-gui",
+      "aliases": ["launch-gui", "launcher-gui", "codex/launch-menu-gui"],
+      "status": "active",
+      "note": "Launch Manager GUI and startup support."
+    },
+    {
+      "label": "message-viewer",
+      "role": "support",
+      "branch": "codex/message-viewer-gui",
+      "worktree": "_worktrees/message-viewer-gui",
+      "aliases": ["message-viewer-gui", "sync-message-viewer", "codex/message-viewer-gui"],
+      "status": "integrated",
+      "note": "Launch Manager sync message viewer. Feature has been cherry-picked into system."
+    },
+    {
+      "label": "common-contact-tooling",
+      "role": "support",
+      "branch": "codex/common-contact-tooling",
+      "worktree": "_worktrees/common-contact-tooling",
+      "aliases": ["contact-tooling", "common-contact", "codex/common-contact-tooling"],
+      "status": "active",
+      "note": "Shared contact and preview tooling experiments."
+    },
+    {
+      "label": "mesmerizer-signal-lock",
+      "role": "song",
+      "songId": "mesmerizer-signal-lock",
+      "branch": "codex/mesmerizer-signal-lock",
+      "worktree": "_worktrees/mesmerizer-signal-lock",
+      "aliases": ["mesmerizer", "codex/mesmerizer-signal-lock"],
+      "status": "active",
+      "note": "Song visual owner for Mesmerizer."
+    },
+    {
+      "label": "igaku-effect",
+      "role": "song",
+      "songId": "igaku",
+      "branch": "codex/igaku-effect",
+      "worktree": "_worktrees/igaku-effect",
+      "aliases": ["igaku", "codex/igaku-effect"],
+      "status": "active",
+      "note": "Song visual owner for Igaku."
+    },
+    {
+      "label": "issen-kounen-effect",
+      "role": "song",
+      "songId": "issen-kounen",
+      "branch": "codex/issen-kounen-effect",
+      "worktree": "_worktrees/issen-kounen-effect",
+      "aliases": ["issen-kounen", "codex/issen-kounen-effect"],
+      "status": "active",
+      "note": "Song visual owner for Issen Kounen."
+    },
+    {
+      "label": "monitoring-effect",
+      "role": "song",
+      "songId": "monitoring",
+      "branch": "codex/monitoring-effect",
+      "worktree": "_worktrees/monitoring-effect",
+      "aliases": ["monitoring", "codex/monitoring-effect"],
+      "status": "active",
+      "note": "Song visual owner for Monitoring."
+    },
+    {
+      "label": "ope-effect",
+      "role": "song",
+      "songId": "ope",
+      "branch": "codex/ope-effect",
+      "worktree": "_worktrees/ope-effect",
+      "aliases": ["ope", "codex/ope-effect"],
+      "status": "active",
+      "note": "Song visual owner for Ope."
+    },
+    {
+      "label": "traffic-jam-redo",
+      "role": "song",
+      "songId": "traffic-jam",
+      "branch": "codex/traffic-jam-redo",
+      "worktree": "_worktrees/traffic-jam-redo",
+      "aliases": ["traffic-jam", "codex/traffic-jam-redo"],
+      "status": "active",
+      "note": "Song visual owner for the accepted Traffic Jam redo."
+    },
+    {
+      "label": "launch-manager",
+      "role": "support",
+      "branch": "codex/launch-manager",
+      "worktree": "_worktrees/launch-manager",
+      "aliases": ["codex/launch-manager"],
+      "status": "dormant",
+      "note": "Older Launch Manager branch. Prefer launch-menu-gui/system unless explicitly revived."
+    },
+    {
+      "label": "traffic-jam-effect",
+      "role": "song",
+      "songId": "traffic-jam",
+      "branch": "codex/traffic-jam-effect",
+      "worktree": "_worktrees/traffic-jam-effect",
+      "aliases": ["codex/traffic-jam-effect"],
+      "status": "rejected",
+      "note": "Old rejected Traffic Jam implementation. Do not merge."
+    },
+    {
+      "label": "live-beat-sync-prototype",
+      "role": "system",
+      "branch": "codex/live-beat-sync-prototype",
+      "worktree": null,
+      "aliases": ["codex/live-beat-sync-prototype"],
+      "status": "reference-only",
+      "note": "Reference prototype only. Do not merge directly."
+    }
+  ]
+}

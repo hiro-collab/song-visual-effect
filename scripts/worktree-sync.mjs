@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
+import { branchShortName, labelsForBranch, participantForBranch, rosterRows } from "./sync-roster.mjs";
 
 const cwd = process.cwd();
 
@@ -185,11 +186,6 @@ function latestReadyByBranch() {
   return map;
 }
 
-function branchShortName(branch) {
-  const parts = branch.split("/");
-  return parts[parts.length - 1] || branch;
-}
-
 function splitTargets(value) {
   return String(value || "all")
     .split(",")
@@ -220,25 +216,7 @@ function eventId(event) {
 }
 
 function currentLabels(currentBranch, opts = {}) {
-  const labels = new Set(["*", "all", currentBranch, branchShortName(currentBranch)]);
-  for (const label of splitTargets(opts.for)) labels.add(label);
-
-  const short = branchShortName(currentBranch);
-  const branch = currentBranch.toLowerCase();
-  const lowerShort = short.toLowerCase();
-  if (lowerShort.includes("system")) labels.add("system");
-  if (lowerShort.includes("security") || branch.includes("download-security")) labels.add("security");
-  if (lowerShort.includes("beat-sync")) labels.add("beat-sync");
-  if (lowerShort.includes("traffic-jam")) {
-    labels.add("traffic-jam");
-    labels.add("traffic-jam-redo");
-  }
-  if (lowerShort.includes("mesmerizer")) {
-    labels.add("mesmerizer");
-    labels.add("mesmerizer-signal-lock");
-  }
-  if (lowerShort.includes("launch-manager")) labels.add("launch-manager");
-  return labels;
+  return labelsForBranch(currentBranch, { root: cwd, extra: splitTargets(opts.for) });
 }
 
 function commandNote(args) {
@@ -651,6 +629,23 @@ function commandOnboard(args) {
   console.log(`HEAD: ${shortSha(currentHead)} ${subject(currentHead)}`);
   console.log(`Clean: ${isClean() ? "yes" : "no - commit/stash before merge or ready"}`);
   console.log(`Recipient labels: ${labels.join(", ")}`);
+  const branchParticipant = participantForBranch(currentBranch, cwd);
+  const actingParticipants = splitTargets(opts.for)
+    .map((label) => participantForBranch(label, cwd))
+    .filter(Boolean);
+  if (branchParticipant) {
+    console.log(`Current branch participant: ${branchParticipant.label} (${branchParticipant.role ?? "unknown"})`);
+    console.log(`Current branch status: ${branchParticipant.status ?? "unknown"}`);
+  } else {
+    console.log("Current branch participant: not listed in config/sync-participants.json");
+  }
+  if (actingParticipants.length) {
+    console.log(
+      `Acting as: ${actingParticipants
+        .map((participant) => `${participant.label}${participant.songId ? ` / song:${participant.songId}` : ""}`)
+        .join(", ")}`
+    );
+  }
   console.log("");
   console.log("Read first:");
   console.log("- docs/README.md");
@@ -665,6 +660,7 @@ function commandOnboard(args) {
   console.log("- Share reusable know-how with --topic knowledge-candidate before treating it as a common rule.");
   console.log("");
   console.log("Useful commands:");
+  console.log("  npm run sync:roster");
   console.log("  npm run sync:brief -- --for <your-label>");
   console.log("  npm run sync:check");
   console.log("  npm run sync:inbox -- --open");
@@ -674,6 +670,25 @@ function commandOnboard(args) {
   console.log("");
   console.log("Current brief:");
   commandBrief(args);
+}
+
+function commandRoster() {
+  const rows = rosterRows(cwd);
+  if (rows.length === 0) {
+    console.log("No participants listed. Add config/sync-participants.json.");
+    return;
+  }
+
+  console.log("Music Effect sync roster");
+  console.log("========================");
+  for (const row of rows) {
+    const song = row.songId ? ` / song:${row.songId}` : "";
+    console.log(`- ${row.label} [${row.role}${song}] ${row.status}`);
+    console.log(`  branch: ${row.branch || "-"}`);
+    console.log(`  worktree: ${row.worktree || "-"}`);
+    if (row.aliases) console.log(`  aliases: ${row.aliases}`);
+    if (row.note) console.log(`  note: ${row.note}`);
+  }
 }
 
 async function commandWatch(args) {
@@ -689,6 +704,7 @@ async function commandWatch(args) {
 function usage() {
   console.log(`Usage:
   npm run sync:onboard -- --for <your-label>
+  npm run sync:roster
   npm run sync:ready -- -m "short message"
   npm run sync:brief
   npm run sync:check
@@ -723,6 +739,8 @@ try {
     commandInbox(rest);
   } else if (command === "list") {
     commandList();
+  } else if (command === "roster") {
+    commandRoster();
   } else if (command === "onboard") {
     commandOnboard(rest);
   } else if (command === "watch") {

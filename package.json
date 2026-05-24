@@ -18,6 +18,7 @@
     "sync:check": "node scripts/worktree-sync.mjs check",
     "sync:merge": "node scripts/worktree-sync.mjs merge",
     "sync:list": "node scripts/worktree-sync.mjs list",
+    "sync:roster": "node scripts/worktree-sync.mjs roster",
     "sync:note": "node scripts/worktree-sync.mjs note",
     "sync:ack": "node scripts/worktree-sync.mjs ack",
     "sync:inbox": "node scripts/worktree-sync.mjs inbox",
