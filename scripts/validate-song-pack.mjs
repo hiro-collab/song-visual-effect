@@ -7,10 +7,31 @@ const repoRoot = path.resolve(__dirname, "..");
 const songPacksRoot = path.join(repoRoot, "song-packs");
 const realSongPacksRoot = fs.realpathSync(songPacksRoot);
 const MAX_REFERENCES_BYTES = 64 * 1024;
+const MAX_TEXT_SCAN_BYTES = 1024 * 1024;
 const ALLOWED_REFERENCES_ROOT_KEYS = new Set(["schema", "note", "items"]);
 const ALLOWED_REFERENCE_KEYS = new Set(["label", "type", "url", "purpose", "accessedAt", "note", "language"]);
 const FORBIDDEN_KEY_PATTERN = /lyrics?|body|content|image|screenshot|base64|datauri|html|markdown|transcript|quote|fulltext/i;
-const FORBIDDEN_VALUE_PATTERN = /data:image\/|data:audio\/|data:video\/|base64,|<img\b|<script\b/i;
+const FORBIDDEN_VALUE_PATTERN = /data:image\/|data:audio\/|data:video\/|base64,|<img\b|<script\b|<iframe\b/i;
+const SECRET_VALUE_PATTERN =
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{20,}|ghp_[0-9A-Za-z_]{20,}|hf_[0-9A-Za-z]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}/;
+const TEXT_SCAN_EXTENSIONS = new Set([
+  ".css",
+  ".csv",
+  ".html",
+  ".js",
+  ".json",
+  ".md",
+  ".mjs",
+  ".svg",
+  ".ts",
+  ".tsx",
+  ".txt",
+  ".xml",
+  ".yaml",
+  ".yml"
+]);
+const FORBIDDEN_AUDIO_EXTENSIONS = new Set([".aac", ".aiff", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav"]);
+const FORBIDDEN_SECRET_EXTENSIONS = new Set([".key", ".p12", ".pfx", ".pem"]);
 
 const isInside = (parent, child) => {
   const baseKey = process.platform === "win32" ? parent.toLowerCase() : parent;
@@ -127,6 +148,72 @@ const validateReferences = (referencesPath) => {
   return [];
 };
 
+const assertAllowedSongPackPath = (relativePath, stat) => {
+  const normalized = relativePath.split(path.sep).join("/");
+  const basename = path.basename(relativePath).toLowerCase();
+  const extension = path.extname(relativePath).toLowerCase();
+
+  if (basename === ".env" || basename.startsWith(".env.")) {
+    throw new Error(`Environment files are not allowed in song packs: ${normalized}`);
+  }
+  if (FORBIDDEN_SECRET_EXTENSIONS.has(extension)) {
+    throw new Error(`Secret-like files are not allowed in song packs: ${normalized}`);
+  }
+  if (FORBIDDEN_AUDIO_EXTENSIONS.has(extension)) {
+    throw new Error(`Audio files must not be committed in song packs: ${normalized}`);
+  }
+  if (TEXT_SCAN_EXTENSIONS.has(extension) && stat.size > MAX_TEXT_SCAN_BYTES) {
+    throw new Error(`Text file is too large for security scan: ${normalized}`);
+  }
+};
+
+const scanTextFile = (filePath, relativePath) => {
+  const extension = path.extname(relativePath).toLowerCase();
+  if (!TEXT_SCAN_EXTENSIONS.has(extension)) return;
+
+  const content = fs.readFileSync(filePath, "utf8");
+  const normalized = relativePath.split(path.sep).join("/");
+  if (FORBIDDEN_VALUE_PATTERN.test(content)) {
+    throw new Error(`Embedded data or active markup is not allowed in song pack text files: ${normalized}`);
+  }
+  if (SECRET_VALUE_PATTERN.test(content)) {
+    throw new Error(`Secret-like token found in song pack text file: ${normalized}`);
+  }
+};
+
+const validateSongPackTree = (root, realRoot) => {
+  const stack = [root];
+  while (stack.length > 0) {
+    const dir = stack.pop();
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const filePath = path.join(dir, entry.name);
+      const relativePath = path.relative(root, filePath);
+      const stat = fs.lstatSync(filePath);
+      const normalized = relativePath.split(path.sep).join("/");
+
+      if (stat.isSymbolicLink()) {
+        throw new Error(`Symlinks and junctions are not allowed in song packs: ${normalized}`);
+      }
+
+      if (entry.isDirectory()) {
+        const realDir = fs.realpathSync(filePath);
+        if (!isInside(realRoot, realDir)) {
+          throw new Error(`Song pack directory escapes its root: ${normalized}`);
+        }
+        stack.push(filePath);
+        continue;
+      }
+
+      if (!entry.isFile()) {
+        throw new Error(`Unsupported filesystem entry in song pack: ${normalized}`);
+      }
+
+      assertAllowedSongPackPath(relativePath, stat);
+      scanTextFile(filePath, relativePath);
+    }
+  }
+};
+
 const main = () => {
   const opts = parseArgs(process.argv.slice(2));
   const id = String(opts.id ?? opts.song ?? "").trim();
@@ -146,6 +233,7 @@ const main = () => {
   const referencesPath =
     resolveInsideSongPack(root, realRoot, manifest.references ?? "references.json") ?? path.join(root, "references.json");
   const warnings = validateReferences(referencesPath);
+  validateSongPackTree(root, realRoot);
 
   for (const warning of warnings) console.warn(`Warning: ${warning}`);
   console.log(`Song pack validation ok: ${path.relative(repoRoot, root)}`);

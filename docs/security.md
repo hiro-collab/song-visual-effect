@@ -43,6 +43,7 @@
 - song-pack validation は `references.json` 参照が対象曲パッケージ外へ出る場合を拒否します。
 - preview snapshot の出力先はリポジトリ配下に限定し、シンボリックリンク出力先を拒否します。
 - `references.json` はURLと参照用途だけを記録するメタデータとして扱い、`npm run song:validate` で歌詞本文、記事本文、画像データ、base64埋め込み、HTML断片の混入を拒否します。
+- `npm run song:validate` は song-pack 全体も走査し、symlink/junction、`.env` や秘密鍵系ファイル、音源ファイル、埋め込みdata URI、`<script>` / `<img>` / `<iframe>`、秘密情報らしきトークンを拒否します。
 
 ## 運用ルール
 
