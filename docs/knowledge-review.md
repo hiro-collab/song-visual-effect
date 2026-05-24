@@ -141,21 +141,24 @@ system担当は、候補を小さな主張に分解してから分類します�
 
 ### 2026-05-24: song-owned time map
 
-元連絡: `#be904bd7af`
+元連絡: `#be904bd7af`, `#60a2d7317b`
 
 - conditional: 曲側の追加time mapは `context.assets.readJson()` で読み、beat反応の強度や包絡を調整する入力として使える。
+- conditional: mapが大きくなりすぎる場合は、感情/強度/反応量のmapと、表示範囲/密度/視線誘導/主役構造のmapを曲側で分ける選択肢がある。
 - common: manifest標準スキーマを増やさず、曲側adapterが必要なJSONを曲パック内で読む。
-- song-owned: mapの値、ラベル、感情語、表示語彙。これらは曲の解釈に属する。
+- song-owned: mapの値、ラベル、感情語、表示語彙、具体的な構図名や主役構造。これらは曲の解釈に属する。
 
 反映済み: `docs/song-authoring.md` のsystem補助説明へ、song-owned time mapの扱いを追記した。
 
 ### 2026-05-24: motion layers and scene families
 
-元連絡: `#0413b251a3`, `#0ed768680b`
+元連絡: `#0413b251a3`, `#0ed768680b`, `#c45b8c027a`, `#49c194cf32`
 
 - conditional: 曲に機械的な拍、歌唱主体、感情主体、環境変化など複数の時間感覚がある場合、拍に鋭く同期するレイヤーと、lag / damping / overshoot で少し遅れて追うレイヤーを分ける選択肢がある。
 - conditional: 区間ごとの強度調整だけでは単調に見える場合、時間範囲を別のscene draw関数やcomposition profileへ振り分ける選択肢がある。
-- song-owned: 感情主体、生命感、身体的な線、scene名、区間ごとの見た目、各曲のモチーフ。
-- reject: すべての曲を有機的な動きに寄せること、または単純な曲にも複数scene familyを必須にすること。
+- conditional: 場面の違いがカメラ距離やズーム量だけで伝わらない場合、主役レイヤー、背景レイヤー、遮蔽、密度、明暗、表示範囲など、見てすぐ分かる大きな層の変化を検討する。
+- conditional: 画面全体の流れ、方向感、視線移動は、常時の主表現ではなく転換点の短いアクセントや薄い視線誘導として使う選択肢がある。
+- song-owned: 感情主体、生命感、身体的な線、scene名、区間ごとの見た目、各曲のモチーフ、具体的な方向や落下表現、記号、形状、透明度、タイミング。
+- reject: すべての曲を有機的な動きに寄せること、単純な曲にも複数scene familyを必須にすること、特定の方向運動や記号レイヤーを共通ルールにすること。
 
 反映済み: `docs/song-authoring.md` の曲構成と画面構成へ、条件つきの動き/scene分離として追記した。

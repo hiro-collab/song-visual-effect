@@ -1,0 +1,30 @@
+{
+  "schema": "music-effect.song-manifest.v1",
+  "id": "ope",
+  "title": "オペ",
+  "artist": "蜂屋ななし feat. v4 flower",
+  "duration": 225.07,
+  "credits": "./CREDITS.md",
+  "references": "./references.json",
+  "lyrics": null,
+  "analysis": {
+    "markers": "./analysis/markers.json",
+    "palette": "./analysis/palette.json",
+    "song": "./analysis/song.json",
+    "beat": "./analysis/beat.json",
+    "chord": "./analysis/chord.json",
+    "melody": "./analysis/melody.json",
+    "chorus": "./analysis/chorus.json",
+    "timing": null
+  },
+  "audio": null,
+  "design": {
+    "effect": "./design/effect.json",
+    "cues": "./analysis/structure-map.json"
+  },
+  "webAdapter": "song:ope",
+  "source": {
+    "songleId": "www.nicovideo.jp/watch/sm35902611",
+    "songUrl": "https://www.nicovideo.jp/watch/sm35902611"
+  }
+}

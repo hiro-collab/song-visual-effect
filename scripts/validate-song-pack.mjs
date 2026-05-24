@@ -43,7 +43,7 @@ const readJson = (filePath, maxBytes) => {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 };
 
-const resolveInsideSongPack = (root, relativePath) => {
+const resolveInsideSongPack = (root, realRoot, relativePath) => {
   if (!relativePath || typeof relativePath !== "string") return null;
   if (path.isAbsolute(relativePath)) {
     throw new Error(`Absolute paths are not allowed in song pack metadata: ${relativePath}`);
@@ -51,8 +51,8 @@ const resolveInsideSongPack = (root, relativePath) => {
   const target = path.resolve(root, relativePath);
   const parent = fs.existsSync(target) ? target : path.dirname(target);
   const realParent = fs.realpathSync(parent);
-  if (!isInside(realSongPacksRoot, realParent)) {
-    throw new Error(`Path escapes song-packs: ${path.relative(repoRoot, target)}`);
+  if (!isInside(realRoot, realParent)) {
+    throw new Error(`Path escapes song pack: ${path.relative(repoRoot, target)}`);
   }
   return target;
 };
@@ -133,6 +133,9 @@ const main = () => {
   assertSongId(id);
 
   const root = path.join(songPacksRoot, id);
+  if (fs.existsSync(root) && fs.lstatSync(root).isSymbolicLink()) {
+    throw new Error(`Refusing symlinked song pack directory: ${path.relative(repoRoot, root)}`);
+  }
   const realRoot = fs.realpathSync(root);
   if (!isInside(realSongPacksRoot, realRoot)) {
     throw new Error(`Song pack escapes song-packs: ${id}`);
@@ -141,7 +144,7 @@ const main = () => {
   const manifestPath = path.join(root, "manifest.json");
   const manifest = fs.existsSync(manifestPath) ? readJson(manifestPath, 256 * 1024) : {};
   const referencesPath =
-    resolveInsideSongPack(root, manifest.references ?? "references.json") ?? path.join(root, "references.json");
+    resolveInsideSongPack(root, realRoot, manifest.references ?? "references.json") ?? path.join(root, "references.json");
   const warnings = validateReferences(referencesPath);
 
   for (const warning of warnings) console.warn(`Warning: ${warning}`);

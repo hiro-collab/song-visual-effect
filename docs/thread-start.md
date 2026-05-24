@@ -6,6 +6,14 @@
 
 ## 最初にやること
 
+まず、現在のworktree、branch、担当ラベル、未処理連絡をまとめて確認します。
+
+```powershell
+npm run sync:onboard -- --for <担当ラベル>
+```
+
+短い導線だけ見たい場合は `docs/sync-onboarding.md` を読んでください。
+
 新しいスレッドは、まず次を確認します。
 
 ```powershell

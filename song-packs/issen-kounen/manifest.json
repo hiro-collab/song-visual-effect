@@ -1,0 +1,21 @@
+{
+  "schema": "music-effect.song-manifest.v1",
+  "id": "issen-kounen",
+  "title": "一千光年",
+  "artist": "いよわ",
+  "duration": 242.5,
+  "credits": "credits.md",
+  "references": "references.json",
+  "analysis": {
+    "song": "analysis/song.json",
+    "beat": "analysis/beat.json",
+    "chorus": "analysis/chorus.json",
+    "markers": "analysis/markers.json",
+    "palette": "analysis/palette.json"
+  },
+  "design": {
+    "effect": "design/effect.md",
+    "cues": "design/cues.json"
+  },
+  "webAdapter": "song:issen-kounen"
+}

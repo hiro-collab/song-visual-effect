@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>一千光年 ライブラリ導入構成メモ</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101116;
+        --surface: #171920;
+        --surface-2: #20232c;
+        --surface-3: #292d37;
+        --line: rgba(255, 255, 255, 0.14);
+        --line-strong: rgba(255, 255, 255, 0.24);
+        --text: #f7f1e7;
+        --muted: #bbb5aa;
+        --quiet: #8f95a1;
+        --accent: #8cff47;
+        --accent-2: #80c7e8;
+        --ok: #94d8ad;
+        --warn: #efa1a1;
+        --shadow: rgba(0, 0, 0, 0.28);
+        font-family:
+          "Yu Gothic UI",
+          "Yu Gothic",
+          "Hiragino Sans",
+          "Meiryo",
+          system-ui,
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 78% 18%, rgba(140, 255, 71, 0.18), transparent 30rem),
+          linear-gradient(145deg, #101116 0%, #1d2434 45%, #27372f 100%);
+        color: var(--text);
+      }
+
+      main {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 34px 0 56px;
+      }
+
+      header {
+        border: 1px solid var(--line);
+        background: rgba(23, 25, 32, 0.82);
+        box-shadow: 0 18px 48px var(--shadow);
+        padding: 26px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(26px, 5vw, 44px);
+        line-height: 1.16;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-top: 34px;
+        font-size: 22px;
+        line-height: 1.35;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        font-size: 16px;
+        line-height: 1.4;
+        letter-spacing: 0;
+      }
+
+      p,
+      li,
+      td,
+      th {
+        line-height: 1.75;
+      }
+
+      code {
+        padding: 0.12em 0.36em;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.06);
+        font-family: Consolas, "Cascadia Code", monospace;
+        font-size: 0.92em;
+      }
+
+      pre {
+        overflow: auto;
+        margin: 14px 0 0;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #0f1117;
+      }
+
+      pre code {
+        padding: 0;
+        border: 0;
+        background: transparent;
+      }
+
+      a {
+        color: var(--accent-2);
+      }
+
+      .lead {
+        margin-top: 14px;
+        max-width: 860px;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 5px 10px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 13px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .panel,
+      .layer,
+      table {
+        border: 1px solid var(--line);
+        background: rgba(23, 25, 32, 0.78);
+      }
+
+      .panel,
+      .layer {
+        padding: 18px;
+      }
+
+      .panel p,
+      .layer p {
+        margin-top: 8px;
+        color: var(--muted);
+      }
+
+      .layer strong {
+        display: block;
+        color: var(--accent);
+        font-size: 13px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      .flow {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .arrow {
+        color: var(--quiet);
+        text-align: center;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+      }
+
+      th,
+      td {
+        vertical-align: top;
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+      }
+
+      th {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 13px;
+      }
+
+      td {
+        color: var(--muted);
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .status {
+        display: inline-block;
+        min-width: 6.5em;
+        border-radius: 999px;
+        padding: 3px 8px;
+        text-align: center;
+        font-size: 12px;
+      }
+
+      .status.now {
+        color: #07130c;
+        background: var(--ok);
+      }
+
+      .status.later {
+        color: #16120b;
+        background: #f5c96f;
+      }
+
+      .status.no {
+        color: #210f12;
+        background: var(--warn);
+      }
+
+      .note {
+        margin-top: 12px;
+        border-left: 3px solid var(--accent);
+        padding: 10px 14px;
+        color: var(--muted);
+        background: rgba(140, 255, 71, 0.07);
+      }
+
+      ul {
+        margin: 10px 0 0;
+        padding-left: 1.2em;
+      }
+
+      @media (max-width: 820px) {
+        main {
+          width: min(100vw - 20px, 1180px);
+          padding-top: 18px;
+        }
+
+        header,
+        .panel,
+        .layer {
+          padding: 14px;
+        }
+
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+
+        th,
+        td {
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>一千光年 ライブラリ導入構成メモ</h1>
+        <p class="lead">
+          一千光年担当が制作中に「既存ライブラリやツールを入れるならこう置きたい」と感じた構成案です。
+          曲固有の演出判断は song-pack 側に残し、system 側は optional helper、検証、参照管理だけを持つ前提で整理しています。
+        </p>
+        <div class="meta">
+          <span class="pill">Owner: 一千光年担当</span>
+          <span class="pill">Audience: system 実装担当</span>
+          <span class="pill">No lyrics text stored</span>
+          <span class="pill">No image/frame data stored</span>
+        </div>
+      </header>
+
+      <section>
+        <h2>基本方針</h2>
+        <div class="grid three">
+          <article class="panel">
+            <h3>曲側が決めること</h3>
+            <p>MVや歌詞から何を抽象化するか、どの色や動きを主役にするか、セクションごとの演出判断。</p>
+          </article>
+          <article class="panel">
+            <h3>system側が持つこと</h3>
+            <p>safe area、DPR、文字fit、参照URL検証、preview snapshotなど、曲を縛らない補助。</p>
+          </article>
+          <article class="panel">
+            <h3>避けること</h3>
+            <p>歌詞本文・記事本文・MV画像の保存、公式絵の複製、独立clockで音楽時刻とズレるtimeline。</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>想定レイヤ構成</h2>
+        <div class="flow">
+          <div class="layer">
+            <strong>song-pack / adapter</strong>
+            <p>曲固有の点列、色、強弱、セクション解釈を作る。例: 黄緑の筆線の中心線、声の花びら配置、歩幅。</p>
+          </div>
+          <div class="arrow">down: small data / draw intent</div>
+          <div class="layer">
+            <strong>system/kit optional helpers</strong>
+            <p>
+              <code>contentRect</code>、<code>fitTextToRect</code>、将来の <code>drawBrushStroke</code>、
+              <code>valueAtTime</code> など。曲側から呼ばれた時だけ使う。
+            </p>
+          </div>
+          <div class="arrow">down: verification / authoring loop</div>
+          <div class="layer">
+            <strong>scripts / dev tooling</strong>
+            <p>
+              <code>song:validate</code>、将来の <code>preview:snapshot</code>。
+              URL参照の安全性、console error、safeArea衝突、指定時刻のスクショ確認を担当する。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>候補ライブラリと置き場所</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>領域</th>
+              <th>候補</th>
+              <th>使いたくなった理由</th>
+              <th>今回は使わなかった理由</th>
+              <th>入れるなら</th>
+              <th>優先度</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>手描き・筆線</td>
+              <td><code>perfect-freehand</code>, <code>paper.js</code>, <code>rough.js</code></td>
+              <td>MV由来の黄緑の筆線を、点列から自然な太さ・丸み・かすれにしたい。</td>
+              <td>曲branchで依存を増やすと bundle/security/表現方針の評価が重い。今回はCanvas2Dで足りた。</td>
+              <td>system側で optional stroke helper として評価。曲側は点列、色、太さ、roughnessだけ渡す。</td>
+              <td><span class="status later">P2 evaluate</span></td>
+            </tr>
+            <tr>
+              <td>時間補間</td>
+              <td><code>GSAP</code>, <code>anime.js</code></td>
+              <td>手作りの <code>mix</code> / <code>smoothstep</code> が増え、曲ごとに同じ補間を書くことになる。</td>
+              <td>独立clockのtimelineは <code>previewTime</code>、seek、停止再開で音楽時刻とズレやすい。</td>
+              <td>ライブラリtimelineではなく、<code>frame.time</code> 駆動の easing / interpolation helper をsystemに置く。</td>
+              <td><span class="status later">P2 evaluate</span></td>
+            </tr>
+            <tr>
+              <td>プレビュー検証</td>
+              <td><code>Playwright</code> / browser automation</td>
+              <td>指定時刻スクショ、console error、safeArea衝突は毎回手確認になりがち。</td>
+              <td>現状はブラウザ確認で十分だったが、担当間レビューでは再現性が弱い。</td>
+              <td><code>npm run preview:snapshot -- --song issen-kounen --time 56.21</code> で画像とJSONを出す。</td>
+              <td><span class="status later">P1 next</span></td>
+            </tr>
+            <tr>
+              <td>2D scene/layout</td>
+              <td><code>PixiJS</code>, <code>Konva</code>, <code>p5.js</code></td>
+              <td>レイヤ、図形、テキスト、イベントを抽象化できる。</td>
+              <td>一千光年は軽量Canvas2Dで十分。大きなscene engineは曲の自由度を逆に縛る可能性がある。</td>
+              <td>すぐ導入しない。まず visualHost layer と contentRect/textFit helper を育てる。</td>
+              <td><span class="status no">Hold</span></td>
+            </tr>
+            <tr>
+              <td>3D・ゲームエンジン</td>
+              <td><code>Three.js</code>, <code>Phaser</code>, <code>Matter.js</code></td>
+              <td>3D空間や物理ルールが主役の曲なら有効。Three.jsは既にsystemで利用可能。</td>
+              <td>今回の主役は筆線と窓辺で、物理や3D sceneは過剰。</td>
+              <td>採用基準をdocs化。曲の主役構造が3D/物理でない限り標準化しない。</td>
+              <td><span class="status no">Not for this song</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>APIイメージ</h2>
+        <div class="grid two">
+          <article class="panel">
+            <h3>筆線 helper</h3>
+            <pre><code>const points = samplePaintPath(frame.time, chorus);
+drawBrushStroke(ctx, points, {
+  rect: scene.contentRect,
+  color: "#8cff47",
+  width: valueAtTime(frame.time, cues),
+  roughness: beat.pulse
+});</code></pre>
+            <p>曲側は中心線と意味だけを作る。線の丸み、かすれ、DPR対応、clipはsystem helperが担当する。</p>
+          </article>
+          <article class="panel">
+            <h3>時刻駆動 helper</h3>
+            <pre><code>const openness = cueValueAt(frame.time, [
+  { start: 56.21, end: 79.95, from: 0.2, to: 1, ease: "outCubic" }
+]);
+const y = mix(baseY, chorusY, openness);</code></pre>
+            <p>内部clockは持たず、常に <code>frame.time</code> を入力にする。seekやpreviewTimeに強い。</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>確認方法</h2>
+        <div class="panel">
+          <ul>
+            <li><code>npm run song:validate -- --id issen-kounen</code> で参照URLメタデータだけが保存されていることを確認する。</li>
+            <li><code>npm run build</code> で、optional helper が使われない曲にも影響しないことを確認する。</li>
+            <li>将来 <code>preview:snapshot</code> が入ったら、<code>56.21s</code> などサビ頭でスクショ、console error、safeArea衝突を確認する。</li>
+          </ul>
+          <p class="note">
+            このHTML自体も参照整理用の説明です。歌詞本文、記事本文、公式MV画像、サムネイル、スクリーンショットは含めていません。
+          </p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

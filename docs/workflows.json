@@ -312,10 +312,10 @@
       "label": "スレッド開始手順",
       "kind": "knowledge-base",
       "group": "文脈",
-      "file": "docs/thread-start.md",
+      "file": "docs/thread-start.md / docs/sync-onboarding.md",
       "x": 46,
       "y": 86,
-      "description": "新しいCodexスレッドが最初に読む導線です。git status、sync:brief、sync:check、sync:inbox、担当分類、ready通知のmerge判断をまとめます。"
+      "description": "新しいCodexスレッドが最初に読む導線です。sync:onboard、git status、sync:brief、sync:check、sync:inbox、担当分類、ready通知のmerge判断をまとめます。"
     },
     {
       "id": "songAuthoringDocs",
@@ -352,21 +352,21 @@
     {
       "id": "thread-start",
       "label": "新しいスレッドが作業を始める",
-      "summary": "AGENTS.mdからthread-startへ進み、現在branch、sync:brief、ready通知、note連絡、担当範囲、読むべきdocsを確認してから作業します。",
+      "summary": "AGENTS.mdからsync-onboarding/thread-startへ進み、現在branch、担当ラベル、sync:brief、ready通知、note連絡、読むべきdocsを確認してから作業します。",
       "trigger": "新しいCodexスレッドで作業を始める",
       "steps": [
         {
           "from": "agents",
           "to": "threadStart",
           "action": "開始手順を読む",
-          "payload": "docs/thread-start.md",
+          "payload": "docs/sync-onboarding.md / docs/thread-start.md",
           "note": "長い会話履歴に頼らず、最初の確認とmerge判断を同じ手順に揃えます。"
         },
         {
           "from": "threadStart",
           "to": "devManager",
-          "action": "同期状態を確認",
-          "payload": "git status --short --branch / npm run sync:brief / npm run sync:check / npm run sync:inbox",
+          "action": "同期状態をまとめて確認",
+          "payload": "npm run sync:onboard -- --for <担当ラベル>",
           "note": "briefは要対応のquestion/blockerと未merge readyの要約です。ready通知は取り込み候補、note通知はcommit不要の連絡です。"
         },
         {

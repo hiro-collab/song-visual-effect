@@ -1,0 +1,76 @@
+{
+  "schema": "music-effect.references.v1",
+  "note": "Store URLs and reference purposes only. Do not copy lyrics, images, screenshots, transcripts, article bodies, or media here.",
+  "items": [
+    {
+      "label": "NicoNico official MV",
+      "type": "official",
+      "url": "https://www.nicovideo.jp/watch/sm35902611",
+      "purpose": "Canonical source URL for Songle analysis and official MV context. Do not copy media, comments, lyrics, or screenshots.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "YouTube official MV",
+      "type": "official",
+      "url": "https://www.youtube.com/watch?v=WqHVaG0GzEE",
+      "purpose": "Alternate official MV URL for public context. Songle Widget API did not resolve this URL during setup.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "Official off-vocal and lyrics package",
+      "type": "official",
+      "url": "https://www.dropbox.com/s/q8px2vot62obp86/%E3%82%AA%E3%83%9A_OFFVOCAL.zip?dl=0",
+      "purpose": "Rights-controlled source for lyrics and off-vocal referenced from the official NicoNico description. Do not store zip contents here.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "KARENT distribution page",
+      "type": "official",
+      "url": "https://karent.jp/album/2565",
+      "purpose": "Release date, genre, distribution, character credit, and art credit reference.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "Apple Music release page",
+      "type": "official",
+      "url": "https://music.apple.com/jp/album/operation-single/1495936753",
+      "purpose": "Distribution metadata and runtime cross-check.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "Nico description mirror",
+      "type": "metadata",
+      "url": "https://www.nicozon.net/search/%2FQ/m/d",
+      "purpose": "Readable metadata fallback for creator credits and official lyrics/off-vocal link when direct NicoNico content is difficult to fetch.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "KeyTube analysis",
+      "type": "analysis",
+      "url": "https://keytube.net/song/detail/82299",
+      "purpose": "Public BPM, vocal range, density, and popularity reference for design planning.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "RAGNET review",
+      "type": "review",
+      "url": "https://www.ragnet.co.jp/fashionable-vocaloid-songs/24",
+      "purpose": "Public reception reference for instrumentation and listening impression.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "Listener note",
+      "type": "review",
+      "url": "https://note.com/lefthorse/n/n1e9dbe682143",
+      "purpose": "Public reception reference for theme interpretation and listener framing.",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "Van de Shop profile context",
+      "type": "background",
+      "url": "https://news.joysound.com/article/451369",
+      "purpose": "Background context for Hachiya Nanashi / Kuriyama Yuri transition and later band activity.",
+      "accessedAt": "2026-05-24"
+    }
+  ]
+}

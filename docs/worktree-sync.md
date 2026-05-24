@@ -18,6 +18,16 @@ Launch Managerを起動している場合は、管理画面の「担当メッセ
 
 ## 使い方
 
+### 0. 初回確認をまとめて見る
+
+新しく作業を始める担当は、まず `sync:onboard` を使います。
+
+```powershell
+npm run sync:onboard -- --for <担当ラベル>
+```
+
+現在のworktree、branch、HEAD、未コミット変更の有無、担当ラベル、読むべきdocs、未処理のnote/readyがまとめて表示されます。
+
 ### 1. 共有できる区切りを出す
 
 作業をコミットし、ビルドや最低限の確認が終わったら、その worktree で実行します。

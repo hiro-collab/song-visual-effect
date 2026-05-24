@@ -1,0 +1,46 @@
+{
+  "schema": "music-effect.references.v1",
+  "note": "URL metadata only. No lyrics text, article text, images, audio, comments, or review bodies are copied into this pack.",
+  "items": [
+    {
+      "label": "Songle page for イガク - 重音テト",
+      "type": "songle",
+      "url": "https://songle.jp/songs/www.nicovideo.jp%2Fwatch%2Fsm43436193",
+      "purpose": "Songle registration and analysis source for song, beat, and chorus JSON.",
+      "language": "ja",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "Original NicoNico video page",
+      "type": "original",
+      "url": "https://www.nicovideo.jp/watch/sm43436193",
+      "purpose": "Original song page reference. No media is bundled.",
+      "language": "ja",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "NicoNico VOCALOID SONGS 2024 first-half ranking article",
+      "type": "ranking",
+      "url": "https://originalnews.nico/463851",
+      "purpose": "Selection context for recent popularity. Article text is not copied.",
+      "language": "ja",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "Lyric meaning reference page",
+      "type": "lyrics-reference",
+      "url": "https://songtell.com/sasuke-haraguchi-ft-kasane-teto/igaku",
+      "purpose": "Theme orientation only. Lyrics and translation text are not stored.",
+      "language": "en",
+      "accessedAt": "2026-05-24"
+    },
+    {
+      "label": "Lyric metadata reference page",
+      "type": "lyrics-reference",
+      "url": "https://silentblue.remywiki.com/Igaku",
+      "purpose": "Theme orientation and metadata only. Lyrics text is not stored.",
+      "language": "en",
+      "accessedAt": "2026-05-24"
+    }
+  ]
+}

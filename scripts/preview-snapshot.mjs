@@ -1,12 +1,13 @@
-import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { get } from "node:http";
-import { join, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const repoRoot = resolve(__dirname, "..");
+const realRepoRoot = realpathSync(repoRoot);
 const runtimeRoot = resolve(repoRoot, ".codex", "runtime", "preview-snapshots");
 
 const defaultPlayerPort = Number(process.env.PLAYER_PORT ?? 5173);
@@ -161,6 +162,27 @@ const timestampSlug = () => new Date().toISOString().replace(/[:.]/g, "-");
 const safeSlug = (value) => value.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "song";
 
 const delay = (ms) => new Promise((resolveDelay) => setTimeout(resolveDelay, ms));
+
+const isInsidePath = (root, candidate) => {
+  const relativePath = relative(root, candidate);
+  return relativePath === "" || (!relativePath.startsWith("..") && !isAbsolute(relativePath));
+};
+
+const prepareOutputRoot = (outDir) => {
+  const outputRoot = resolve(outDir);
+  if (!isInsidePath(repoRoot, outputRoot)) {
+    throw new Error(`preview:snapshot output must stay inside this repository: ${outputRoot}`);
+  }
+  mkdirSync(outputRoot, { recursive: true });
+  if (lstatSync(outputRoot).isSymbolicLink()) {
+    throw new Error(`Refusing symlinked output directory: ${outputRoot}`);
+  }
+  const realOutDir = realpathSync(outputRoot);
+  if (!isInsidePath(realRepoRoot, realOutDir)) {
+    throw new Error(`preview:snapshot output must stay inside this repository: ${outputRoot}`);
+  }
+  return outputRoot;
+};
 
 const fetchOk = async (url, timeoutMs = 1200) => {
   const controller = new AbortController();
@@ -594,7 +616,11 @@ const summarizeFailures = ({ audit, consoleMessages, allowConsoleErrors }) => {
 const main = async () => {
   const options = parseArgs(process.argv.slice(2));
   const config = resolveSnapshotConfig(options);
-  const snapshotDir = resolve(options.outDir, `${timestampSlug()}-${safeSlug(options.song)}-${Math.round(options.time * 1000)}ms`);
+  const outputRoot = prepareOutputRoot(options.outDir);
+  const snapshotDir = resolve(outputRoot, `${timestampSlug()}-${safeSlug(options.song)}-${Math.round(options.time * 1000)}ms`);
+  if (!isInsidePath(realpathSync(outputRoot), snapshotDir)) {
+    throw new Error(`Preview snapshot path escapes its output directory: ${snapshotDir}`);
+  }
   mkdirSync(snapshotDir, { recursive: true });
 
   const spawned = [];

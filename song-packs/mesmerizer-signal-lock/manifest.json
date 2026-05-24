@@ -1,0 +1,26 @@
+{
+  "schema": "music-effect.song-manifest.v1",
+  "id": "mesmerizer-signal-lock",
+  "title": "メズマライザー / 初音ミク・重音テトSV.",
+  "artist": "サツキ",
+  "duration": 156.97,
+  "credits": "credits.md",
+  "references": "references.json",
+  "lyrics": null,
+  "analysis": {
+    "song": "analysis/song.json",
+    "beat": "analysis/beat.json",
+    "chord": "analysis/chord.json",
+    "melody": "analysis/melody.json",
+    "chorus": "analysis/chorus.json",
+    "timing": null,
+    "markers": null,
+    "palette": null
+  },
+  "audio": null,
+  "design": {
+    "effect": "design/visual-brief.md",
+    "cues": "design/cues.json"
+  },
+  "webAdapter": "song:mesmerizer-signal-lock"
+}

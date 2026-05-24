@@ -156,6 +156,10 @@ npm run song:validate -- --id song-id
 
 区間ごとの強度を変えても映像が単調に見える場合は、ひとつのsceneを数値で膨らませ続けるのではなく、verse、chorus、interludeなどの時間範囲を別のscene draw関数やcomposition profileへ振り分ける選択肢があります。単純な曲では共有sceneで十分な場合もあるため、これは条件つきの実装方法です。
 
+場面の違いがカメラ距離やズーム量だけで伝わらない場合は、主役レイヤー、背景レイヤー、遮蔽、密度、明暗、表示範囲など、見てすぐ分かる大きな層の変化を検討します。ただし、具体的な記号、形状、透明度、タイミングは曲側の設計に残します。
+
+画面全体の流れ、方向感、視線移動のような大きな運動は、曲に合う場合でも常時出し続けるとは限りません。転換点だけの短いアクセント、または主役構造の背後で薄く働く視線誘導として使う選択肢があります。特定の方向、落下、移動モチーフを共通ルールにしないでください。
+
 ## Songle URLの選び方
 
 Songle/Songriumから解析JSONを取得する場合は、曲パックごとにcanonical URLを1つ決めてください。
@@ -192,6 +196,7 @@ Songle由来のJSONは、完全な音楽スコアではなく、演出のきっ�
 - tools: 歌詞タイミング編集などのoptional tool。
 - loader: manifestや素材URL解決。
 - song-owned time map: 曲側の追加JSONを `context.assets.readJson()` で読み、beat反応の強度や包絡を調整する。manifest標準スキーマへ昇格させず、値や語彙は曲側に残す。
+- song-owned composition map: ひとつのJSONへ全判断を詰め込みすぎる場合は、感情/強度/反応量のmapと、表示範囲/密度/視線誘導/主役構造のmapを曲側で分けてもよい。map名、ラベル、時刻、値は曲固有にする。
 - visual host: 曲adapter用の追加表示レイヤ、DPR/resize、fixture UIと重ならないsafe area。WebGLなどでcanvasを使う場合は2D contextを作らないレイヤも選べる。
 - content rect helper: Canvas2Dを選んだ曲だけが任意で使える、DPR resize、safe area clip、pointer正規化、文字サイズfitの小さな補助。全画面投影の主映像はviewport全体で構成し、contentRectはポインタ正規化やHUD/状態ラベルだけに使ってもよい。
 
