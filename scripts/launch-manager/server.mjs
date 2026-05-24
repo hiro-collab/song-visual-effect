@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertLoopbackHost, loadLaunchConfig } from "./config.mjs";
 import { LaunchSupervisor } from "./supervisor.mjs";
+import { listSongCatalog } from "./songs.mjs";
 import { managerHtml } from "./ui.mjs";
 
 const baseSecurityHeaders = {
@@ -43,6 +44,19 @@ const sendText = (response, status, body) => {
     "Content-Type": "text/plain; charset=utf-8"
   });
   response.end(body);
+};
+
+const safeSongCatalog = async (config) => {
+  try {
+    return await listSongCatalog(config);
+  } catch (error) {
+    return {
+      songs: [],
+      errors: [`song catalog could not be read: ${error.message}`],
+      requiredTargetIds: [],
+      launchSetId: null
+    };
+  }
 };
 
 const isTrustedBrowserOrigin = (request, allowedOrigins) => {
@@ -109,7 +123,10 @@ export const startLaunchManager = async ({
 
     try {
       if (request.method === "GET" && url.pathname === "/api/status") {
-        sendJson(response, 200, await supervisor.snapshot());
+        sendJson(response, 200, {
+          ...(await supervisor.snapshot()),
+          songCatalog: await safeSongCatalog(config)
+        });
         return;
       }
       if (request.method === "POST" && url.pathname.startsWith("/api/")) {

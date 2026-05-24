@@ -38,6 +38,10 @@
 - 各曲担当から出たライブラリ/ツール候補は `docs/library-candidates.md` に集約する。system標準依存を増やす前に、曲側任意依存、小さいhelper、time-drivenな再現性、bundle/securityを確認する。
 - セキュリティレビューを反映し、manifest素材パスのパッケージ境界チェック、サイズ上限つきfetch、song-pack serverのCORS制限、dev managerのoriginチェックとログ表示無害化を追加した。
 - 複数の曲用映像や補助サーバーを扱う簡素版Launch Manager MVPを実装した。`npm run dev` は `scripts/dev-manager.mjs` 互換入口から `scripts/launch-manager/server.mjs` を起動し、`launch/targets.json` のTarget/SetをGUI/APIで管理する。
+- Launch Managerは `song-packs/*/manifest.json` を曲JSONメニューとして列挙し、GUI上で曲を選んで必要なtargetを起動し、その曲のfixture player URLを開ける。
+- Launch Manager GUIは曲選択を主導線にし、手動Set操作は詳細操作へ折りたたむ。全停止は誤操作防止のため二度押し確認にする。
+- Launch Manager GUIは、Launch Manager、各target、選択中の曲JSONを二次元ノードグラフとして見せる状態マップを持つ。起動中ノードと関連線は光り、サーバーが増えたときも連携関係を把握しやすくする。
+- Windowsでは `start-music-effect.cmd` をダブルクリックするとLaunch Managerを起動できる。既に起動中なら管理画面を開くだけで、初回は `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得する。
 - Launch Managerの停止操作は、そのLaunch Manager自身が起動したmanaged targetだけに効く。並行worktreeではportを分け、GUI下部の `config` / `runtime` とtarget portを確認してから操作する。
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
 - docsの読み分けを `docs/README.md` に集約し、`examples/fixtures/soft-light-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
@@ -89,12 +93,19 @@ ready通知は「必ずmerge」ではなく「取り込み候補」です。note
 
 通常起動:
 
+```text
+start-music-effect.cmd をダブルクリック
+```
+
+手動起動:
+
 ```powershell
 npm install
 npm run dev
 ```
 
-`npm run dev` はLaunch Managerを立てます。管理画面で `Basic fixture` setを起動すると、fixture player と song-pack server がまとめて起動します。
+`npm run dev` はLaunch Managerを立てます。管理画面で曲JSONを選び、`選択曲を再生` を押すと、再生画面と曲データサーバーが起動し、選択曲の再生画面を開きます。詳細操作として `標準再生セット` を手動起動することもできます。
+管理画面の状態マップでは、Launch Manager、各サーバー、選択中の曲JSONのつながりをノードグラフとして確認できます。
 
 ```text
 http://127.0.0.1:5172/

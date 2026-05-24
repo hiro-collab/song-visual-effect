@@ -6,12 +6,16 @@
 
 ## Setup
 
+Windowsで普段使う場合は、リポジトリ直下の `start-music-effect.cmd` をダブルクリックします。既にLaunch Managerが起動中なら管理画面を開くだけです。初回だけ `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得します。
+
+手動で起動する場合:
+
 ```powershell
 npm install
 npm run dev
 ```
 
-`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、`Basic fixture` を選んで起動すると、fixture player app と song-pack server がまとめて起動します。
+`npm run dev` はLaunch Managerを立ち上げます。ブラウザで管理画面を開き、曲JSONを選んで再生すると、再生画面と曲データサーバーが起動し、選択した曲の再生画面を開きます。
 
 ```text
 http://127.0.0.1:5172/
@@ -19,12 +23,14 @@ http://127.0.0.1:5172/
 
 Launch Managerでできること:
 
-- `launch/targets.json` に書かれたTarget/Setだけを起動する。
-- Targetごとの起動、停止、再起動、Set起動/停止、全停止を行う。
+- 曲JSONメニューから `song-packs/*/manifest.json` を選び、選択曲を再生する。
+- Launch Manager、各サーバー、選択中の曲JSONを状態マップで見て、起動中のノードと連携線を視覚的に確認する。
+- `launch/targets.json` に書かれた起動対象だけを起動する。
+- サーバーごとの起動、停止、再起動、起動セットの起動/停止、全停止を行う。全停止は誤操作防止のため二度押し確認です。
 - PID、port、health、CPU、memory、stdout/stderr末尾を見る。
 - port衝突時は自動で別portに逃がさず、エラーとして表示する。
 
-GUIタブを閉じても起動中Targetは止まりません。停止するには、管理画面のTarget停止、Set停止、または全停止を使ってください。Launch Manager自体を終了すると、MVPでは管理中Targetを停止してから終了します。
+GUIタブを閉じても起動中サーバーは止まりません。停止するには、管理画面の各サーバー停止、起動セット停止、または全停止を使ってください。Launch Manager自体を終了すると、MVPでは管理中サーバーを停止してから終了します。
 
 fixture player appは `?song=<manifest-url>` で曲パッケージを指定して開きます。
 

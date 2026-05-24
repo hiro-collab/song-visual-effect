@@ -37,8 +37,9 @@ PCブラウザや将来のスマホから開く操作画面です。
 責任:
 
 - target一覧を表示する。
+- `song-packs/*/manifest.json` を曲JSONメニューとして表示し、選択した曲のfixture player URLを作る。
 - 起動、停止、再起動、全停止をLaunch Serverへ依頼する。
-- 状態、PID、port、URL、CPU、memory、ログ末尾を表示する。
+- 状態マップ、PID、port、URL、CPU、memory、ログ末尾を表示する。
 
 UIは正本を持ちません。ブラウザタブを閉じても起動中targetは止まりません。
 
@@ -104,7 +105,7 @@ Song Visual Server
   "targets": [
     {
       "id": "fixture-player",
-      "label": "Fixture player",
+      "label": "再生画面",
       "kind": "web-app",
       "cwd": ".",
       "command": "npm",
@@ -122,7 +123,7 @@ Song Visual Server
   "sets": [
     {
       "id": "basic-fixture",
-      "label": "Basic fixture",
+      "label": "標準再生セット",
       "targets": ["fixture-player", "song-pack-server"]
     }
   ]
@@ -215,12 +216,13 @@ GUIはログ末尾だけを表示します。詳細なイベント履歴やmetri
 
 MVP画面:
 
-- 上部: Launch Set選択。
-- 上部: 選択Setを起動、選択Setを停止、全停止。
-- 中央: targetカード一覧。
-- targetカード: 状態、PID、port、URL、CPU、memory、起動時刻。
-- targetカード操作: 起動、停止、再起動、開く。
-- 下部またはカード内: stdout/stderrの直近ログ。
+- 上部: 曲JSON選択。`song-packs/<song-id>/manifest.json` を選び、必要なtargetを起動して再生画面を開く。
+- 状態マップ: Launch Manager、各target、選択中の曲JSONをノードとして表示する。起動中ノードと関連線は発光し、サーバーが増えても連携関係を見渡せるようにする。
+- 詳細操作: Launch Set選択、選択Set起動、選択Set停止、全停止。全停止は二度押し確認にする。
+- 中央: サーバー状態カード一覧。
+- サーバーカード: 状態、port、起動時刻を先に表示する。
+- サーバーカード操作: 起動、停止、再起動。
+- 詳細欄: PID、ID、command、CWD、stdout/stderrの直近ログ。
 - 警告: port衝突、起動失敗、異常終了、health失敗。
 
 GUI上には、次の注意を表示します。
@@ -233,7 +235,7 @@ GUI上には、次の注意を表示します。
 
 MVP:
 
-- `GET /api/status`
+- `GET /api/status`。target状態に加え、曲JSONメニュー用の `songCatalog` を返す。
 - `POST /api/targets/:id/start`
 - `POST /api/targets/:id/stop`
 - `POST /api/targets/:id/restart`
@@ -254,6 +256,7 @@ MVP:
 - POST APIはsame-originだけ許可する。
 - 任意コマンド入力UIは作らない。
 - target定義はローカルファイルだけ。
+- 曲JSONメニューはローカル `song-packs/*/manifest.json` の最小メタデータだけを読む。音源解析、歌詞本文解析、外部URL由来のtarget定義読み込みは行わない。
 - targetの `cwd` とログ出力先がリポジトリまたは許可ディレクトリ内にあることを確認する。
 - 停止対象はLaunch Serverが起動したmanaged targetだけ。
 
