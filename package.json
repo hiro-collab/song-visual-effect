@@ -7,8 +7,6 @@
     "dev": "node scripts/dev-manager.mjs",
     "dev:manager": "node scripts/dev-manager.mjs",
     "dev:player": "vite --host 127.0.0.1",
-    "dev:lyric-timing": "vite --config tools/lyric-timing-workbench/vite.config.mjs",
-    "build:lyric-timing": "vite build --config tools/lyric-timing-workbench/vite.config.mjs",
     "dev:songs": "node scripts/serve-song-packs.mjs",
     "build": "tsc --noEmit && vite build",
     "test": "node --test",

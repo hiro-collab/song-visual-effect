@@ -16,7 +16,6 @@
 
 - `system/kit/index.ts`: 曲アプリが参照しやすい公開API入口。必要なhelperだけをここから選んでimportできる。
 - `system/kit/core/`: 型、manifest読み込み、安全なfetch、Transport、frame loop、Visual Sequencerなど、描画方式に依存しない土台。
-- `system/kit/lyrics/`: Lyric Timing Workbench向けのUI非依存helper。project/export型、歌詞txt parser、validation、v2 export、runtime変換を持つ。
 - `system/kit/timing/`: beat、chorus、lyricsの時刻検索、beat state helper、手動歌詞タイミングのデータ処理。
 - `system/kit/render/`: 表示レイヤ、content rect、DPR/clip/pointer/text fit、damping、palette、optional Three services型など、任意で使える描画補助。
 - `system/kit/song-app/`: fixtureや曲adapterをつなぐ最小インターフェースと、曲パッケージ内asset reader。
@@ -68,10 +67,6 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/launch-manager/metrics.mjs`: PIDごとのCPU/memory簡易取得。
 - `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知、brief/ack、note/inbox連絡を扱うローカル同期補助。
 
-## tools
-
-- `tools/lyric-timing-workbench/`: 歌詞タイミング編集用の独立Viteアプリ。ローカル音源と歌詞txtを読み込む付属ツールで、Music Effect本体playerやLaunch ManagerのDOM/CSSへ依存しない。方針は `docs/lyric-timing-workbench.md` を正本にする。
-
 ## launch
 
 - `launch/targets.json`: Launch Managerが扱うTarget/Set定義。GUIから任意コマンドは入力させず、このローカルファイルに書かれたmanaged targetだけを起動する。
@@ -92,6 +87,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `docs/architecture.md`: 全体構成と処理の流れ。
 - `docs/module-map.md`: このファイル。ディレクトリとファイルの役割。
 - `docs/decisions.md`: 設計判断と理由。
+- `docs/lyric-timing-editor.md`: 分離済みLyric Timing EditorとのJSON受け渡し境界。
 - `docs/launch-manager-spec.md`: 複数の曲用映像や補助サーバーを起動、停止、監視する簡素版Launch Manager仕様。
 - `docs/deck-playback.md`: ライブ/VJ運用でDeck A/Bを使う再生仕様。Deckごとのplayer server、output URL、外部ツールとの責務分担を定義する。
 - `docs/archive/working-notes/launch-manager-spec.html`: 旧レビュー用HTML。現在は `workflows.html` と `launch-manager-spec.md` を優先する。

@@ -45,10 +45,7 @@ manifest URLを指定しない場合、特定の曲へ自動フォールバッ�
 ```powershell
 npm run dev:player
 npm run dev:songs
-npm run dev:lyric-timing
 ```
-
-`npm run dev:lyric-timing` は、歌詞タイミング編集用の独立Workbenchを起動します。Workbenchは本体playerやLaunch ManagerのDOM/CSSに依存しません。方針とデータ境界は `docs/lyric-timing-workbench.md` を参照してください。
 
 別worktreeで同時に起動する場合も、通常は手でポートを割り当てる必要はありません。必要な場合だけ、環境変数で明示できます。
 
@@ -132,7 +129,12 @@ http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-s
 
 歌詞の切り替わりがずれている場合は、ブラウザ上で手動キーフレームを打てます。この機能はfixture playerに載せているoptional toolです。歌詞がない曲や、別のタイミング構造を使う曲では使わなくても構いません。
 
-より独立した編集作業には `tools/lyric-timing-workbench/` の Lyric Timing Workbench を使います。Workbench project JSONはローカル作業ファイルで、歌詞本文を含みうるため、権利確認なしに公開repoへコミットしないでください。
+より独立した編集作業には、別プロジェクトの Lyric Timing Editor を使います。
+
+- Repository: https://github.com/hiro-collab/lyric-timing-editor
+- GitHub Pages: https://hiro-collab.github.io/lyric-timing-editor/
+
+Editor project JSONはローカル作業ファイルで、歌詞本文を含みうるため、権利確認なしに公開repoへコミットしないでください。Music Effect側は、完成したtiming JSONを曲パッケージへ置いて読むだけにします。境界は `docs/lyric-timing-editor.md` を参照してください。
 
 基本操作:
 

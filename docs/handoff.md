@@ -57,7 +57,7 @@
 - Launch ManagerのHTTP API本体と管理画面HTMLを分け、`scripts/launch-manager/server.mjs` と `scripts/launch-manager/ui.mjs` に整理した。
 - 並行worktree間の連絡整理として、`npm run sync:brief` / `sync:ack` / `sync:note` / `sync:inbox` を使う。`sync:brief` は要対応のquestion/blockerと未merge readyの要約、`sync:ack` は自分のworktreeで確認済みにする記録、`sync:ready` はmerge可能commit、`sync:note` は質問やブロッカー共有として使い分ける。
 - Launch Manager GUIに担当メッセージ閲覧を追加した。`/api/sync-events` がGit共通ディレクトリの `codex-sync/events.jsonl` を読み、ready/note/ackを要対応、担当、種別で絞り込んで表示する。GUIは読み取り専用で、note/ack/mergeは既存の `sync:*` CLIで行う。
-- Lyric Timing Workbenchの初期骨格を `tools/lyric-timing-workbench/` に追加した。方針は `docs/lyric-timing-workbench.md`。project/exportはミリ秒単位を明示し、共通ロジックは `system/kit/lyrics/` に置く。現時点のUIは歌詞txt parser、project保存/読み込み、v2 export validationまでで、音源再生と打刻UIは次段階。
+- Lyric Timing Editorは別repo `https://github.com/hiro-collab/lyric-timing-editor` へ分離した。Music Effect側は完成済みtiming JSONを読む境界だけを残す。詳細は `docs/lyric-timing-editor.md`。
 
 ## 新しいスレッドの開始手順
 
@@ -160,14 +160,13 @@ http://127.0.0.1:<player-port>/docs/workflows.html
 - `system/kit/index.ts`: system kitの公開API入口。
 - `system/kit/core/safeFetch.ts`: URL検証、曲パッケージ境界チェック、サイズ上限つきfetch。
 - `system/kit/core/assets.ts`: manifestと曲データの読み込み。
-- `system/kit/lyrics/`: Lyric Timing Workbench向けのproject/export型、歌詞txt parser、validation、v2 export helper。
 - `system/kit/song-app/songAdapterContext.ts`: 曲アプリ向けasset reader。
 - `system/kit/render/contentRect.ts`: Canvas2D向けのcontent rect、DPR、clip、pointer、text fit補助。
 - `examples/fixtures/soft-light-player/main.ts`: 動作確認用fixture playerの入口。
 - `examples/fixtures/soft-light-player/adapters/`: fixture player内adapter registry。曲固有adapterを直接importしない。
 - `song-packs/local-adapters.ts`: ローカル開発用の曲固有adapter登録。
 - `examples/fixtures/soft-light-player/tools/lyricTimingTool.ts`: fixture playerに載せたoptional lyric timing UI。
-- `tools/lyric-timing-workbench/`: 本体playerやLaunch Managerから独立した歌詞タイミング編集Workbench。
+- Lyric Timing Editor本体は `https://github.com/hiro-collab/lyric-timing-editor` 側を正本にする。
 - `templates/neutral-song-app/`: 新曲向けの空scaffoldとvisual brief。
 - `docs/security.md`: 信頼境界と運用ルール。
 - `docs/launch-manager-spec.md`: 次に実装する簡素版Launch Manager仕様。

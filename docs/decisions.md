@@ -248,4 +248,4 @@ Launch ManagerはDeckごとの起動、停止、曲選択、URL copy/open、stat
 Songle由来JSONや手動編集JSONには、秒とミリ秒が混ざる可能性がある。特に `244` のような1000未満のミリ秒値は、単純な `value > 1000` 判定では244秒として誤読されるため。
 
 影響:
-Lyric Timing Workbenchの内部projectは `startTimeMs` / `endTimeMs` のミリ秒整数を正本にしてよい。Music Effect向けexportは `startSec` / `endSec` の秒小数を推奨する。既存の `start` / `end` は互換用に残せるが、新しいloaderは明示単位を先に読む。詳細は `docs/lyric-timing-workbench.md` に置く。
+分離済みLyric Timing Editorや曲側toolが作る新規JSONは、`startSec` / `endSec` または `startTimeMs` / `endTimeMs` のように単位が分かるfieldを使う。既存の `start` / `end` は互換用に残せるが、新しいloaderは明示単位を先に読む。Editor本体は別repoを正本にし、Music Effect側の受け渡し境界は `docs/lyric-timing-editor.md` に置く。
