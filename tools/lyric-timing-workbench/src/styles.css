@@ -127,6 +127,26 @@ kbd {
 }
 
 .topbar {
+  grid-row: 1;
+}
+
+.draft-banner {
+  grid-row: 2;
+}
+
+.song-ribbon {
+  grid-row: 3;
+}
+
+.lyric-stage {
+  grid-row: 4;
+}
+
+.work-area {
+  grid-row: 5;
+}
+
+.topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1345,6 +1365,14 @@ label span {
     min-height: 100vh;
     overflow: visible;
     grid-template-rows: auto;
+  }
+
+  .topbar,
+  .draft-banner,
+  .song-ribbon,
+  .lyric-stage,
+  .work-area {
+    grid-row: auto;
   }
 
   .topbar,
