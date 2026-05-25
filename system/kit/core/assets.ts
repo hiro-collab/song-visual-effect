@@ -7,6 +7,7 @@ import {
   resolveHttpUrl,
   resolveWithinBaseUrl
 } from "./safeFetch";
+import { collectTimedLyrics } from "./lyricsTiming";
 
 const compactPaths = (paths: Array<string | null | undefined>) => paths.filter((path): path is string => Boolean(path));
 
@@ -222,21 +223,6 @@ const collectSongleChorus = (json: unknown): Range[] => {
   return uniqueSorted(ranges, (range) => range.start).slice(0, 32);
 };
 
-const collectTimedLyrics = (json: unknown): LyricCue[] => {
-  const cues: LyricCue[] = [];
-  walkObjects(json, (object, timeUnit) => {
-    const text = typeof object.text === "string" ? object.text : typeof object.word === "string" ? object.word : "";
-    const time = readNumber(object, ["start", "startTime", "time"], timeUnit);
-    if (!text || time === null) return;
-    const end =
-      readNumber(object, ["end", "endTime"], timeUnit) ??
-      time + (readNumber(object, ["duration", "length"], timeUnit) ?? 3.5);
-    const index = typeof object.index === "number" ? object.index : undefined;
-    cues.push({ index, time, end: Math.max(time + 0.8, end), text });
-  });
-  return uniqueSorted(cues, (cue) => cue.time);
-};
-
 const uniqueSorted = <T>(items: T[], pick: (item: T) => number) => {
   const sorted = [...items].sort((a, b) => pick(a) - pick(b));
   return sorted.filter((item, index) => index === 0 || Math.abs(pick(item) - pick(sorted[index - 1])) > 0.015);
@@ -312,12 +298,12 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
   const manifestDuration = readNumber(manifest as unknown as Record<string, unknown>, ["duration", "length"]);
   const songDuration = songJson ? readNumber(songJson, ["duration", "length"]) : null;
   const duration = songDuration ?? manifestDuration ?? usableMarkers.estimatedDuration ?? 318;
-  const beats = beatJson ? collectBeats(beatJson) : [];
-  const chorus = chorusJson ? collectRanges(chorusJson) : [];
-  const timedLyrics = lyricJson ? collectTimedLyrics(lyricJson) : [];
   const title = manifest.title;
   const artist = manifest.artist;
   const lyricLines = parseLyricLines(lyricText, title);
+  const beats = beatJson ? collectBeats(beatJson) : [];
+  const chorus = chorusJson ? collectRanges(chorusJson) : [];
+  const timedLyrics = lyricJson ? collectTimedLyrics(lyricJson, { lyricLines, duration, warnings }) : [];
 
   if (!beatJson || beats.length < 8) warnings.push("beat fallback");
   if (!chorusJson || chorus.length === 0) warnings.push("chorus fallback");

@@ -74,6 +74,7 @@ system担当は `docs/knowledge-review.md` に沿って、`common` / `conditiona
 - この曲をどんな場で使うか。
 - ライブ操作が必要か。
 - 歌詞が必要か。
+- 歌詞タイミングが必要な場合、Lyric Timing Editor の v2 timing JSONを使うか、曲側の別方式にするか。
 - 拍、サビ、コード、手動マーカーのどれを使うか。
 - そもそもSongle/TextAlive由来の構造を使うか。
 - 描画方式を何にするか。
@@ -144,6 +145,7 @@ npm run song:validate -- --id song-id
 曲担当が「この映像を中央環境で確認してよい」と渡すときは、最低限、次を曲パック側へ置きます。これは曲の文法や演出構成を固定するためではなく、別担当が安全に再生確認、権利確認、統合確認を始められるようにするための入口です。
 
 - `manifest.json`: 機械が読む入口。曲ID、タイトル、必要なanalysis/design/adapterの所在を書きます。
+- 歌詞timing JSON: 必要な場合だけ `analysis.timing` などから参照します。新規作成では Lyric Timing Editor の `music-effect.lyrics-timing.v2` を優先し、歌詞本文を含めない timing-only export と曲パック側の `manifest.lyrics` を結合する運用を基本にします。
 - 再生入口: `webAdapter`、`adapter.ts` / `adapter.js`、または別ランタイムで再生する場合の手順をREADMEに書きます。
 - `README.md`: 人間が読む使い方。推奨見出しはありますが、固定形式ではありません。
 - `CREDITS.md` または `manifest.credits`: 出典、ライセンス、利用条件、音源や歌詞を同梱していない理由を記録します。
