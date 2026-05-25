@@ -128,14 +128,18 @@ export const makeTimingExport = (
       index: cue.index ?? 0,
       start: roundTime(cue.time),
       end: roundTime(cue.end),
+      startSec: roundTime(cue.time),
+      endSec: roundTime(cue.end),
       text: cue.text
     }));
 
   return {
     schema: "music-effect.lyrics-timing.v1",
+    timeUnit: "seconds",
     title: musicMap.title,
     artist: musicMap.artist,
     duration: roundTime(musicMap.duration),
+    durationSec: roundTime(musicMap.duration),
     generatedAt: new Date().toISOString(),
     note: "Manual lyric keyframes and display offsets recorded from UI input. This file contains no audio analysis or AI training data.",
     adjustments: {
@@ -149,6 +153,7 @@ export const makeTimingExport = (
     keyframes: normalized.map((keyframe) => ({
       index: keyframe.index,
       at: roundTime(keyframe.time),
+      atSec: roundTime(keyframe.time),
       text: keyframe.text
     })),
     lyrics

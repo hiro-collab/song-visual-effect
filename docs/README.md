@@ -9,6 +9,7 @@
 - `team-roster.md`: 担当名、branch、worktree、宛先ラベルの対応表。
 - `project-scope.md`: song-pack、system kit、show-profile、互換性方針の境界。
 - `deck-playback.md`: ライブ/VJ運用でDeck A/Bを使う再生仕様。
+- `lyric-timing-workbench.md`: 歌詞タイミング調整Workbenchの配置、export、時間単位の境界。
 - `system-overview.md`: 曲に依存しないシステムの考え方。
 - `song-authoring.md`: 新しい曲を作るときの手順と注意。
 - `song-visual-independence.md`: 既存曲やfixtureの見た目に引っ張られないための確認表。
@@ -47,6 +48,7 @@
 - `module-map.md`
 - `launch-manager-spec.md`
 - `deck-playback.md`
+- `lyric-timing-workbench.md`
 - `sync-onboarding.md`
 - `worktree-sync.md`
 - `thread-start.md`

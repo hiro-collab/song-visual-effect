@@ -37,14 +37,16 @@ export type LyricTimingAdjustments = {
 
 export type LyricTimingExport = {
   schema: "music-effect.lyrics-timing.v1";
+  timeUnit: "seconds";
   title: string;
   artist: string;
   duration: number;
+  durationSec: number;
   generatedAt: string;
   note: string;
   adjustments: LyricTimingAdjustments;
-  keyframes: Array<{ index: number; at: number; text: string }>;
-  lyrics: Array<{ index: number; start: number; end: number; text: string }>;
+  keyframes: Array<{ index: number; at: number; atSec: number; text: string }>;
+  lyrics: Array<{ index: number; start: number; end: number; startSec: number; endSec: number; text: string }>;
 };
 
 export type Palette = {

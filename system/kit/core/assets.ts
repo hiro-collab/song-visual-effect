@@ -66,37 +66,105 @@ const loadManifest = async (manifestUrl: string) => {
   }
 };
 
-const asSeconds = (value: unknown): number | null => {
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-  return value > 1000 ? value / 1000 : value;
+type TimeUnit = "seconds" | "milliseconds";
+
+const normalizeTimeUnit = (value: unknown): TimeUnit | null => {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase();
+  if (["s", "sec", "secs", "second", "seconds"].includes(normalized)) return "seconds";
+  if (["ms", "msec", "msecs", "millisecond", "milliseconds"].includes(normalized)) return "milliseconds";
+  return null;
 };
 
-const readNumber = (object: Record<string, unknown>, keys: string[]) => {
+const objectTimeUnit = (object: Record<string, unknown>) => {
+  return normalizeTimeUnit(object.timeUnit ?? object.time_unit ?? object.unit ?? object.units);
+};
+
+const toSnakeCase = (value: string) => value.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
+
+const explicitTimeKeys = (key: string, unit: TimeUnit) => {
+  const snakeKey = toSnakeCase(key);
+  return unit === "seconds"
+    ? [`${key}Sec`, `${key}Secs`, `${key}Seconds`, `${snakeKey}_sec`, `${snakeKey}_secs`, `${snakeKey}_seconds`]
+    : [
+        `${key}Ms`,
+        `${key}Msec`,
+        `${key}Millis`,
+        `${key}Milliseconds`,
+        `${snakeKey}_ms`,
+        `${snakeKey}_msec`,
+        `${snakeKey}_millis`,
+        `${snakeKey}_milliseconds`
+      ];
+};
+
+const numericValue = (value: unknown): number | null => {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return value;
+};
+
+const toSeconds = (value: unknown, unit: TimeUnit): number | null => {
+  const number = numericValue(value);
+  if (number === null) return null;
+  return unit === "milliseconds" ? number / 1000 : number;
+};
+
+const legacyAsSeconds = (value: unknown): number | null => {
+  const number = numericValue(value);
+  if (number === null) return null;
+  return number > 1000 ? number / 1000 : number;
+};
+
+const readNumber = (object: Record<string, unknown>, keys: string[], inheritedUnit?: TimeUnit | null) => {
   for (const key of keys) {
-    const value = asSeconds(object[key]);
+    for (const candidate of explicitTimeKeys(key, "seconds")) {
+      const value = toSeconds(object[candidate], "seconds");
+      if (value !== null) return value;
+    }
+    for (const candidate of explicitTimeKeys(key, "milliseconds")) {
+      const value = toSeconds(object[candidate], "milliseconds");
+      if (value !== null) return value;
+    }
+  }
+
+  const timeUnit = objectTimeUnit(object) ?? inheritedUnit ?? null;
+  if (timeUnit) {
+    for (const key of keys) {
+      const value = toSeconds(object[key], timeUnit);
+      if (value !== null) return value;
+    }
+  }
+
+  for (const key of keys) {
+    const value = legacyAsSeconds(object[key]);
     if (value !== null) return value;
   }
   return null;
 };
 
-const walkObjects = (value: unknown, callback: (object: Record<string, unknown>) => void) => {
+const walkObjects = (
+  value: unknown,
+  callback: (object: Record<string, unknown>, inheritedUnit: TimeUnit | null) => void,
+  inheritedUnit: TimeUnit | null = null
+) => {
   if (Array.isArray(value)) {
-    for (const child of value) walkObjects(child, callback);
+    for (const child of value) walkObjects(child, callback, inheritedUnit);
     return;
   }
   if (value && typeof value === "object") {
     const object = value as Record<string, unknown>;
-    callback(object);
-    for (const child of Object.values(object)) walkObjects(child, callback);
+    const timeUnit = objectTimeUnit(object) ?? inheritedUnit;
+    callback(object, timeUnit);
+    for (const child of Object.values(object)) walkObjects(child, callback, timeUnit);
   }
 };
 
 const collectBeats = (json: unknown): Beat[] => {
   const beats: Beat[] = [];
-  walkObjects(json, (object) => {
-    const time = readNumber(object, ["start", "time", "startTime", "timestamp"]);
+  walkObjects(json, (object, timeUnit) => {
+    const time = readNumber(object, ["start", "time", "startTime", "timestamp"], timeUnit);
     if (time === null) return;
-    const duration = readNumber(object, ["duration", "length"]) ?? 0.48;
+    const duration = readNumber(object, ["duration", "length"], timeUnit) ?? 0.48;
     const position =
       typeof object.position === "number"
         ? object.position
@@ -118,11 +186,11 @@ const collectRanges = (json: unknown): Range[] => {
   if (songleChorus.length) return songleChorus;
 
   const ranges: Range[] = [];
-  walkObjects(json, (object) => {
-    const start = readNumber(object, ["start", "startTime", "time"]);
+  walkObjects(json, (object, timeUnit) => {
+    const start = readNumber(object, ["start", "startTime", "time"], timeUnit);
     if (start === null) return;
-    const duration = readNumber(object, ["duration", "length"]);
-    const end = readNumber(object, ["end", "endTime"]);
+    const duration = readNumber(object, ["duration", "length"], timeUnit);
+    const end = readNumber(object, ["end", "endTime"], timeUnit);
     const finish = end ?? (duration !== null ? start + duration : null);
     if (finish === null || finish <= start) return;
     if (finish - start < 3) return;
@@ -134,6 +202,7 @@ const collectRanges = (json: unknown): Range[] => {
 const collectSongleChorus = (json: unknown): Range[] => {
   if (!json || typeof json !== "object") return [];
   const root = json as { chorusSegments?: unknown };
+  const rootUnit = objectTimeUnit(root as Record<string, unknown>);
   if (!Array.isArray(root.chorusSegments)) return [];
   const ranges: Range[] = [];
   for (const segment of root.chorusSegments) {
@@ -143,8 +212,9 @@ const collectSongleChorus = (json: unknown): Range[] => {
     for (const repeat of typedSegment.repeats) {
       if (!repeat || typeof repeat !== "object") continue;
       const object = repeat as Record<string, unknown>;
-      const start = readNumber(object, ["start", "startTime", "time"]);
-      const duration = readNumber(object, ["duration", "length"]);
+      const timeUnit = objectTimeUnit(object) ?? rootUnit;
+      const start = readNumber(object, ["start", "startTime", "time"], timeUnit);
+      const duration = readNumber(object, ["duration", "length"], timeUnit);
       if (start === null || duration === null) continue;
       ranges.push({ start, end: start + duration, intensity: 1 });
     }
@@ -154,11 +224,13 @@ const collectSongleChorus = (json: unknown): Range[] => {
 
 const collectTimedLyrics = (json: unknown): LyricCue[] => {
   const cues: LyricCue[] = [];
-  walkObjects(json, (object) => {
+  walkObjects(json, (object, timeUnit) => {
     const text = typeof object.text === "string" ? object.text : typeof object.word === "string" ? object.word : "";
-    const time = readNumber(object, ["start", "startTime", "time"]);
+    const time = readNumber(object, ["start", "startTime", "time"], timeUnit);
     if (!text || time === null) return;
-    const end = readNumber(object, ["end", "endTime"]) ?? time + (readNumber(object, ["duration", "length"]) ?? 3.5);
+    const end =
+      readNumber(object, ["end", "endTime"], timeUnit) ??
+      time + (readNumber(object, ["duration", "length"], timeUnit) ?? 3.5);
     const index = typeof object.index === "number" ? object.index : undefined;
     cues.push({ index, time, end: Math.max(time + 0.8, end), text });
   });
@@ -237,8 +309,9 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
   ]);
 
   const usableMarkers = markers ?? {};
+  const manifestDuration = readNumber(manifest as unknown as Record<string, unknown>, ["duration", "length"]);
   const songDuration = songJson ? readNumber(songJson, ["duration", "length"]) : null;
-  const duration = songDuration ?? manifest?.duration ?? usableMarkers.estimatedDuration ?? 318;
+  const duration = songDuration ?? manifestDuration ?? usableMarkers.estimatedDuration ?? 318;
   const beats = beatJson ? collectBeats(beatJson) : [];
   const chorus = chorusJson ? collectRanges(chorusJson) : [];
   const timedLyrics = lyricJson ? collectTimedLyrics(lyricJson) : [];
