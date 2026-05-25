@@ -48,6 +48,7 @@ test("lyrics timing v2 with lyrics converts milliseconds to seconds", async () =
       artist: "Synthetic Artist",
       durationMs: 10000,
       slug: "synthetic-song",
+      sourceProjectSchema: "lyric-timing-editor.project.v1",
       songle: { id: "1234", url: "https://songle.jp/songs/example" },
       timeUnit: "ms",
       includesLyrics: true,
@@ -132,6 +133,7 @@ test("lyrics timing v2 metadata stays optional but invalid metadata warns", asyn
       schema: "music-effect.lyrics-timing.v2",
       durationMs: 5000,
       slug: "Bad Slug",
+      sourceProjectSchema: "other.project.v1",
       songle: "https://songle.jp/songs/example",
       timeUnit: "ms",
       includesLyrics: "yes",
@@ -144,8 +146,32 @@ test("lyrics timing v2 metadata stays optional but invalid metadata warns", asyn
 
   assert.deepEqual(cues, [{ index: 0, time: 1, end: 2.2, text: "alpha" }]);
   assert.match(warnings.join("\n"), /slug should use lowercase/);
+  assert.match(warnings.join("\n"), /sourceProjectSchema should be lyric-timing-editor\.project\.v1/);
   assert.match(warnings.join("\n"), /songle should be an object or null/);
   assert.match(warnings.join("\n"), /includesLyrics should be boolean/);
   assert.match(warnings.join("\n"), /rightsNotice is missing/);
   assert.match(warnings.join("\n"), /sourceLine is invalid/);
+});
+
+test("lyrics timing v2 warns when millisecond fields are not integers", async () => {
+  const { collectTimedLyrics } = await loadLyricsTimingModule();
+  const warnings = [];
+  const cues = collectTimedLyrics(
+    {
+      schema: "music-effect.lyrics-timing.v2",
+      durationMs: 5000.5,
+      timeUnit: "ms",
+      includesLyrics: true,
+      rightsNotice: "Synthetic test fixture. No real lyric rights are involved.",
+      phrases: [
+        { id: "phrase-0001", index: 0, sourceLine: 1, startTimeMs: 1000.5, endTimeMs: 2200.5, text: "alpha" }
+      ]
+    },
+    { warnings }
+  );
+
+  assert.deepEqual(cues, [{ id: "phrase-0001", index: 0, sourceLine: 1, time: 1.0005, end: 2.2005, text: "alpha" }]);
+  assert.match(warnings.join("\n"), /durationMs should be integer milliseconds or null/);
+  assert.match(warnings.join("\n"), /startTimeMs should be integer milliseconds/);
+  assert.match(warnings.join("\n"), /endTimeMs should be integer milliseconds/);
 });

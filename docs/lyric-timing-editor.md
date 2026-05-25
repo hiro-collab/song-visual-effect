@@ -42,6 +42,7 @@ song-packs/<song-id>/lyrics/timing.json
 - `timeUnit: "ms"`
 - `durationMs` は `number | null`。
 - `slug` は任意です。ある場合は小文字英数字とハイフンだけの照合用文字列として扱います。
+- `sourceProjectSchema` はexport元の識別用metadataです。`lyric-timing-editor.project.v1` 以外が入っている場合はwarningを出しますが、Music Effect側がEditor project JSONを入力として読むわけではありません。
 - `songle` は任意の参照metadataです。存在しなくても、`null` でも読めます。
 - `includesLyrics` は boolean です。
 - `rightsNotice` は文字列です。Music Effect側は表示の必須条件にはしませんが、欠落時はwarningを出します。

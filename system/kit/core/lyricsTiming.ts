@@ -1,6 +1,7 @@
 import type { LyricCue } from "./types";
 
 export const LYRIC_TIMING_EXPORT_SCHEMA_V2 = "music-effect.lyrics-timing.v2";
+const LYRIC_TIMING_EDITOR_PROJECT_SCHEMA = "lyric-timing-editor.project.v1";
 
 type TimeUnit = "seconds" | "milliseconds";
 
@@ -124,6 +125,10 @@ const nonNegativeInteger = (value: unknown) => {
   return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
 };
 
+const integerMilliseconds = (value: unknown) => {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
+};
+
 const embeddedLyricText = (phrase: Record<string, unknown>) => {
   const embedded = typeof phrase.text === "string" ? phrase.text.trim() : "";
   if (embedded) return embedded;
@@ -165,6 +170,15 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
   if (typeof json.rightsNotice !== "string" || !json.rightsNotice.trim()) {
     warn(warnings, "lyrics timing v2 warning: rightsNotice is missing");
   }
+  if (
+    "sourceProjectSchema" in json &&
+    json.sourceProjectSchema !== LYRIC_TIMING_EDITOR_PROJECT_SCHEMA
+  ) {
+    warn(warnings, "lyrics timing v2 warning: sourceProjectSchema should be lyric-timing-editor.project.v1");
+  }
+  if ("durationMs" in json && json.durationMs !== null && integerMilliseconds(json.durationMs) === null) {
+    warn(warnings, "lyrics timing v2 warning: durationMs should be integer milliseconds or null");
+  }
   if (!Array.isArray(json.phrases)) {
     warn(warnings, "lyrics timing v2 warning: phrases array is missing");
     return [];
@@ -195,6 +209,12 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
     }
 
     const timeUnit = objectTimeUnit(phraseValue) ?? rootUnit ?? "milliseconds";
+    if ("startTimeMs" in phraseValue && integerMilliseconds(phraseValue.startTimeMs) === null) {
+      warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].startTimeMs should be integer milliseconds`);
+    }
+    if ("endTimeMs" in phraseValue && integerMilliseconds(phraseValue.endTimeMs) === null) {
+      warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].endTimeMs should be integer milliseconds`);
+    }
     const time = readNumber(phraseValue, ["startTime", "start", "time"], timeUnit);
     const end = readNumber(phraseValue, ["endTime", "end"], timeUnit);
     if (time === null) {
