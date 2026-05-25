@@ -16,6 +16,7 @@
 
 - `system/kit/index.ts`: 曲アプリが参照しやすい公開API入口。必要なhelperだけをここから選んでimportできる。
 - `system/kit/core/`: 型、manifest読み込み、安全なfetch、Transport、frame loop、Visual Sequencerなど、描画方式に依存しない土台。
+- `system/kit/lyrics/`: Lyric Timing Workbench向けのUI非依存helper。project/export型、歌詞txt parser、validation、v2 export、runtime変換を持つ。
 - `system/kit/timing/`: beat、chorus、lyricsの時刻検索、beat state helper、手動歌詞タイミングのデータ処理。
 - `system/kit/render/`: 表示レイヤ、content rect、DPR/clip/pointer/text fit、damping、palette、optional Three services型など、任意で使える描画補助。
 - `system/kit/song-app/`: fixtureや曲adapterをつなぐ最小インターフェースと、曲パッケージ内asset reader。
@@ -66,6 +67,10 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - `scripts/launch-manager/logs.mjs`: stdout/stderr保存とログ末尾取得。
 - `scripts/launch-manager/metrics.mjs`: PIDごとのCPU/memory簡易取得。
 - `scripts/worktree-sync.mjs`: 並行worktree間でready/check/merge通知、brief/ack、note/inbox連絡を扱うローカル同期補助。
+
+## tools
+
+- `tools/lyric-timing-workbench/`: 歌詞タイミング編集用の独立Viteアプリ。ローカル音源と歌詞txtを読み込む付属ツールで、Music Effect本体playerやLaunch ManagerのDOM/CSSへ依存しない。方針は `docs/lyric-timing-workbench.md` を正本にする。
 
 ## launch
 

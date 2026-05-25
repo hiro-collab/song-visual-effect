@@ -67,5 +67,30 @@ export {
   normalizeAdjustments,
   normalizeKeyframes
 } from "./timing/manualTiming";
+export type {
+  LyricTextParseMode,
+  LyricTimingAudioRef,
+  LyricTimingCharacter,
+  LyricTimingExportV2,
+  LyricTimingExportPhrase,
+  LyricTimingIssue,
+  LyricTimingIssueLevel,
+  LyricTimingPhrase,
+  LyricTimingProject,
+  LyricTimingProjectLine,
+  LyricTimingProjectLineKind,
+  LyricTimingWord
+} from "./lyrics";
+export {
+  LYRIC_TIMING_EXPORT_SCHEMA,
+  LYRIC_TIMING_PROJECT_SCHEMA,
+  LYRIC_TIMING_RIGHTS_NOTICE,
+  createLyricTimingProject,
+  lyricTimingExportToLyricCues,
+  makeLyricTimingExport,
+  parseLyricText,
+  updateLyricTimingProjectMetadata,
+  validateLyricTimingProject
+} from "./lyrics";
 export { ColorRamp, DEFAULT_PALETTE } from "./render/palette";
 export { DampValue, clamp, decayPulse, smoothstep } from "./render/damping";
