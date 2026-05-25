@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadLaunchConfig } from "../scripts/launch-manager/config.mjs";
@@ -12,6 +14,12 @@ const deckEnv = {
   DECK_A_PLAYER_PORT: "53173",
   DECK_B_PLAYER_PORT: "53175",
   SONG_PACK_PORT: "53174"
+};
+
+const writeManifest = (root, id) => {
+  const directory = resolve(root, "song-packs", id);
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(resolve(directory, "manifest.json"), JSON.stringify({ id, title: id, audio: null }), "utf8");
 };
 
 test("launch config defines independent Deck A/B player targets", async () => {
@@ -27,20 +35,27 @@ test("launch config defines independent Deck A/B player targets", async () => {
 });
 
 test("song catalog exposes Deck URLs without binding songs to one player", async () => {
-  const config = await loadLaunchConfig({ root: repoRoot, env: deckEnv });
-  const catalog = await listSongCatalog(config);
-  assert.equal(catalog.songPackTargetId, "song-pack-server");
-  assert.deepEqual(catalog.deckTargetIds, ["deck-a-player", "deck-b-player"]);
-  assert.deepEqual(
-    catalog.decks.map((deck) => [deck.id, deck.targetId]),
-    [
-      ["deck-a", "deck-a-player"],
-      ["deck-b", "deck-b-player"]
-    ]
-  );
-  assert.ok(catalog.songs.length > 0);
-  for (const song of catalog.songs) {
-    assert.match(song.deckUrls["deck-a"], /^http:\/\/127\.0\.0\.1:53173\/\?song=/);
-    assert.match(song.deckUrls["deck-b"], /^http:\/\/127\.0\.0\.1:53175\/\?song=/);
+  const root = mkdtempSync(resolve(tmpdir(), "music-effect-launch-decks-"));
+  try {
+    writeManifest(root, "deck-test-song");
+    const baseConfig = await loadLaunchConfig({ root: repoRoot, env: deckEnv });
+    const config = { ...baseConfig, root };
+    const catalog = await listSongCatalog(config);
+    assert.equal(catalog.songPackTargetId, "song-pack-server");
+    assert.deepEqual(catalog.deckTargetIds, ["deck-a-player", "deck-b-player"]);
+    assert.deepEqual(
+      catalog.decks.map((deck) => [deck.id, deck.targetId]),
+      [
+        ["deck-a", "deck-a-player"],
+        ["deck-b", "deck-b-player"]
+      ]
+    );
+    assert.equal(catalog.songs.length, 1);
+    for (const song of catalog.songs) {
+      assert.match(song.deckUrls["deck-a"], /^http:\/\/127\.0\.0\.1:53173\/\?song=/);
+      assert.match(song.deckUrls["deck-b"], /^http:\/\/127\.0\.0\.1:53175\/\?song=/);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
 });

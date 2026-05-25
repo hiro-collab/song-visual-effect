@@ -34,6 +34,7 @@
 - song-pack server は隠しファイルと未許可拡張子を配信しません。
 - song-pack server は曲パッケージ内の `.js` / `.css` を配信しません。adapterコードは同一ビルド内の静的登録だけで読み込みます。
 - song-pack server は配信直前に実パスを確認し、シンボリックリンクやジャンクションで `song-packs/` 外へ出るファイルを配信しません。
+- `song-packs/` 本体は公開repoへ含めず、private repoをローカルに配置して使います。公開repo単体では曲一覧が空でも正常な状態として扱います。
 - dev manager の状態変更APIは、同一origin相当のブラウザリクエストだけを受け付けます。
 - dev manager のログ表示は `textContent` / DOM生成で行い、HTMLとして解釈しません。
 - Launch Manager の管理画面はCSP、frame拒否、権限拒否ヘッダーを付け、同一originのAPIだけに接続します。
@@ -46,7 +47,7 @@
 - Launch Manager のtarget定義は、作業ディレクトリをリポジトリ配下に限定し、commandを単純なコマンド名に限定します。
 - Launch Manager のtarget定義では、`PATH`、`COMSPEC`、`SYSTEMROOT`、`NODE_OPTIONS` などrunner側の重要環境変数を上書きできません。
 - Windows上の `npm` / `npx` target は `cmd.exe /c` を介すため、target引数にshellメタ文字が含まれる場合は起動前に拒否します。
-- 同一ビルド内の曲固有adapterは `song-packs/local-adapters.ts` の `song:` 静的登録だけを使います。`builtin:` はfixture player側、`song:` は曲パック側のIDとして分け、外部URLや任意文字列からの動的importは行いません。
+- 同一ビルド内の曲固有adapterは、private `song-packs/local-adapters.ts` がローカルに存在する場合だけ `song:` 静的登録として読みます。`builtin:` はfixture player側、`song:` は曲パック側のIDとして分け、外部URLや任意文字列からの動的importは行いません。
 - Songle取得スクリプトは `SongId`、対象URL、取得target、保存先、サイズ、JSON構文を検証します。
 - song-pack scaffold は対象の `song-packs/<song-id>/` 外へ出る実パスやシンボリックリンク上書きを拒否します。
 - song-pack validation は `references.json` 参照が対象曲パッケージ外へ出る場合を拒否します。

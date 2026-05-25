@@ -7,7 +7,7 @@
 例外的な引き継ぎ:
 
 - 煮ル果実「トラフィック・ジャム」の映像エフェクトは、`codex/traffic-jam-effect` の `81876a7 Add traffic jam visual adapter` を採用しません。
-- 別スレッドで作り直す場合は `song-packs/traffic-jam/design/reimplementation-brief.md` を読んでください。
+- 別スレッドで作り直す場合は、private song-packs repo側の `song-packs/traffic-jam/design/reimplementation-brief.md` を読んでください。
 - `sync:check` に `codex/traffic-jam-effect 81876a7` が表示されても取り込まないでください。
 - `codex/live-beat-sync-prototype` は旧 `src/` 構成を含むため、Launch Manager入りの現行構成へ直接mergeしないでください。必要な変更だけ現行構成へ移植してください。
 
@@ -26,9 +26,9 @@
 - 全体/途中からのタイミング補正と、シーケンスバー上のストーン可視化がある。
 - シーケンスバーをクリック/ドラッグして再生位置を移動できる。
 - `docs/workflows.html` / `docs/workflows.json` にワークフロー地図がある。
-- `song-packs/` に曲ごとのパッケージがある。曲固有の設計メモや再実装ブリーフは各曲パック側のREADMEやdesign配下を見る。
+- `song-packs/` は公開repoから外し、private repo `hiro-collab/song-visual-effect-song-packs` をローカルに配置する。曲固有の設計メモや再実装ブリーフはprivate repo側の各曲パックREADMEやdesign配下を見る。
 - 曲アプリ向けに `system/kit/song-app/songAdapterContext.ts` を追加し、raw manifest、base URL、`readJson()`、`readText()`、`readDesignCues()` を渡せるようにした。system kitは `design.cues` の中身を固定解釈しない。
-- fixture player内のregistryは中立的な `builtin:` adapterだけを直接持つ。ローカル開発用の曲固有 `song:` adapter登録は `song-packs/local-adapters.ts` 側へ置く。`song-packs/local-adapters.ts` は `song:` IDだけを扱い、外部adapter URL/pathの解決は無効。
+- fixture player内のregistryは中立的な `builtin:` adapterだけを直接持つ。private `song-packs/local-adapters.ts` がローカルに存在する場合だけoptionalに読み、曲固有 `song:` adapter登録へ委譲する。`song-packs/local-adapters.ts` は `song:` IDだけを扱い、外部adapter URL/pathの解決は無効。
 - 歌詞なし曲は `manifest.lyrics` と `analysis.timing` がnull/未指定なら lyric-free として扱い、`rough lyrics` warningを出さない。歌詞テキストがあるがtimingがない場合だけ `rough lyrics` を出す。
 - 曲adapter向けに `services.safeArea` と `services.visualHost` を追加した。fixture UIと重なりにくいcontent rect、追加Canvas/DOMレイヤ、DPR/resize、cleanupを曲側が任意で使える。
 - `npm run song:scaffold` で、既存曲を読まずに中立的な曲パック雛形を作れる。
@@ -164,7 +164,7 @@ http://127.0.0.1:<player-port>/docs/workflows.html
 - `system/kit/render/contentRect.ts`: Canvas2D向けのcontent rect、DPR、clip、pointer、text fit補助。
 - `examples/fixtures/soft-light-player/main.ts`: 動作確認用fixture playerの入口。
 - `examples/fixtures/soft-light-player/adapters/`: fixture player内adapter registry。曲固有adapterを直接importしない。
-- `song-packs/local-adapters.ts`: ローカル開発用の曲固有adapter登録。
+- private `song-packs/local-adapters.ts`: ローカル開発用の曲固有adapter登録。
 - `examples/fixtures/soft-light-player/tools/lyricTimingTool.ts`: fixture playerに載せたoptional lyric timing UI。
 - Lyric Timing Editor本体は `https://github.com/hiro-collab/lyric-timing-editor` 側を正本にする。
 - `templates/neutral-song-app/`: 新曲向けの空scaffoldとvisual brief。
@@ -198,7 +198,7 @@ Launch Managerを変更する場合:
 
 曲ごとの設計メモや再実装ブリーフは、system-wide docsではなく各曲パック配下に置きます。
 
-`traffic-jam` の内容は `song-packs/traffic-jam/README.md` と `song-packs/traffic-jam/design/reimplementation-brief.md` を見てください。Traffic Jam固有の曲アプリを作る場合は、system kitとは分けて曲側の自由な構成として始めます。
+`traffic-jam` の内容は private song-packs repo側の `song-packs/traffic-jam/README.md` と `song-packs/traffic-jam/design/reimplementation-brief.md` を見てください。Traffic Jam固有の曲アプリを作る場合は、system kitとは分けて曲側の自由な構成として始めます。
 
 ## 文脈管理の意図
 

@@ -149,7 +149,7 @@
       "file": "song-packs/<song-id>/manifest.json",
       "x": 49,
       "y": 14,
-      "description": "曲パッケージの入口です。歌詞、解析JSON、音源、クレジット、設計資料への相対パスを持ちます。"
+      "description": "private song-packs repo側にある曲パッケージの入口です。歌詞、解析JSON、音源、クレジット、設計資料への相対パスを持ちます。"
     },
     {
       "id": "showProfile",
@@ -179,7 +179,7 @@
       "file": "song-packs/<song-id>",
       "x": 72,
       "y": 14,
-      "description": "歌詞、Songle解析JSON、手動調整済みlyrics_timing.json、palette、markers、CREDITSを含む曲側の素材群です。"
+      "description": "private song-packs repo側に置く、歌詞、Songle解析JSON、手動調整済みlyrics_timing.json、palette、markers、CREDITSを含む曲側の素材群です。公開repoには含めません。"
     },
     {
       "id": "visualHost",
@@ -229,7 +229,7 @@
       "file": "song-packs/<song-id>/adapter.ts / song-packs/local-adapters.ts",
       "x": 38,
       "y": 66,
-      "description": "曲側が持つ演出コードです。system kitから必要なcontextやhelperだけを受け取り、曲固有のcue文法を曲側で解釈します。外部adapter URL/pathは共通フレームワークの実行対象にしません。"
+      "description": "private song-packs repo側が持つ演出コードです。system kitから必要なcontextやhelperだけを受け取り、曲固有のcue文法を曲側で解釈します。外部adapter URL/pathは共通フレームワークの実行対象にしません。"
     },
     {
       "id": "effects",
@@ -269,7 +269,7 @@
       "file": "scripts/serve-song-packs.mjs",
       "x": 91,
       "y": 14,
-      "description": "song-packsを別ポートで配信します。CORSはDeck A/B playerのoriginに限定し、manifestやJSONを読めるようにします。"
+      "description": "ローカルに配置されたprivate song-packsを別ポートで配信します。CORSはDeck A/B playerのoriginに限定し、manifestやJSONを読めるようにします。song-packsが空でも起動できます。"
     },
     {
       "id": "previewSnapshot",

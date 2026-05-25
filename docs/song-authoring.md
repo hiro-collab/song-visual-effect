@@ -110,7 +110,7 @@ timeline-mapは考えるためのメモ、structure-mapは実装の入力です�
 npm run song:scaffold -- --id song-id --title "Song Title" --artist "Artist" --song-url "https://example.com/song" --adapter-id none
 ```
 
-同一ビルド内で曲owned adapterを始める場合は `--adapter-id song:song-id --with-adapter` を指定できます。ただし、fixture previewで実際に使うには `song-packs/local-adapters.ts` への登録が別途必要です。
+同一ビルド内で曲owned adapterを始める場合は `--adapter-id song:song-id --with-adapter` を指定できます。ただし、fixture previewで実際に使うには private repo 側の `song-packs/local-adapters.ts` への登録が別途必要です。
 
 MV、公式ページ、歌詞考察などを参照した場合は、本文や画像を保存せず、`references.json` にURLと参照用途だけを記録してください。
 
@@ -138,7 +138,7 @@ npm run song:validate -- --id song-id
 
 `npm run song:validate` は `capabilities` の説明不足をwarningにしません。言語や書式が曲ごとに違ってよいからです。代わりに、外部入力や通信を持つ曲側システムでは、必要に応じて接続状態、公開状態、認可状態、rate limit、debounce、異常時の停止方法を曲側UIや運用メモで見えるようにしてください。
 
-外部URLは、出典、ライセンス、参照用途を人間が確認するためのメモとして扱います。adapterや演出コードを外部URLから自動で読み込む仕組みは使わず、同一ビルド内で試す曲固有adapterは `song-packs/<song-id>/adapter.ts` と `song-packs/local-adapters.ts` に置いてください。
+外部URLは、出典、ライセンス、参照用途を人間が確認するためのメモとして扱います。adapterや演出コードを外部URLから自動で読み込む仕組みは使わず、同一ビルド内で試す曲固有adapterは private repo 側の `song-packs/<song-id>/adapter.ts` と `song-packs/local-adapters.ts` に置いてください。
 
 ## 曲パック提出物チェックリスト
 

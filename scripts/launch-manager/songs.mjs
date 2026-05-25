@@ -1,4 +1,4 @@
-import { realpath, readdir, readFile, stat } from "node:fs/promises";
+import { mkdir, realpath, readdir, readFile, stat } from "node:fs/promises";
 import { isAbsolute, relative, resolve } from "node:path";
 
 const MANIFEST_MAX_BYTES = 256 * 1024;
@@ -117,6 +117,7 @@ export const listSongCatalog = async (config) => {
   let dirents = [];
   let songPacksRootReal;
   try {
+    await mkdir(songPacksRoot, { recursive: true });
     songPacksRootReal = await realpath(songPacksRoot);
     dirents = await readdir(songPacksRoot, { withFileTypes: true });
   } catch (error) {

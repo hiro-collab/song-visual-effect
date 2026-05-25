@@ -73,6 +73,7 @@
 
 - Webシステムは曲アプリを束縛する親ではなく、補助ランタイムとして扱う。
 - 曲ごとの素材、タイミング、演出意図、クレジット、演出コードは曲パッケージ側に置く。
+- 曲パッケージ本体は公開repoに置かず、private repo `hiro-collab/song-visual-effect-song-packs` をローカルの `song-packs/` に配置する。`song-packs/` は公開repoでは追跡しない。
 - 別システムや別ランタイムで使える余地を残す。
 - システム側は再生、入力、フレームループ、保存、タイミング編集などの能力を提供する。
 - 曲固有の演出判断は、将来的に曲側のadapterへ移す。
@@ -105,7 +106,7 @@
 ## 変更時の注意
 
 - 音源ファイルはコミットしない。`.gitignore` の除外を維持する。
-- `music_src/` は廃止済み。`song-packs/` を曲データ本体として扱う。
+- `music_src/` は廃止済み。`song-packs/` を曲データ本体として扱うが、公開repoではなくprivate repo側で管理する。
 - `docs/handoff.md` と必要に応じて正本側のdocsを更新する。古い作業メモは `docs/archive/working-notes/` に置き、新しい恒久仕様の置き場にしない。
 - UIやフローを変えた場合は `docs/workflows.json` も更新する。
 - 恒久的な仕様変更は作業メモだけに置かず、`docs/README.md` で案内される正本側へ反映する。

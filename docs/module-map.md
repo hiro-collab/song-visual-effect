@@ -28,13 +28,13 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 
 - `examples/fixtures/soft-light-player/main.ts`: fixtureの入口。DOM取得、起動、入力登録、transport、fixture adapter、optional toolを接続する。
 - `examples/fixtures/soft-light-player/README.md`: fixtureが標準テンプレートではないことを明示する注意書き。
-- `examples/fixtures/soft-light-player/adapters/registry.ts`: fixture内で使う `builtin:` adapter registry。曲固有adapterを直接importせず、必要な場合は `song-packs/local-adapters.ts` へ委譲する。
+- `examples/fixtures/soft-light-player/adapters/registry.ts`: fixture内で使う `builtin:` adapter registry。曲固有adapterを直接importせず、private `song-packs/local-adapters.ts` が存在する場合だけoptionalに委譲する。
 - `examples/fixtures/soft-light-player/renderers/` と `effects/`: soft light確認用の見た目。新しい曲のテンプレートとして読まない。
 - `examples/fixtures/soft-light-player/tools/`: lyric timing、beat state、visual sequencer panelなど、fixtureに載せているoptional tool。visual sequencer panelは検証用にraw timeとvisual timeを分けて動かせる。system kitの必須UIではない。
 
 ## song-packs
 
-分離構成用の曲パッケージ置き場です。ここを曲データの本体にします。
+分離構成用の曲パッケージ置き場です。公開repoでは追跡せず、private repo `hiro-collab/song-visual-effect-song-packs` をローカルの `song-packs/` へ配置します。ここを曲データの本体にします。
 
 重要:
 
@@ -44,7 +44,7 @@ system kitを使った動作確認用アプリです。新しい曲のテンプ�
 - fixture playerで読む場合は、入口としてmanifest URLを渡す。
 - `song-packs/*/audio/`: ローカル音源配置用。音源ファイルはコミットしない。
 - `song-packs/<song-id>/adapter.ts`: 曲固有のWeb adapterを同一ビルドで試す場合の置き場所。
-- `song-packs/local-adapters.ts`: ローカル開発用に `song:<song-id>` を曲側adapterへ対応づける橋。`song:` IDだけを扱い、`builtin:` やURL/path形式は扱わない。曲ID直書きの登録はfixture playerやsystem kitではなくここに置く。
+- `song-packs/local-adapters.ts`: private repo側のローカル開発用adapter橋。`song:<song-id>` を曲側adapterへ対応づける。`song:` IDだけを扱い、`builtin:` やURL/path形式は扱わない。曲ID直書きの登録はfixture playerやsystem kitではなくここに置く。
 
 ## scripts
 

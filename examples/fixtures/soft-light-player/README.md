@@ -17,6 +17,6 @@
 - 曲ごとのcue文法やデータ構造を決めるコード。
 - 既存fixtureの見た目を一般テンプレート化するコード。
 
-曲固有adapterをローカルで同一ビルドに載せる必要がある場合も、adapter本体と登録は `song-packs/` 側に置きます。
+曲固有adapterをローカルで同一ビルドに載せる必要がある場合も、adapter本体と登録は private repo 側の `song-packs/` に置きます。
 
 新しい曲を作る場合は、このディレクトリを入口にせず、`docs/song-authoring.md` と `templates/neutral-song-app/` から始めてください。

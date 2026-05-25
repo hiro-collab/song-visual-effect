@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const songPacksRoot = path.join(repoRoot, "song-packs");
+fs.mkdirSync(songPacksRoot, { recursive: true });
 const realSongPacksRoot = fs.realpathSync(songPacksRoot);
 
 const isInside = (parent, child) => {
@@ -156,7 +157,7 @@ const main = () => {
   );
   writeFile(
     path.join(root, "README.md"),
-    `# ${title}\n\nThis song pack is a neutral scaffold. It intentionally does not copy an existing song pack structure.\n\n## Status\n\n- Audio: not included\n- Lyrics: not included by default\n- Adapter: ${adapterId ?? "none"}\n\nIf you use a song-owned adapter, keep its code under this song pack and register it through \`song-packs/local-adapters.ts\` only when needed for same-build local preview.\n`,
+    `# ${title}\n\nThis song pack is a neutral scaffold. It intentionally does not copy an existing song pack structure.\n\n## Status\n\n- Audio: not included\n- Lyrics: not included by default\n- Adapter: ${adapterId ?? "none"}\n\nIf you use a song-owned adapter, keep its code under this private song pack and register it through \`song-packs/local-adapters.ts\` only when needed for same-build local preview.\n`,
     force,
     realSongRoot
   );
@@ -178,7 +179,7 @@ const main = () => {
 
   console.log(`Created song pack scaffold: ${path.relative(repoRoot, root)}`);
   if (adapterId?.startsWith("song:")) {
-    console.log("Reminder: register the adapter in song-packs/local-adapters.ts for same-build fixture preview.");
+    console.log("Reminder: register the adapter in private song-packs/local-adapters.ts for same-build fixture preview.");
   }
 };
 

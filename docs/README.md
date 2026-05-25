@@ -10,6 +10,7 @@
 - `project-scope.md`: song-pack、system kit、show-profile、互換性方針の境界。
 - `deck-playback.md`: ライブ/VJ運用でDeck A/Bを使う再生仕様。
 - `lyric-timing-editor.md`: 分離済みLyric Timing EditorとMusic Effect側のJSON受け渡し境界。
+- `private-song-packs.md`: 公開repoから分離したprivate song-packs repoの配置と運用。
 - `system-overview.md`: 曲に依存しないシステムの考え方。
 - `song-authoring.md`: 新しい曲を作るときの手順と注意。
 - `song-visual-independence.md`: 既存曲やfixtureの見た目に引っ張られないための確認表。
@@ -49,6 +50,7 @@
 - `launch-manager-spec.md`
 - `deck-playback.md`
 - `lyric-timing-editor.md`
+- `private-song-packs.md`
 - `sync-onboarding.md`
 - `worktree-sync.md`
 - `thread-start.md`
@@ -69,7 +71,7 @@
 
 - 新しい恒久ルールは `decisions.md` または該当する正本へ書く。
 - 一時的な引き継ぎは `handoff.md` へ書く。
-- 曲固有の設計メモ、再実装ブリーフ、演出方針は `song-packs/<song-id>/` 配下へ置く。
+- 曲固有の設計メモ、再実装ブリーフ、演出方針は private repo 側の `song-packs/<song-id>/` 配下へ置く。
 - UIや処理フローを変えたら `workflows.json` も更新する。
 - Launch Managerの起動、停止、管理範囲を変えたら `launch-manager-spec.md`、`deck-playback.md`、`architecture.md`、`thread-start.md` を確認する。
 - 新しい曲の作成ルールを変えたら `song-authoring.md` と `song-visual-independence.md` を確認する。

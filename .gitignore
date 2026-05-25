@@ -8,10 +8,9 @@ _worktrees/
 # Local source asset downloads. Commit curated assets and source notes instead.
 _asset_sources/
 
-# Local audio files are for browser playback only.
-# Do not commit licensed music assets into the repository.
-song-packs/*/audio/*
-!song-packs/*/audio/.gitkeep
+# Real song packs are private/local project data.
+# Clone hiro-collab/song-visual-effect-song-packs here when needed.
+/song-packs/
 
 .DS_Store
 Thumbs.db

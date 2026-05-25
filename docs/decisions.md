@@ -13,10 +13,10 @@
 影響:
 beat、chorus、歌詞タイミングの精度はJSONと手動調整に依存する。
 
-## D002: `music_src` は廃止し、曲データ本体を `song-packs` に一本化する
+## D002: `music_src` は廃止し、曲データ本体をprivate `song-packs` に一本化する
 
 決定:
-`music_src` は今後廃止する。曲データの本体は `song-packs/<song-id>/` に一本化する。
+`music_src` は今後廃止する。曲データの本体は `song-packs/<song-id>/` に一本化する。ただし `song-packs/` は公開repoへ含めず、private repo `hiro-collab/song-visual-effect-song-packs` をローカルに配置して使う。
 
 理由:
 歌詞、解析JSON、manifest、palette、markersを複数箇所に置くとズレが発生するため。曲パッケージを唯一のソースにした方が、別システムや別ランタイムへ持ち出しやすい。
@@ -165,13 +165,13 @@ MVPではmanaged targetだけを扱う。Launch Manager UIは状態の正本を�
 ## D013: 曲固有データと曲固有adapterをsystem-wide領域へ置かない
 
 決定:
-曲固有のmanifest、analysis、design、再実装ブリーフ、演出コード、adapter登録は `song-packs/<song-id>/` または `song-packs/local-adapters.ts` に置く。`system/kit`、`examples/fixtures/soft-light-player`、`docs/` 直下には、曲IDを直書きした実装や曲専用ブリーフを増やさない。
+曲固有のmanifest、analysis、design、再実装ブリーフ、演出コード、adapter登録は private `song-packs/<song-id>/` または private `song-packs/local-adapters.ts` に置く。`system/kit`、`examples/fixtures/soft-light-player`、`docs/` 直下には、曲IDを直書きした実装や曲専用ブリーフを増やさない。
 
 理由:
 system kitとfixture playerは曲を束縛しない補助領域であり、特定曲の構成や演出を混ぜると、新しい曲が既存曲の文法へ引っ張られるため。
 
 影響:
-ローカル開発で同一ビルド内の曲adapterを試す場合、曲adapter本体は `song-packs/<song-id>/adapter.ts` に置き、`song-packs/local-adapters.ts` だけに `song:<song-id>` の対応を追加する。`song-packs/local-adapters.ts` は `song:` IDだけを扱い、`builtin:` IDやURL/path形式は扱わない。fixture playerのbuiltin registryへ曲固有adapterを直接importしない。system-wide docsには必要最小限のポインタだけを残し、曲の設計メモは曲パック側へ置く。
+ローカル開発で同一ビルド内の曲adapterを試す場合、曲adapter本体は private `song-packs/<song-id>/adapter.ts` に置き、private `song-packs/local-adapters.ts` だけに `song:<song-id>` の対応を追加する。`song-packs/local-adapters.ts` は `song:` IDだけを扱い、`builtin:` IDやURL/path形式は扱わない。fixture playerのbuiltin registryへ曲固有adapterを直接importしない。system-wide docsには必要最小限のポインタだけを残し、曲の設計メモは曲パック側へ置く。
 
 ## D014: このプロジェクトは曲別Web映像制作キットとして扱う
 

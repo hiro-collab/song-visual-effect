@@ -1,4 +1,4 @@
-import { createReadStream, existsSync, realpathSync, statSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, realpathSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +8,7 @@ const root = resolve(__dirname, "..", "song-packs");
 const port = Number(process.env.SONG_PACK_PORT ?? 5174);
 const host = process.env.SONG_PACK_HOST ?? "127.0.0.1";
 const defaultCorsOrigins = "http://127.0.0.1:5173,http://localhost:5173";
+mkdirSync(root, { recursive: true });
 const realRoot = realpathSync(root);
 
 const mimeTypes = new Map([

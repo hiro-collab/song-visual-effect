@@ -82,7 +82,13 @@ docs/song-visual-independence.md
 
 ## Song Package
 
-曲パッケージは `song-packs/<song-id>/` に置けます。ただし、このディレクトリにある既存曲はテンプレートではなく、あくまで個別の実装例です。
+曲パッケージは `song-packs/<song-id>/` に置けます。ただし `song-packs/` は公開repoには含めず、private repo `hiro-collab/song-visual-effect-song-packs` をローカルに配置して使います。既存曲はテンプレートではなく、あくまで個別の実装例です。
+
+```powershell
+git clone https://github.com/hiro-collab/song-visual-effect-song-packs.git song-packs
+```
+
+詳しくは `docs/private-song-packs.md` を確認してください。
 
 同梱のfixture playerで曲を読む場合は、入口としてmanifest URLを渡します。manifestの先の構成は、曲ごとに自由に設計して構いません。
 
