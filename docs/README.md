@@ -20,6 +20,7 @@
 - `knowledge-review.md`: 各曲担当から届く共通ノウハウ候補を審議し、共通化するものと曲側に戻すものを分けるルール。
 - `visual-authoring-feedback.md`: 共有ノウハウを各曲映像へ戻し、反映可否やsystem支援要望を集める運用。
 - `preview-lab.md`: 複数曲を中央検証用worktreeでまとめて確認する運用。
+- `lyric-timing-workbench.md`: 独立した歌詞タイミング編集Workbenchの配置、データ形式、権利境界、MVP範囲。
 
 ## 新しい曲を作るとき
 

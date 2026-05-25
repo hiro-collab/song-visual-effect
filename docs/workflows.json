@@ -29,6 +29,7 @@
         "frameLoop",
         "visualHost",
         "timingEditor",
+        "lyricWorkbench",
         "storage"
       ]
     },
@@ -249,6 +250,16 @@
       "x": 72,
       "y": 66,
       "description": "A/Dキー、全体補正、途中から補正、ストーン表示、Export用JSON生成を担当します。音声波形は解析しません。"
+    },
+    {
+      "id": "lyricWorkbench",
+      "label": "Lyric Timing Workbench",
+      "kind": "standalone-tool",
+      "group": "ツール",
+      "file": "tools/lyric-timing-workbench / system/kit/lyrics / docs/lyric-timing-workbench.md",
+      "x": 82,
+      "y": 58,
+      "description": "本体playerやLaunch Managerから独立した歌詞タイミング編集Workbenchです。project/exportはミリ秒単位を明示し、歌詞本文を含むファイルの公開前に権利確認を促します。"
     },
     {
       "id": "storage",
@@ -625,6 +636,49 @@
           "action": "Export JSONを曲パッケージへ反映可能",
           "payload": "lyrics_timing.manual.json -> analysis/lyrics_timing.json",
           "note": "確定版として同梱すれば、次回起動時にそのタイミングを読みます。"
+        }
+      ]
+    },
+    {
+      "id": "lyric-timing-workbench",
+      "label": "独立Workbenchで歌詞タイミングを準備する",
+      "summary": "ローカル音源と歌詞txtをWorkbench projectへ変換し、Current/Next表示で打刻して、完成タイミングをMusic Effect向けv2 JSONとして書き出します。",
+      "trigger": "歌詞タイミングを本体playerから切り離して編集したい",
+      "steps": [
+        {
+          "from": "threadStart",
+          "to": "lyricWorkbench",
+          "action": "Workbench仕様を読む",
+          "payload": "docs/lyric-timing-workbench.md",
+          "note": "本体playerやLaunch ManagerのDOM/CSSに依存しない付属ツールとして扱います。"
+        },
+        {
+          "from": "browser",
+          "to": "lyricWorkbench",
+          "action": "歌詞txtを読み込む",
+          "payload": "TextAlive互換/Literal parser、空行section break、# comment、\\# escape",
+          "note": "MVPの編集単位はフレーズ=歌詞1行です。words/charsは将来拡張用です。"
+        },
+        {
+          "from": "browser",
+          "to": "lyricWorkbench",
+          "action": "ローカル音源を再生しながら打刻する",
+          "payload": "Current Phrase、Next Phrase、A/Dキー、画面ボタン、Undo/Redo、シークバー",
+          "note": "音源本体は保存せず、Projectにはファイル名と取得できた場合のdurationだけを保存します。"
+        },
+        {
+          "from": "lyricWorkbench",
+          "to": "storage",
+          "action": "project JSONを保存",
+          "payload": "music-effect.lyric-timing-workbench.project.v1",
+          "note": "projectはローカル作業ファイルで、歌詞本文を含みうるため権利確認なしに公開repoへコミットしません。"
+        },
+        {
+          "from": "lyricWorkbench",
+          "to": "songPack",
+          "action": "完成JSONを書き出す",
+          "payload": "music-effect.lyrics-timing.v2 with lyrics / timing only",
+          "note": "v2はstartTimeMs/endTimeMsのミリ秒正本です。歌詞本文込みexportは公開、配布、アップロード前に権利確認が必要です。"
         }
       ]
     },
