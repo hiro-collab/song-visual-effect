@@ -71,6 +71,12 @@ const readManifestSummary = async ({ songPacksRoot, songPacksRootReal, dirent, s
     throw new Error(`${directoryName} resolves outside song-packs.`);
   }
 
+  const manifestPathStat = await stat(manifestPath).catch((error) => {
+    if (error?.code === "ENOENT" || error?.code === "ENOTDIR") return null;
+    throw error;
+  });
+  if (!manifestPathStat?.isFile()) return null;
+
   const manifestRealPath = await realpath(manifestPath);
   if (!isInsidePath(songPacksRootReal, manifestRealPath)) {
     throw new Error(`${directoryName}/manifest.json resolves outside song-packs.`);

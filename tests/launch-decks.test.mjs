@@ -38,9 +38,11 @@ test("song catalog exposes Deck URLs without binding songs to one player", async
   const root = mkdtempSync(resolve(tmpdir(), "music-effect-launch-decks-"));
   try {
     writeManifest(root, "deck-test-song");
+    mkdirSync(resolve(root, "song-packs", "docs"), { recursive: true });
     const baseConfig = await loadLaunchConfig({ root: repoRoot, env: deckEnv });
     const config = { ...baseConfig, root };
     const catalog = await listSongCatalog(config);
+    assert.deepEqual(catalog.errors, []);
     assert.equal(catalog.songPackTargetId, "song-pack-server");
     assert.deepEqual(catalog.deckTargetIds, ["deck-a-player", "deck-b-player"]);
     assert.deepEqual(
