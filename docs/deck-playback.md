@@ -25,6 +25,7 @@ Deckごとに持つもの:
 - 選択中の曲manifest。
 - 外部ツールへ渡すoutput URL。
 - 将来のDeck-local state。例: `visualTime`、`rate`、`offset`、歌詞タイミング補正、live session state。
+- ライブ用の歌詞表示補正。例: `lyricOffsetMs`。
 
 ### Player Server
 
@@ -52,6 +53,12 @@ http://127.0.0.1:<deck-port>/?song=http://127.0.0.1:<song-pack-port>/<song-id>/m
 ```
 
 TouchDesignerのWeb Browser TOP、OBSのブラウザソース、UnityのWebView、自作ブラウザ表示などは、このURLを個別に読み込みます。
+
+歌詞表示だけを現場補正したい場合、Deck URLに `lyricOffsetMs` を追加できます。単位はmillisecondsで、正の値は歌詞表示を遅らせます。
+
+```text
+http://127.0.0.1:<deck-port>/?song=<manifest-url>&lyricOffsetMs=120
+```
 
 MVPでは、Deckの曲変更は「Launch Manager内の選択曲とoutput URLを更新する」操作です。既に開いているDeck player画面や外部ツール内のWebViewへ、Launch Managerから直接曲差し替え命令は送りません。曲を切り替える場合は、更新されたDeck URLを `open` するか、`copy` して外部ツール側で読み直します。
 
@@ -93,6 +100,7 @@ Deck AとDeck Bは同じplayerアプリを別portで起動します。同じplay
 - 共有Song Data Serverを起動、停止、再起動する。
 - Deckごとに曲manifestを選ぶ。
 - Deckごとのoutput URLを表示、コピー、ブラウザで開く。
+- Deckごとの歌詞表示補正 `lyricOffsetMs` をURLに載せる。
 - Deckごとのstatus、port、PID、log、healthを表示する。
 - 状態マップでLaunch Manager、Deck A/B、Song Data Server、選択曲の関係を見せる。
 
@@ -155,6 +163,7 @@ Song Data Server
 MVPの曲変更ルール:
 
 - Deckの曲dropdownを変えると、そのDeckのselected manifestとoutput URLを更新する。
+- Deckの歌詞補正を変えると、そのDeckのoutput URLを更新する。
 - `open` は、その時点のoutput URLをブラウザで開く。
 - `copy` は、その時点のoutput URLをクリップボードへコピーする。
 - 既に開いているDeck player画面へ、同一ページ内で曲を差し替えるAPI呼び出しは行わない。
@@ -230,6 +239,8 @@ Deck-local stateの例:
 
 Deck AとDeck Bが同じ曲を開いていても、これらの状態は混ぜません。
 
+`lyricOffsetMs` は完成済み歌詞timing JSONの修正値ではなく、Deck-localなライブ運用値です。正の値は表示を遅らせ、負の値は早めます。基準timingそのものが間違っている場合は、Lyric Timing Editorで修正してv2 JSONを作り直します。
+
 映像用の `visualTime`、`rate`、`offset`、pause、scrub、nudge、snapshot/restore は、`system/kit/core/visualSequencer.ts` の `createVisualSequencer()` をDeckごとに1インスタンス作って扱うことを標準の出発点にします。このhelperはDOMやplayer serverを正本にせず、`rawTime` と `nowMs` を外部から受け取るだけに留めます。
 
 ## Future Control API
@@ -287,7 +298,15 @@ show-profileは任意のイベント運用層です。Deck運用を使うイベ�
   "externalRouting": {
     "tool": "TouchDesigner",
     "notes": "Deck A/B URLs are loaded as separate Web Browser TOPs."
-  }
+  },
+  "setlist": [
+    {
+      "songId": "monitoring",
+      "manifest": "song-packs/monitoring/manifest.json",
+      "label": "モニタリング",
+      "lyricOffsetMs": 120
+    }
+  ]
 }
 ```
 

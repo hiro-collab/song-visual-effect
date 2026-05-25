@@ -249,17 +249,17 @@
       "file": "examples/fixtures/soft-light-player/tools/lyricTimingTool.ts / system/kit/timing/manualTiming.ts",
       "x": 72,
       "y": 66,
-      "description": "A/Dキー、全体補正、途中から補正、ストーン表示、Export用JSON生成を担当します。音声波形は解析しません。"
+      "description": "fixture内の簡易調整UIです。基準timingはLyric Timing Editorのv2 JSONを優先し、ライブ現場の微補正はshow-profile/DeckのlyricOffsetMsとして扱います。音声波形は解析しません。"
     },
     {
       "id": "storage",
       "label": "保存先",
       "kind": "storage",
       "group": "保存",
-      "file": "localStorage / lyrics_timing.json",
+      "file": "localStorage / lyrics_timing.json / show-profile lyricOffsetMs",
       "x": 91,
       "y": 66,
-      "description": "調整中はlocalStorageに保存します。確定版はlyrics_timing.jsonとして曲パッケージへ入れます。"
+      "description": "調整中はlocalStorageに保存します。確定版はLyric Timing Editorのv2 timing JSONとして曲パッケージへ入れ、イベント当日の微補正はshow-profileやDeck URLに残します。"
     },
     {
       "id": "songServer",
@@ -810,8 +810,8 @@
           "from": "devManager",
           "to": "externalTool",
           "action": "Deck URLを渡す",
-          "payload": "Deck A URL、Deck B URL",
-          "note": "TouchDesigner、OBS、Unity、自作ツールなどが各URLを別入力として読み込み、合成、クロスフェード、program outputを担当します。"
+          "payload": "Deck A URL、Deck B URL、lyricOffsetMs",
+          "note": "TouchDesigner、OBS、Unity、自作ツールなどが各URLを別入力として読み込み、合成、クロスフェード、program outputを担当します。歌詞表示の現場補正がある場合はURL queryのlyricOffsetMsとして渡します。"
         },
         {
           "from": "devManager",

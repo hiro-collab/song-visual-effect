@@ -46,10 +46,20 @@ let songContext: SongAdapterContext;
 let songApp: SongApp;
 let visualHost: SongVisualHost;
 let lastSongTime = 0;
+let lyricDisplayOffsetSec = 0;
 
 const isBeatStateToolEnabled = () => {
   const value = new URLSearchParams(window.location.search).get("beatState")?.toLowerCase();
   return value === "1" || value === "true" || value === "on" || value === "show";
+};
+
+const lyricOffsetFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get("lyricOffsetMs") ?? params.get("lyricDisplayOffsetMs") ?? params.get("captionOffsetMs");
+  if (!raw) return 0;
+  const value = Number.parseFloat(raw);
+  if (!Number.isFinite(value)) return 0;
+  return clamp(value, -30000, 30000) / 1000;
 };
 
 const setPlayingIcon = () => {
@@ -79,10 +89,11 @@ const loadThree = async () => {
 };
 
 const updateLyrics = (time: number) => {
-  const lyric = lyricAt(time, musicMap.lyrics);
+  const lyricTime = wrapTime(time - lyricDisplayOffsetSec, musicMap.duration);
+  const lyric = lyricAt(lyricTime, musicMap.lyrics);
   lyricCurrent.textContent = lyric.current?.text ?? "";
   lyricNext.textContent = lyric.next?.text ?? "";
-  timingTool?.update(time);
+  timingTool?.update(lyricTime);
 };
 
 const tick = (now: number, dt: number) => {
@@ -158,6 +169,7 @@ const boot = async () => {
   try {
     transport = new Transport(audio, setPlayingIcon);
     musicMap = await loadMusicMap();
+    lyricDisplayOffsetSec = lyricOffsetFromUrl();
     songContext = createSongAdapterContext(musicMap);
     visualHost = createVisualHost(canvas, {
       root: document.querySelector<HTMLElement>("#app") ?? document.body,

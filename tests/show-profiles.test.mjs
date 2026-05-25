@@ -68,7 +68,8 @@ test("show profile loader reads local setlist items and ignores unknown fields",
             songId,
             manifest: `song-packs/${songId}/manifest.json`,
             label: "Test setlist item",
-            notes: "local only"
+            notes: "local only",
+            lyricOffsetMs: 120
           }
         ]
       }
@@ -80,6 +81,38 @@ test("show profile loader reads local setlist items and ignores unknown fields",
       assert.equal(profile.setlist[0].songDirectoryName, songId);
       assert.equal(profile.setlist[0].manifestUrl, `http://127.0.0.1:51002/${songId}/manifest.json`);
       assert.match(profile.setlist[0].playerUrl, /http:\/\/127\.0\.0\.1:51001\/\?song=/);
+      assert.match(profile.setlist[0].playerUrl, /lyricOffsetMs=120/);
+      assert.equal(profile.setlist[0].lyricOffsetMs, 120);
+    }
+  );
+});
+
+test("show profile loader rejects copied lyric text but allows lyric offset metadata", async () => {
+  const songId = `test-show-song-lyrics-${process.pid}`;
+  const showId = `test-show-lyrics-bad-${process.pid}`;
+  await withShowProfileFixture(
+    {
+      songId,
+      showId,
+      show: {
+        schemaVersion: 1,
+        id: showId,
+        title: "Lyrics Text Bad Test Show",
+        setlist: [
+          {
+            songId,
+            manifest: `song-packs/${songId}/manifest.json`,
+            label: "Copied lyrics",
+            lyricOffsetMs: 100,
+            lyricsText: "copied lyric body"
+          }
+        ]
+      }
+    },
+    (result) => {
+      assert.ok(result.errors.some((error) => error.includes("lyricsText is not allowed")));
+      const profile = result.profiles.find((item) => item.directoryName === showId);
+      assert.equal(profile, undefined);
     }
   );
 });

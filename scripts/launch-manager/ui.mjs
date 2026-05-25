@@ -145,6 +145,13 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         color: var(--text);
         overflow-wrap: anywhere;
       }
+      .deck-tuning {
+        margin-top: 10px;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .deck-tuning input {
+        min-height: 36px;
+      }
       .deck-url {
         display: block;
         min-height: 36px;
@@ -527,13 +534,16 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         padding: 14px;
         border-top: 1px solid var(--line);
       }
-      select, button, a.launch {
+      select, input, button, a.launch {
         min-height: 40px;
         border: 1px solid var(--line);
         border-radius: 8px;
         background: #25262c;
         color: var(--text);
         font: inherit;
+      }
+      input {
+        padding: 0 12px;
       }
       select {
         padding: 0 12px;
@@ -882,6 +892,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       };
       const legacySelectedSongStorageKey = "music-effect.launch-manager.selectedSong";
       const deckSelectionStoragePrefix = "music-effect.launch-manager.deckSong.";
+      const deckLyricOffsetStoragePrefix = "music-effect.launch-manager.deckLyricOffsetMs.";
       const selectedShowStorageKey = "music-effect.launch-manager.selectedShow";
       const selectedSetlistStorageKey = "music-effect.launch-manager.selectedSetlist";
       const controlTokenStorageKey = "music-effect.launch-manager.controlToken";
@@ -1207,6 +1218,27 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           if (deckId === "deck-a") localStorage.setItem(legacySelectedSongStorageKey, value);
         } catch {}
       };
+      const clampLiveOffsetMs = (value) => Math.max(-30000, Math.min(30000, Math.round(value)));
+      const storedDeckLyricOffsetMs = (deckId) => {
+        try {
+          const value = Number(localStorage.getItem(deckLyricOffsetStoragePrefix + deckId) || 0);
+          return Number.isFinite(value) ? clampLiveOffsetMs(value) : 0;
+        } catch {
+          return 0;
+        }
+      };
+      const rememberDeckLyricOffset = (deckId, value) => {
+        const offset = clampLiveOffsetMs(Number(value));
+        try {
+          localStorage.setItem(deckLyricOffsetStoragePrefix + deckId, String(Number.isFinite(offset) ? offset : 0));
+        } catch {}
+        return Number.isFinite(offset) ? offset : 0;
+      };
+      const selectedDeckLyricOffsetMs = (deckId) => {
+        const input = byId(deckDomId(deckId, "lyric-offset"));
+        if (input) return rememberDeckLyricOffset(deckId, input.value);
+        return storedDeckLyricOffsetMs(deckId);
+      };
       const selectedSongForDeck = (deckId) => {
         const catalog = state.status?.songCatalog;
         const select = byId(deckDomId(deckId, "song-select"));
@@ -1216,10 +1248,13 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       const selectedSong = () => selectedSongForDeck("deck-a");
       const deckUrlForSong = (deck, song) => {
         if (!deck || !song) return "";
-        if (song.deckUrls?.[deck.id]) return song.deckUrls[deck.id];
-        if (!deck.playerBaseUrl || !song.manifestUrl) return "";
-        const url = new URL(deck.playerBaseUrl);
-        url.searchParams.set("song", song.manifestUrl);
+        const baseUrl = song.deckUrls?.[deck.id] || deck.playerBaseUrl;
+        if (!baseUrl || (!song.deckUrls?.[deck.id] && !song.manifestUrl)) return "";
+        const url = new URL(baseUrl);
+        if (!song.deckUrls?.[deck.id]) url.searchParams.set("song", song.manifestUrl);
+        const lyricOffsetMs = selectedDeckLyricOffsetMs(deck.id);
+        if (lyricOffsetMs) url.searchParams.set("lyricOffsetMs", String(lyricOffsetMs));
+        else url.searchParams.delete("lyricOffsetMs");
         return url.toString();
       };
       const selectedDeckUrl = (deckId) => deckUrlForSong(deckById(deckId), selectedSongForDeck(deckId));
@@ -1253,7 +1288,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         storeValue(selectedShowStorageKey, showValue);
         storeValue(selectedSetlistStorageKey, showValue + ":" + setlistValue);
       };
-      const applySongSelection = (songDirectoryName, { announce = true } = {}) => {
+      const applySongSelection = (songDirectoryName, { announce = true, lyricOffsetMs = null } = {}) => {
         const catalog = state.status?.songCatalog || { songs: [] };
         const song = (catalog.songs || []).find((item) => item.directoryName === songDirectoryName);
         if (!song) {
@@ -1265,9 +1300,16 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           deckASelect.value = song.directoryName;
           rememberDeckSong("deck-a");
         }
+        if (Number.isFinite(Number(lyricOffsetMs))) {
+          rememberDeckLyricOffset("deck-a", lyricOffsetMs);
+        }
         renderDecks();
         if (state.status) renderSystemMap(state.status);
-        if (announce) setMessage(formatSongLabel(song) + " をDeck Aへ反映しました。", "ok");
+        const offsetNote =
+          Number.isFinite(Number(lyricOffsetMs)) && Number(lyricOffsetMs) !== 0
+            ? " / 歌詞補正 " + Number(lyricOffsetMs) + "ms"
+            : "";
+        if (announce) setMessage(formatSongLabel(song) + " をDeck Aへ反映しました。" + offsetNote, "ok");
         return true;
       };
       const targetMap = () => new Map((state.status?.targets || []).map((target) => [target.id, target]));
@@ -1502,6 +1544,23 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         label.append(select);
         article.append(label);
 
+        const offsetLabel = make("label", "deck-tuning", "歌詞補正(ms・正の値で遅らせる)");
+        const offsetInput = make("input");
+        offsetInput.id = deckDomId(deck.id, "lyric-offset");
+        offsetInput.type = "number";
+        offsetInput.min = "-30000";
+        offsetInput.max = "30000";
+        offsetInput.step = "10";
+        offsetInput.value = String(storedDeckLyricOffsetMs(deck.id));
+        offsetInput.setAttribute("aria-label", deck.label + " lyric offset milliseconds");
+        offsetInput.addEventListener("change", () => {
+          offsetInput.value = String(rememberDeckLyricOffset(deck.id, offsetInput.value));
+          renderDecks();
+          if (state.status) renderSystemMap(state.status);
+        });
+        offsetLabel.append(offsetInput);
+        article.append(offsetLabel);
+
         const song = (catalog.songs || []).find((item) => item.directoryName === select.value) || null;
         const deckUrl = deckUrlForSong(deck, song);
         const duration = song?.duration ? " / " + Math.round(song.duration) + "秒" : "";
@@ -1588,7 +1647,11 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
 
         const selected = selectedSetlistItem();
         const description = profile.description ? " / " + profile.description : "";
-        const selectedText = selected ? " / 選択: " + selected.label + " / " + selected.manifestPath : "";
+        const selectedOffset =
+          selected && selected.lyricOffsetMs
+            ? " / 歌詞補正 " + selected.lyricOffsetMs + "ms"
+            : "";
+        const selectedText = selected ? " / 選択: " + selected.label + " / " + selected.manifestPath + selectedOffset : "";
         meta.textContent = profile.title + description + " / " + profile.showPath + selectedText;
 
         const chips = setlist.slice(0, 12).map((item) => {
@@ -1599,7 +1662,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
             setlistSelect.value = String(item.index);
             rememberShowSelection();
             renderSelectedShow();
-            applySongSelection(item.songDirectoryName);
+            applySongSelection(item.songDirectoryName, { lyricOffsetMs: item.lyricOffsetMs });
           });
           return chip;
         });
@@ -1948,7 +2011,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           return;
         }
         rememberShowSelection();
-        applySongSelection(item.songDirectoryName);
+        applySongSelection(item.songDirectoryName, { lyricOffsetMs: item.lyricOffsetMs });
       });
       byId("stop-decks").addEventListener("click", stopAllDecks);
       byId("copy-deck-urls").addEventListener("click", copyAllDeckUrls);

@@ -42,6 +42,7 @@
 - Launch Manager の状態変更APIは、LAN公開中は `LAUNCH_MANAGER_CONTROL_TOKEN` が設定されていない限り実行できません。tokenが設定されている場合は `X-Control-Token` または `Authorization: Bearer` で一致した操作だけを受け付けます。
 - Launch Manager のsync message viewerは `codex-sync/events.jsonl` の末尾だけを読み、イベント由来のcommit/ref文字列をgit引数に使う前に形式検証します。
 - Launch Manager のshow-profile読み込みは `show-profiles/<show-id>/show.json` に限定し、実パスが `show-profiles/` 外へ出る項目、外部URL/絶対パスのmanifest、巨大JSON、埋め込みdata URI、HTML断片、秘密情報らしき文字列、歌詞本文や画像本文を示すキーを拒否します。
+- 例外として、歌詞本文ではなく数値補正だけを表す `lyricOffsetMs` / `lyricDisplayOffsetMs` / `captionOffsetMs` は許可します。値は有限数値かつ `-30000` から `30000` milliseconds の範囲に制限します。
 - Launch Manager のtarget定義は、作業ディレクトリをリポジトリ配下に限定し、commandを単純なコマンド名に限定します。
 - Launch Manager のtarget定義では、`PATH`、`COMSPEC`、`SYSTEMROOT`、`NODE_OPTIONS` などrunner側の重要環境変数を上書きできません。
 - Windows上の `npm` / `npx` target は `cmd.exe /c` を介すため、target引数にshellメタ文字が含まれる場合は起動前に拒否します。

@@ -8,6 +8,8 @@ const FORBIDDEN_KEY_PATTERN = /lyrics?|body|content|image|screenshot|base64|data
 const FORBIDDEN_VALUE_PATTERN = /data:image\/|data:audio\/|data:video\/|base64,|<img\b|<script\b|<iframe\b/i;
 const SECRET_VALUE_PATTERN =
   /-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{20,}|ghp_[0-9A-Za-z_]{20,}|hf_[0-9A-Za-z]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}/;
+const SAFE_TIMING_KEYS = new Set(["lyricOffsetMs", "lyricDisplayOffsetMs", "captionOffsetMs"]);
+const MAX_LIVE_OFFSET_MS = 30000;
 
 const normalizeSlashes = (value) => value.replace(/\\/g, "/");
 
@@ -42,11 +44,27 @@ const scanProfileValue = (value, label) => {
     return;
   }
   for (const [key, nestedValue] of Object.entries(value)) {
+    if (SAFE_TIMING_KEYS.has(key)) {
+      asLiveOffsetMs(nestedValue, `${label}.${key}`);
+      continue;
+    }
     if (FORBIDDEN_KEY_PATTERN.test(key)) {
       throw new Error(`${label}.${key} is not allowed in show-profile metadata.`);
     }
     scanProfileValue(nestedValue, `${label}.${key}`);
   }
+};
+
+const asLiveOffsetMs = (value, label) => {
+  if (value === undefined || value === null || value === "") return 0;
+  const offset = Number(value);
+  if (!Number.isFinite(offset)) {
+    throw new Error(`${label} must be a finite number.`);
+  }
+  if (Math.abs(offset) > MAX_LIVE_OFFSET_MS) {
+    throw new Error(`${label} must be between -${MAX_LIVE_OFFSET_MS} and ${MAX_LIVE_OFFSET_MS}.`);
+  }
+  return Math.round(offset);
 };
 
 const targetById = (config, id) => config.targets.find((target) => target.id === id) ?? null;
@@ -65,10 +83,11 @@ const urlWithTrailingSlash = (value) => {
   return url.toString();
 };
 
-const playerUrlFor = (playerBaseUrl, manifestUrl) => {
+const playerUrlFor = (playerBaseUrl, manifestUrl, lyricOffsetMs = 0) => {
   if (!playerBaseUrl || !manifestUrl) return null;
   const url = new URL(playerBaseUrl);
   url.searchParams.set("song", manifestUrl);
+  if (lyricOffsetMs) url.searchParams.set("lyricOffsetMs", String(lyricOffsetMs));
   return url.toString();
 };
 
@@ -160,6 +179,10 @@ const readShowProfileSummary = async ({
       assertShortString(item.manifest ?? item.manifestPath, `setlist[${index}].manifest`, 240);
       assertShortString(item.label ?? item.title, `setlist[${index}].label`, 180);
       assertShortString(item.notes, `setlist[${index}].notes`, 600);
+      const lyricOffsetMs = asLiveOffsetMs(
+        item.lyricOffsetMs ?? item.lyricDisplayOffsetMs ?? item.captionOffsetMs,
+        `setlist[${index}].lyricOffsetMs`
+      );
       const songId = asDisplayText(item.songId, "");
       const manifestValue = item.manifest ?? item.manifestPath ?? (songId ? `song-packs/${songId}/manifest.json` : "");
       const resolved = await resolveSongManifest({
@@ -180,7 +203,8 @@ const readShowProfileSummary = async ({
         notes: asDisplayText(item.notes, ""),
         manifestPath: resolved.manifestPath,
         manifestUrl,
-        playerUrl: playerUrlFor(playerBaseUrl, manifestUrl)
+        playerUrl: playerUrlFor(playerBaseUrl, manifestUrl, lyricOffsetMs),
+        lyricOffsetMs
       });
     } catch (error) {
       itemErrors.push(`${directoryName} setlist[${index}]: ${error.message}`);

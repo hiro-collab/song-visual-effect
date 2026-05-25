@@ -58,4 +58,21 @@ Editor project JSONや歌詞込みexportは歌詞本文を含みうるため、�
 
 本番中の数十ミリ秒単位の調整は、完成済みtiming JSONを書き換えるより、show-profileやDeckごとの運用ラッパーとして別保存する方針を優先します。
 
-これにより、連日イベントで同じ補正を再利用しつつ、Lyric Timing Editorで作った基準timing JSONを保てます。ラッパーの具体的なschemaは、イベント運用・Deck制御・外部ツール連携の仕様が固まってから決めます。
+これにより、連日イベントで同じ補正を再利用しつつ、Lyric Timing Editorで作った基準timing JSONを保てます。より複雑なラッパーschemaは、イベント運用・Deck制御・外部ツール連携の仕様が固まってから追加します。
+
+最小の共通ラッパーとして、show-profileのsetlist項目とDeck URLで `lyricOffsetMs` を扱えます。単位はmillisecondsで、正の値は歌詞表示を遅らせます。
+
+```json
+{
+  "setlist": [
+    {
+      "songId": "example-song",
+      "manifest": "song-packs/example-song/manifest.json",
+      "label": "Example Song",
+      "lyricOffsetMs": 120
+    }
+  ]
+}
+```
+
+Launch Managerはこの値をDeck Aへ反映し、player URLへ `?lyricOffsetMs=120` として渡します。これは現場補正であり、曲パック側のtiming JSONを更新する操作ではありません。
