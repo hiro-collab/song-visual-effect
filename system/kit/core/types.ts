@@ -12,7 +12,9 @@ export type Beat = {
 };
 
 export type LyricCue = {
+  id?: string;
   index?: number;
+  sourceLine?: number;
   time: number;
   end: number;
   text: string;

@@ -47,8 +47,11 @@ test("lyrics timing v2 with lyrics converts milliseconds to seconds", async () =
       title: "Synthetic Song",
       artist: "Synthetic Artist",
       durationMs: 10000,
+      slug: "synthetic-song",
+      songle: { id: "1234", url: "https://songle.jp/songs/example" },
       timeUnit: "ms",
       includesLyrics: true,
+      rightsNotice: "Synthetic test fixture. No real lyric rights are involved.",
       phrases: [
         { id: "phrase-0001", index: 0, startTimeMs: 1200, endTimeMs: 2600, text: "alpha", sourceLine: 1 },
         { id: "phrase-0002", index: 1, startTimeMs: 3000, endTimeMs: 4500, text: "beta", sourceLine: 2 }
@@ -59,8 +62,8 @@ test("lyrics timing v2 with lyrics converts milliseconds to seconds", async () =
 
   assert.equal(warnings.length, 0);
   assert.deepEqual(cues, [
-    { index: 0, time: 1.2, end: 2.6, text: "alpha" },
-    { index: 1, time: 3, end: 4.5, text: "beta" }
+    { id: "phrase-0001", index: 0, sourceLine: 1, time: 1.2, end: 2.6, text: "alpha" },
+    { id: "phrase-0002", index: 1, sourceLine: 2, time: 3, end: 4.5, text: "beta" }
   ]);
 });
 
@@ -73,9 +76,10 @@ test("lyrics timing v2 timing-only joins song-pack lyric lines by index", async 
       durationMs: 8000,
       timeUnit: "ms",
       includesLyrics: false,
+      rightsNotice: "Timing-only test fixture.",
       phrases: [
-        { id: "phrase-0001", index: 1, startTimeMs: 1000, endTimeMs: 2200 },
-        { id: "phrase-0002", index: 2, startTimeMs: 3000, endTimeMs: 4300 }
+        { id: "phrase-0001", index: 1, sourceLine: 10, startTimeMs: 1000, endTimeMs: 2200 },
+        { id: "phrase-0002", index: 2, sourceLine: 11, startTimeMs: 3000, endTimeMs: 4300 }
       ]
     },
     {
@@ -86,6 +90,7 @@ test("lyrics timing v2 timing-only joins song-pack lyric lines by index", async 
 
   assert.equal(warnings.length, 0);
   assert.deepEqual(cues.map((cue) => cue.text), ["one", "two"]);
+  assert.deepEqual(cues.map((cue) => cue.sourceLine), [10, 11]);
   assert.equal(cues[0].time, 1);
   assert.equal(cues[1].end, 4.3);
 });
@@ -99,10 +104,11 @@ test("lyrics timing v2 reports invalid timing and missing text", async () => {
       durationMs: 2000,
       timeUnit: "ms",
       includesLyrics: false,
+      rightsNotice: "Timing-only test fixture.",
       phrases: [
-        { id: "bad-order", index: 0, startTimeMs: 2000, endTimeMs: 1000 },
-        { id: "missing-text", index: 9, startTimeMs: 500, endTimeMs: 900 },
-        { id: "long", index: 0, startTimeMs: 1000, endTimeMs: 3500 }
+        { id: "bad-order", index: 0, sourceLine: 1, startTimeMs: 2000, endTimeMs: 1000 },
+        { id: "missing-text", index: 9, sourceLine: 2, startTimeMs: 500, endTimeMs: 900 },
+        { id: "long", index: 0, sourceLine: 3, startTimeMs: 1000, endTimeMs: 3500 }
       ]
     },
     {
@@ -112,8 +118,34 @@ test("lyrics timing v2 reports invalid timing and missing text", async () => {
     }
   );
 
-  assert.deepEqual(cues, [{ index: 0, time: 1, end: 2, text: "first" }]);
+  assert.deepEqual(cues, [{ id: "long", index: 0, sourceLine: 3, time: 1, end: 2, text: "first" }]);
   assert.match(warnings.join("\n"), /endTimeMs before startTimeMs/);
   assert.match(warnings.join("\n"), /no text and no matching lyric line/);
   assert.match(warnings.join("\n"), /endTimeMs exceeds duration/);
+});
+
+test("lyrics timing v2 metadata stays optional but invalid metadata warns", async () => {
+  const { collectTimedLyrics } = await loadLyricsTimingModule();
+  const warnings = [];
+  const cues = collectTimedLyrics(
+    {
+      schema: "music-effect.lyrics-timing.v2",
+      durationMs: 5000,
+      slug: "Bad Slug",
+      songle: "https://songle.jp/songs/example",
+      timeUnit: "ms",
+      includesLyrics: "yes",
+      phrases: [
+        { index: 0, startTimeMs: 1000, endTimeMs: 2200, text: "alpha", sourceLine: "1" }
+      ]
+    },
+    { warnings }
+  );
+
+  assert.deepEqual(cues, [{ index: 0, time: 1, end: 2.2, text: "alpha" }]);
+  assert.match(warnings.join("\n"), /slug should use lowercase/);
+  assert.match(warnings.join("\n"), /songle should be an object or null/);
+  assert.match(warnings.join("\n"), /includesLyrics should be boolean/);
+  assert.match(warnings.join("\n"), /rightsNotice is missing/);
+  assert.match(warnings.join("\n"), /sourceLine is invalid/);
 });

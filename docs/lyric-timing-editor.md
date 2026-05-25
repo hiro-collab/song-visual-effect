@@ -40,11 +40,19 @@ song-packs/<song-id>/lyrics/timing.json
 
 - `schema: "music-effect.lyrics-timing.v2"`
 - `timeUnit: "ms"`
+- `durationMs` は `number | null`。
+- `slug` は任意です。ある場合は小文字英数字とハイフンだけの照合用文字列として扱います。
+- `songle` は任意の参照metadataです。存在しなくても、`null` でも読めます。
+- `includesLyrics` は boolean です。
+- `rightsNotice` は文字列です。Music Effect側は表示の必須条件にはしませんが、欠落時はwarningを出します。
+- `phrases[].id` はデバッグ用に保持できます。欠落時も再生は止めません。
+- `phrases[].sourceLine` は歌詞txt上の行番号を示すデバッグ補助です。Music Effect側の `LyricCue.sourceLine` に保持しますが、内部再生には必須にしません。
 - `phrases[].startTimeMs` / `phrases[].endTimeMs` は integer milliseconds。
 - `includesLyrics: true` の場合は `phrases[].text` を表示に使います。
 - `includesLyrics: false`、または `phrases[].text` がない場合は、曲パッケージ側の `manifest.lyrics` の歌詞行と `phrases[].index` / 配列順で結合します。
+- `notes` はexport JSONには含めない前提です。含まれていてもMusic Effect側は無視します。
 
-Music Effect内部の `LyricCue` は従来通り seconds 単位です。v2 importer は `startTimeMs` / `endTimeMs` を seconds に変換します。Editorのproject JSONには依存せず、完成済みのexport JSONだけを読みます。
+Music Effect内部の `LyricCue.time` / `LyricCue.end` は従来通り seconds 単位です。v2 importer は `startTimeMs` / `endTimeMs` を seconds に変換します。Editorのproject JSONには依存せず、完成済みのexport JSONだけを読みます。
 
 legacy v1 (`music-effect.lyrics-timing.v1`) は引き続き読めますが、新しく作る完成timing JSONは v2 を優先してください。
 

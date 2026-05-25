@@ -11,6 +11,7 @@ type LyricsTimingImportOptions = {
 };
 
 const MIN_LYRIC_DURATION = 0.8;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => (
   Boolean(value) && typeof value === "object" && !Array.isArray(value)
@@ -119,6 +120,10 @@ const coerceIndex = (value: unknown, fallback: number) => {
   return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : fallback;
 };
 
+const nonNegativeInteger = (value: unknown) => {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
+};
+
 const embeddedLyricText = (phrase: Record<string, unknown>) => {
   const embedded = typeof phrase.text === "string" ? phrase.text.trim() : "";
   if (embedded) return embedded;
@@ -148,6 +153,18 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
   if (json.timeUnit !== "ms") {
     warn(warnings, "lyrics timing v2 warning: timeUnit should be ms");
   }
+  if ("slug" in json && (typeof json.slug !== "string" || !SLUG_PATTERN.test(json.slug))) {
+    warn(warnings, "lyrics timing v2 warning: slug should use lowercase letters, numbers, and hyphens");
+  }
+  if ("songle" in json && json.songle !== null && !isRecord(json.songle)) {
+    warn(warnings, "lyrics timing v2 warning: songle should be an object or null");
+  }
+  if ("includesLyrics" in json && typeof json.includesLyrics !== "boolean") {
+    warn(warnings, "lyrics timing v2 warning: includesLyrics should be boolean");
+  }
+  if (typeof json.rightsNotice !== "string" || !json.rightsNotice.trim()) {
+    warn(warnings, "lyrics timing v2 warning: rightsNotice is missing");
+  }
   if (!Array.isArray(json.phrases)) {
     warn(warnings, "lyrics timing v2 warning: phrases array is missing");
     return [];
@@ -160,9 +177,21 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
       return;
     }
 
+    const id = typeof phraseValue.id === "string" && phraseValue.id.trim() ? phraseValue.id.trim() : "";
+    if (!id) {
+      warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].id is missing`);
+    }
+
     const index = coerceIndex(phraseValue.index, arrayIndex);
     if (index !== phraseValue.index) {
       warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].index is invalid; using array order`);
+    }
+
+    const sourceLine = nonNegativeInteger(phraseValue.sourceLine);
+    if (!("sourceLine" in phraseValue)) {
+      warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].sourceLine is missing`);
+    } else if (sourceLine === null) {
+      warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].sourceLine is invalid`);
     }
 
     const timeUnit = objectTimeUnit(phraseValue) ?? rootUnit ?? "milliseconds";
@@ -200,7 +229,14 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
       warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].startTimeMs exceeds duration`);
     }
 
-    cues.push({ index, time, end: Math.max(time + MIN_LYRIC_DURATION, cueEnd), text });
+    cues.push({
+      ...(id ? { id } : {}),
+      index,
+      ...(sourceLine !== null ? { sourceLine } : {}),
+      time,
+      end: Math.max(time + MIN_LYRIC_DURATION, cueEnd),
+      text
+    });
   });
 
   return uniqueSorted(cues, (cue) => cue.time);
