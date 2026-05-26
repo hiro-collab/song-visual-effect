@@ -42,9 +42,17 @@ export const beatAt = (time: number, beats: Beat[]) => {
 
 export const lyricAt = (time: number, lyrics: LyricCue[]) => {
   const index = lyrics.findIndex((cue) => time >= cue.time && time < cue.end);
+  const current = index >= 0 ? lyrics[index] : null;
+  if (current?.displayMode === "blank") {
+    return {
+      index,
+      current: null,
+      next: null
+    };
+  }
   return {
     index,
-    current: index >= 0 ? lyrics[index] : null,
+    current,
     next: lyrics[index + 1] ?? null
   };
 };

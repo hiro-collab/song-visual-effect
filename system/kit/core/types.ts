@@ -15,6 +15,7 @@ export type LyricCue = {
   id?: string;
   index?: number;
   sourceLine?: number;
+  displayMode?: "blank";
   time: number;
   end: number;
   text: string;

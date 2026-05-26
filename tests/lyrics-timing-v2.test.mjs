@@ -54,7 +54,7 @@ test("lyrics timing v2 with lyrics converts milliseconds to seconds", async () =
       includesLyrics: true,
       rightsNotice: "Synthetic test fixture. No real lyric rights are involved.",
       phrases: [
-        { id: "phrase-0001", index: 0, startTimeMs: 1200, endTimeMs: 2600, text: "alpha", sourceLine: 1 },
+        { id: "phrase-0001", index: 0, startTimeMs: 1200, endTimeMs: 3000, text: "alpha", sourceLine: 1 },
         { id: "phrase-0002", index: 1, startTimeMs: 3000, endTimeMs: 4500, text: "beta", sourceLine: 2 }
       ]
     },
@@ -63,7 +63,7 @@ test("lyrics timing v2 with lyrics converts milliseconds to seconds", async () =
 
   assert.equal(warnings.length, 0);
   assert.deepEqual(cues, [
-    { id: "phrase-0001", index: 0, sourceLine: 1, time: 1.2, end: 2.6, text: "alpha" },
+    { id: "phrase-0001", index: 0, sourceLine: 1, time: 1.2, end: 3, text: "alpha" },
     { id: "phrase-0002", index: 1, sourceLine: 2, time: 3, end: 4.5, text: "beta" }
   ]);
 });
@@ -80,7 +80,7 @@ test("lyrics timing v2 timing-only joins song-pack lyric lines by index", async 
       rightsNotice: "Timing-only test fixture.",
       phrases: [
         { id: "phrase-0001", index: 1, sourceLine: 10, startTimeMs: 1000, endTimeMs: 2200 },
-        { id: "phrase-0002", index: 2, sourceLine: 11, startTimeMs: 3000, endTimeMs: 4300 }
+        { id: "phrase-0002", index: 2, sourceLine: 11, startTimeMs: 2200, endTimeMs: 4300 }
       ]
     },
     {
@@ -94,6 +94,55 @@ test("lyrics timing v2 timing-only joins song-pack lyric lines by index", async 
   assert.deepEqual(cues.map((cue) => cue.sourceLine), [10, 11]);
   assert.equal(cues[0].time, 1);
   assert.equal(cues[1].end, 4.3);
+});
+
+test("lyrics timing v2 keeps blank display ranges without requiring lyric text", async () => {
+  const { collectTimedLyrics } = await loadLyricsTimingModule();
+  const warnings = [];
+  const cues = collectTimedLyrics(
+    {
+      schema: "music-effect.lyrics-timing.v2",
+      durationMs: 3000,
+      timeUnit: "ms",
+      includesLyrics: false,
+      rightsNotice: "Timing-only test fixture.",
+      phrases: [
+        { id: "intro", index: 0, sourceLine: 0, startTimeMs: 0, endTimeMs: 1000, displayMode: "blank" },
+        { id: "phrase-0001", index: 1, sourceLine: 1, startTimeMs: 1000, endTimeMs: 3000 }
+      ]
+    },
+    {
+      lyricLines: ["should-not-be-used", "first lyric"],
+      warnings
+    }
+  );
+
+  assert.equal(warnings.length, 0);
+  assert.deepEqual(cues, [
+    { id: "intro", index: 0, sourceLine: 0, displayMode: "blank", time: 0, end: 1, text: "" },
+    { id: "phrase-0001", index: 1, sourceLine: 1, time: 1, end: 3, text: "first lyric" }
+  ]);
+});
+
+test("lyrics timing v2 warns when phrase ranges are not contiguous", async () => {
+  const { collectTimedLyrics } = await loadLyricsTimingModule();
+  const warnings = [];
+  collectTimedLyrics(
+    {
+      schema: "music-effect.lyrics-timing.v2",
+      durationMs: 5000,
+      timeUnit: "ms",
+      includesLyrics: true,
+      rightsNotice: "Synthetic test fixture. No real lyric rights are involved.",
+      phrases: [
+        { id: "phrase-0001", index: 0, sourceLine: 1, startTimeMs: 1000, endTimeMs: 2200, text: "alpha" },
+        { id: "phrase-0002", index: 1, sourceLine: 2, startTimeMs: 3000, endTimeMs: 4200, text: "beta" }
+      ]
+    },
+    { warnings }
+  );
+
+  assert.match(warnings.join("\n"), /startTimeMs does not match previous endTimeMs/);
 });
 
 test("lyrics timing v2 reports invalid timing and missing text", async () => {

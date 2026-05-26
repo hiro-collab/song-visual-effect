@@ -88,8 +88,10 @@ npm run build
 - `phrases[].id` はデバッグ用に保持できます。欠落時も再生は止めません。
 - `phrases[].sourceLine` は歌詞txt上の行番号を示すデバッグ補助です。Music Effect側の `LyricCue.sourceLine` に保持しますが、内部再生には必須にしません。
 - `phrases[].startTimeMs` / `phrases[].endTimeMs` は integer milliseconds。
+- phrase range は連続区間として扱います。通常はphrase Nの `endTimeMs` がphrase N+1の `startTimeMs` と一致します。ずれている場合はwarningを出しますが、再生は止めません。
 - `includesLyrics: true` の場合は `phrases[].text` を表示に使います。
 - `includesLyrics: false`、または `phrases[].text` がない場合は、曲パッケージ側の `manifest.lyrics` の歌詞行と `phrases[].index` / 配列順で結合します。
+- `phrases[].displayMode: "blank"` は、イントロ、間奏、アウトロなどの意図的な無表示区間として扱います。この場合は歌詞本文がなくてもwarningにせず、標準プレイヤーでは現在行と次行の表示を消します。
 - `notes` はexport JSONには含めない前提です。含まれていてもMusic Effect側は無視します。
 
 Music Effect内部の `LyricCue.time` / `LyricCue.end` は従来通り seconds 単位です。v2 importer は `startTimeMs` / `endTimeMs` を seconds に変換します。Editorのproject JSONには依存せず、完成済みのexport JSONだけを読みます。

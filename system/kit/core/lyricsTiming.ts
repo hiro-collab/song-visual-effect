@@ -135,6 +135,13 @@ const embeddedLyricText = (phrase: Record<string, unknown>) => {
   return "";
 };
 
+const displayModeForPhrase = (phrase: Record<string, unknown>, arrayIndex: number, warnings?: string[]) => {
+  if (!("displayMode" in phrase)) return undefined;
+  if (phrase.displayMode === "blank") return "blank";
+  warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].displayMode is unsupported`);
+  return undefined;
+};
+
 const lyricTextForPhrase = (
   phrase: Record<string, unknown>,
   index: number,
@@ -185,6 +192,7 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
   }
 
   const cues: LyricCue[] = [];
+  let previousEnd: number | null = null;
   phrases.forEach((phraseValue, arrayIndex) => {
     if (!isRecord(phraseValue)) {
       warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}] is not an object`);
@@ -229,13 +237,18 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
       warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}] has endTimeMs before startTimeMs`);
       return;
     }
+    if (previousEnd !== null && Math.abs(previousEnd - time) > 0.001) {
+      warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].startTimeMs does not match previous endTimeMs`);
+    }
+    previousEnd = end;
 
+    const displayMode = displayModeForPhrase(phraseValue, arrayIndex, warnings);
     const embeddedText = embeddedLyricText(phraseValue);
-    if (includesLyrics && !embeddedText) {
+    if (includesLyrics && !embeddedText && displayMode !== "blank") {
       warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].text is missing; using lyric line fallback`);
     }
-    const text = embeddedText || lyricTextForPhrase(phraseValue, index, arrayIndex, lyricLines);
-    if (!text) {
+    const text = displayMode === "blank" ? "" : embeddedText || lyricTextForPhrase(phraseValue, index, arrayIndex, lyricLines);
+    if (!text && displayMode !== "blank") {
       warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}] has no text and no matching lyric line`);
       return;
     }
@@ -253,6 +266,7 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
       ...(id ? { id } : {}),
       index,
       ...(sourceLine !== null ? { sourceLine } : {}),
+      ...(displayMode ? { displayMode } : {}),
       time,
       end: Math.max(time + MIN_LYRIC_DURATION, cueEnd),
       text
