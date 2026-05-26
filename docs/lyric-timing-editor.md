@@ -34,6 +34,35 @@ song-packs/<song-id>/lyrics/timing.json
 
 既存manifest構造では、必要に応じて `analysis.timing` から参照してもよいです。どちらの置き場にするかは各曲パッケージ側の設計で決めます。
 
+### 手早く曲パックへ入れる
+
+Lyric Timing Editorのv2 exportを手元に用意したら、次のコマンドで曲パックへコピーし、`manifest.json` の `lyrics` と `analysis.timing` を更新できます。
+
+```powershell
+npm run song:lyrics:install -- --id <song-id> --timing <path-to-timing-v2.json>
+```
+
+timing-only export (`includesLyrics: false`) の場合は、別のUTF-8歌詞テキストも渡します。
+
+```powershell
+npm run song:lyrics:install -- --id <song-id> --timing <path-to-timing-v2.json> --lyrics <path-to-lyrics.txt> --name live
+```
+
+出力先は常に曲パック内です。
+
+```text
+song-packs/<song-id>/lyrics/<name>.timing.v2.json
+song-packs/<song-id>/lyrics/<name>.lyrics.txt
+```
+
+同じ `<name>` で入れ直す場合だけ `--force` を付けます。導入後は次を確認します。
+
+```powershell
+npm run song:validate -- --id <song-id>
+npm test
+npm run build
+```
+
 ## 対応するtiming JSON
 
 推奨形式は Lyric Timing Editor が出力する v2 です。

@@ -13,6 +13,7 @@
     "docs:check": "node --test tests/docs-consistency.test.mjs",
     "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1",
     "song:scaffold": "node scripts/create-song-pack.mjs",
+    "song:lyrics:install": "node scripts/install-lyrics-data.mjs",
     "song:validate": "node scripts/validate-song-pack.mjs",
     "song:smoke": "node scripts/smoke-song-pack.mjs",
     "song:smoke:all": "node scripts/smoke-all-song-packs.mjs",
