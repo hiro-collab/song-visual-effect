@@ -1,19 +1,18 @@
 import { randomBytes } from "node:crypto";
-import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { findFreePort, stablePortBaseFor } from "../launch-manager/ports.mjs";
+import {
+  defaultRepoRoot,
+  formatInstallResult,
+  installLyricsDataFromText,
+  listInstalledSongs,
+  MAX_LYRICS_TEXT_LENGTH,
+  MAX_TIMING_TEXT_LENGTH
+} from "./install.mjs";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const repoRoot = path.resolve(__dirname, "..", "..");
-const songPacksRoot = path.join(repoRoot, "song-packs");
-const runtimeRoot = path.join(repoRoot, ".codex", "runtime", "lyrics-installer");
+const repoRoot = defaultRepoRoot;
 const host = "127.0.0.1";
 const MAX_REQUEST_BYTES = 6 * 1024 * 1024;
-const MAX_TIMING_TEXT_LENGTH = 4 * 1024 * 1024;
-const MAX_LYRICS_TEXT_LENGTH = 512 * 1024;
 
 const baseSecurityHeaders = {
   "Cache-Control": "no-store",
@@ -54,28 +53,6 @@ const sendText = (response, status, body) => {
   response.end(body);
 };
 
-const isInside = (parent, child) => {
-  const baseKey = process.platform === "win32" ? parent.toLowerCase() : parent;
-  const targetKey = process.platform === "win32" ? child.toLowerCase() : child;
-  return targetKey === baseKey || targetKey.startsWith(`${baseKey}${path.sep}`);
-};
-
-const assertSongId = (id) => {
-  if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(id)) {
-    throw new Error("曲IDは小文字英数字、dot、underscore、hyphenだけにしてください。");
-  }
-};
-
-const sanitizeName = (value) => {
-  const name = String(value ?? "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/^[._-]+|[._-]+$/g, "")
-    .slice(0, 64);
-  return name || "lyrics";
-};
-
 const assertText = (value, label, maxLength) => {
   if (typeof value !== "string" || !value.trim()) {
     throw new Error(`${label}を選んでください。`);
@@ -83,43 +60,6 @@ const assertText = (value, label, maxLength) => {
   if (value.length > maxLength) {
     throw new Error(`${label}が大きすぎます。`);
   }
-};
-
-const realSongPacksRoot = () => fs.realpathSync(songPacksRoot);
-
-const readJsonFile = (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8"));
-
-const listSongs = () => {
-  if (!fs.existsSync(songPacksRoot)) return [];
-  const realRoot = realSongPacksRoot();
-  return fs
-    .readdirSync(songPacksRoot, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .flatMap((entry) => {
-      const root = path.join(songPacksRoot, entry.name);
-      if (fs.lstatSync(root).isSymbolicLink()) return [];
-      const realRootCandidate = fs.realpathSync(root);
-      if (!isInside(realRoot, realRootCandidate)) return [];
-      const manifestPath = path.join(root, "manifest.json");
-      if (!fs.existsSync(manifestPath)) return [];
-      try {
-        const manifest = readJsonFile(manifestPath);
-        return [
-          {
-            id: String(manifest.id ?? entry.name),
-            title: String(manifest.title ?? entry.name),
-            artist: String(manifest.artist ?? ""),
-            duration: typeof manifest.duration === "number" ? manifest.duration : null,
-            lyrics: manifest.lyrics ?? null,
-            timing: manifest.analysis?.timing ?? null,
-            manifestPath: path.relative(repoRoot, manifestPath).split(path.sep).join("/")
-          }
-        ];
-      } catch {
-        return [];
-      }
-    })
-    .sort((a, b) => a.id.localeCompare(b.id));
 };
 
 const readRequestBody = (request) =>
@@ -147,66 +87,27 @@ const originMatchesRequestHost = (origin, requestHost) => {
   }
 };
 
-const writeUploadFile = (dir, name, content) => {
-  const filePath = path.join(dir, name);
-  fs.writeFileSync(filePath, content.endsWith("\n") ? content : `${content}\n`, "utf8");
-  return filePath;
-};
-
 const installFromUpload = (payload) => {
   const id = String(payload.id ?? "").trim();
-  assertSongId(id);
   assertText(payload.timingText, "timing JSON", MAX_TIMING_TEXT_LENGTH);
   const lyricsText = typeof payload.lyricsText === "string" ? payload.lyricsText : "";
   if (lyricsText.length > MAX_LYRICS_TEXT_LENGTH) {
     throw new Error("lyrics txtが大きすぎます。");
   }
 
-  const timingJson = JSON.parse(payload.timingText);
-  if (timingJson?.schema !== "music-effect.lyrics-timing.v2") {
-    throw new Error("timing JSONは music-effect.lyrics-timing.v2 だけを受け付けます。");
-  }
-
-  const name = sanitizeName(payload.name || timingJson.slug || id);
-  const force = Boolean(payload.force);
-  const uploadDir = path.join(runtimeRoot, "uploads", `${Date.now()}-${randomBytes(4).toString("hex")}`);
-  fs.mkdirSync(uploadDir, { recursive: true });
-
-  const timingPath = writeUploadFile(uploadDir, "timing.json", payload.timingText);
-  const lyricsPath = lyricsText.trim() ? writeUploadFile(uploadDir, "lyrics.txt", lyricsText) : null;
-  const args = [
-    "scripts/install-lyrics-data.mjs",
-    "--id",
+  const result = installLyricsDataFromText({
+    root: repoRoot,
     id,
-    "--timing",
-    timingPath,
-    "--name",
-    name,
-    ...(lyricsPath ? ["--lyrics", lyricsPath] : []),
-    ...(force ? ["--force"] : [])
-  ];
-
-  const result = spawnSync(process.execPath, args, {
-    cwd: repoRoot,
-    encoding: "utf8",
-    windowsHide: true
+    timingText: payload.timingText,
+    lyricsText: lyricsText.trim() ? lyricsText : null,
+    name: payload.name,
+    force: Boolean(payload.force)
   });
-  if (result.status !== 0) {
-    throw new Error((result.stderr || result.stdout || "install command failed").trim());
-  }
 
   return {
-    id,
-    name,
-    includesLyrics: timingJson.includesLyrics === true,
-    timingOnly: timingJson.includesLyrics === false,
-    stdout: result.stdout.trim(),
-    stderr: result.stderr.trim(),
-    next: [
-      `npm run song:validate -- --id ${id}`,
-      "npm test",
-      "npm run build"
-    ]
+    ...result,
+    stdout: formatInstallResult(result),
+    stderr: ""
   };
 };
 
@@ -518,7 +419,7 @@ const handleRequest = async (request, response) => {
     return;
   }
   if (request.method === "GET" && url.pathname === "/api/songs") {
-    sendJson(response, 200, { songs: listSongs() });
+    sendJson(response, 200, { songs: listInstalledSongs({ root: repoRoot }) });
     return;
   }
   if (request.method === "POST" && url.pathname === "/api/install") {

@@ -67,6 +67,8 @@ song-packs/<song-id>/lyrics/<name>.lyrics.txt
 
 同じ `<name>` で入れ直す場合だけ `--force` を付けます。導入後は次を確認します。
 
+GUIとCLIはどちらも `scripts/lyrics-installer/install.mjs` の共通ヘルパーを使います。投入先の検証、v2 JSONの最低限検査、manifest更新規則はここで揃えます。
+
 ```powershell
 npm run song:validate -- --id <song-id>
 npm test
