@@ -9,6 +9,7 @@ export const MAX_LYRICS_BYTES = 512 * 1024;
 export const MAX_TIMING_TEXT_LENGTH = 4 * 1024 * 1024;
 export const MAX_LYRICS_TEXT_LENGTH = 512 * 1024;
 export const V2_SCHEMA = "music-effect.lyrics-timing.v2";
+export const EDITOR_PROJECT_SCHEMA = "lyric-timing-editor.project.v1";
 
 export const isInside = (parent, child) => {
   const baseKey = process.platform === "win32" ? parent.toLowerCase() : parent;
@@ -123,6 +124,11 @@ export const validateTimingV2 = (timingJson) => {
   const warnings = [];
   if (!timingJson || typeof timingJson !== "object" || Array.isArray(timingJson)) {
     throw new Error("Timing JSON must be an object.");
+  }
+  if (timingJson.schema === EDITOR_PROJECT_SCHEMA) {
+    throw new Error(
+      `This is a Lyric Timing Editor Work Project JSON (${EDITOR_PROJECT_SCHEMA}). Choose Export -> Music Effect v2 and install that ${V2_SCHEMA} JSON instead.`
+    );
   }
   if (timingJson.schema !== V2_SCHEMA) {
     throw new Error(`Timing JSON schema must be ${V2_SCHEMA}.`);

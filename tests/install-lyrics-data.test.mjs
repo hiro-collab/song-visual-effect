@@ -210,6 +210,39 @@ test("shared lyrics installer helper installs from uploaded text", () => {
   }
 });
 
+test("shared lyrics installer helper explains Lyric Timing Editor project JSON", () => {
+  clean();
+  try {
+    mkdirSync(songRoot, { recursive: true });
+    writeFileSync(
+      join(songRoot, "manifest.json"),
+      `${JSON.stringify({
+        schema: "music-effect.song-manifest.v1",
+        id: songId,
+        title: "Synthetic Install Test",
+        artist: "Synthetic",
+        lyrics: null,
+        analysis: { timing: null }
+      }, null, 2)}\n`,
+      "utf8"
+    );
+
+    assert.throws(
+      () => installLyricsDataFromText({
+        root: repoRoot,
+        id: songId,
+        timingText: `${JSON.stringify({
+          schema: "lyric-timing-editor.project.v1",
+          title: "Synthetic Work Project"
+        })}\n`
+      }),
+      /Work Project JSON.*Export -> Music Effect v2/
+    );
+  } finally {
+    clean();
+  }
+});
+
 test("lyrics installer UI previews manifest changes before overwrite", () => {
   const html = installerHtml("test-nonce");
 
@@ -218,5 +251,8 @@ test("lyrics installer UI previews manifest changes before overwrite", () => {
   assert.match(html, /書き込み後timing/);
   assert.match(html, /曲名・アーティスト・曲ID/);
   assert.match(html, /music-effect\.lyrics-timing\.v2/);
+  assert.match(html, /lyric-timing-editor\.project\.v1/);
+  assert.match(html, /JSONのschemaを確認中/);
+  assert.match(html, /重複サフィックス/);
   assert.match(html, /サーバーが停止している可能性/);
 });

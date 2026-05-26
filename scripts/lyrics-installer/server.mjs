@@ -443,6 +443,12 @@ export const installerHtml = (nonce) => `<!doctype html>
         updateInstallButton();
         return;
       }
+      if (timingState.status === "checking") {
+        writePreview.className = "write-preview is-warn";
+        writePreview.innerHTML = "選択したJSONのschemaを確認中です。確認が終わるまで書き込みはできません。";
+        updateInstallButton();
+        return;
+      }
       if (timingState.status === "invalid") {
         writePreview.className = "write-preview is-warn";
         writePreview.innerHTML = \`
@@ -469,6 +475,9 @@ export const installerHtml = (nonce) => `<!doctype html>
       const overwriteNotice = forceInput.checked
         ? "上書きON: 同じ保存ファイル名の timing/lyrics ファイルがあれば置き換えます。"
         : "上書きOFF: 同じ保存ファイル名のファイルが既にあれば停止します。";
+      const slugNotice = timingState.warning
+        ? \`<p class="preview-note warn">\${escapeHtml(timingState.warning)}</p>\`
+        : "";
 
       writePreview.className = "write-preview";
       writePreview.innerHTML = \`
@@ -482,6 +491,7 @@ export const installerHtml = (nonce) => `<!doctype html>
           <dt>入力JSON</dt><dd>\${escapeHtml(mode)} / title: \${escapeHtml(sourceTitle)} / artist: \${escapeHtml(sourceArtist)}</dd>
         </dl>
         <p class="preview-note">曲名・アーティスト・曲IDなど、曲パック本体の情報はこの操作では変更しません。入力JSON側のtitleやartistが空欄でも、曲パックの表示名を空欄で上書きすることはありません。</p>
+        \${slugNotice}
         <p class="preview-note">\${escapeHtml(overwriteNotice)}</p>
         <p class="preview-note">manifest.jsonで更新するのは基本的に <code>lyrics</code> と <code>analysis.timing</code> の参照先だけです。</p>
       \`;
@@ -502,12 +512,26 @@ export const installerHtml = (nonce) => `<!doctype html>
         renderWritePreview();
         return;
       }
+      timingState = { status: "checking", json: null, error: "" };
+      setResult("JSONのschemaを確認中です...");
+      renderWritePreview();
       try {
         const json = JSON.parse(await file.text());
         if (json && json.schema === "music-effect.lyrics-timing.v2") {
           const mode = json.includesLyrics === false ? "timing-only" : json.includesLyrics === true ? "with-lyrics" : "includesLyrics未指定";
-          timingState = { status: "valid", json, error: "" };
-          setResult(\`<div class="ok">v2 timing JSONとして読めます。</div><div>\${escapeHtml(mode)}</div>\`, "ok");
+          const duplicateSuffixWarning = !json.slug && /\\s\\(\\d+\\)\\.json$/i.test(file.name)
+            ? "このv2 exportにはslugがなく、ファイル名にChromeの重複サフィックスが付いています。保存ファイル名を明示すると、次回以降も同じ名前で安全に上書きできます。"
+            : "";
+          timingState = { status: "valid", json, error: "", fileName: file.name, warning: duplicateSuffixWarning };
+          setResult(\`
+            <div class="ok">v2 timing JSONとして読めます。</div>
+            <div>\${escapeHtml(mode)}</div>
+            \${duplicateSuffixWarning ? \`<div class="warn">\${escapeHtml(duplicateSuffixWarning)}</div>\` : ""}
+          \`, duplicateSuffixWarning ? "warn" : "ok");
+        } else if (json && json.schema === "lyric-timing-editor.project.v1") {
+          const message = "これはLyric Timing Editorの作業用Project JSONです。Music Effectへ入れるには、Lyric Timing Editorで Export -> Music Effect v2 を選び、そのJSONを指定してください。";
+          timingState = { status: "invalid", json: null, error: message };
+          setResult(\`<div class="warn">\${escapeHtml(message)}</div>\`, "warn");
         } else {
           timingState = { status: "invalid", json: null, error: "このJSONは music-effect.lyrics-timing.v2 exportではありません。" };
           setResult('<div class="warn">このJSONは <code>music-effect.lyrics-timing.v2</code> exportではありません。</div>', "warn");
