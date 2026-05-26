@@ -107,6 +107,8 @@ export type MusicMap = {
   beats: Beat[];
   chorus: Range[];
   lyrics: LyricCue[];
+  rawLyrics?: LyricCue[];
+  lyricAdjustmentDiagnostics?: import("../timing/lyricAdjustment").LyricAdjustmentDiagnostics;
   lyricLines: string[];
   markers: Markers;
   palette: Palette;

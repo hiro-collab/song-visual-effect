@@ -1,5 +1,6 @@
 import type { Beat, LyricCue, Markers, MusicMap, Palette, Range, SongManifest } from "./types";
 import { DEFAULT_PALETTE } from "../render/palette";
+import { applyLyricAdjustment } from "../timing/lyricAdjustment";
 import {
   DEFAULT_MAX_TEXT_BYTES,
   fetchBoundedJson,
@@ -52,6 +53,19 @@ const isSongManifest = (value: unknown): value is SongManifest => {
 export const getSongManifestUrl = () => {
   const queryValue = new URLSearchParams(window.location.search).get("song");
   return queryValue ? absoluteUrl(queryValue) : null;
+};
+
+const getLyricAdjustmentUrl = (warnings: string[]) => {
+  const params = new URLSearchParams(window.location.search);
+  const queryValue = params.get("lyricAdjustment") ?? params.get("lyricAdjustmentUrl");
+  if (!queryValue) return null;
+  try {
+    return absoluteUrl(queryValue);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    warnings.push(`lyric adjustment warning: invalid URL: ${detail}`);
+    return null;
+  }
 };
 
 const manifestLoadHint =
@@ -304,10 +318,38 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
   const beats = beatJson ? collectBeats(beatJson) : [];
   const chorus = chorusJson ? collectRanges(chorusJson) : [];
   const timedLyrics = lyricJson ? collectTimedLyrics(lyricJson, { lyricLines, duration, warnings }) : [];
+  const rawLyrics = timedLyrics.length ? timedLyrics : parseLyrics(lyricLines, duration);
 
   if (!beatJson || beats.length < 8) warnings.push("beat fallback");
   if (!chorusJson || chorus.length === 0) warnings.push("chorus fallback");
   if (!timedLyrics.length && lyricLines.length) warnings.push("rough lyrics");
+
+  const lyricAdjustmentUrl = getLyricAdjustmentUrl(warnings);
+  let lyrics = rawLyrics;
+  let lyricAdjustmentDiagnostics: MusicMap["lyricAdjustmentDiagnostics"];
+  if (lyricAdjustmentUrl) {
+    try {
+      const lyricAdjustmentJson = await fetchBoundedJson<unknown>(lyricAdjustmentUrl);
+      if (lyricAdjustmentJson) {
+        const result = applyLyricAdjustment(rawLyrics, lyricAdjustmentJson, {
+          songPackId: manifest.id,
+          visualId: manifest.id,
+          slug: manifest.id,
+          duration
+        });
+        lyrics = result.lyrics;
+        lyricAdjustmentDiagnostics = result.diagnostics;
+        for (const item of result.diagnostics.issues) {
+          warnings.push(`lyric adjustment ${item.level}: ${item.code}`);
+        }
+      } else {
+        warnings.push(`lyric adjustment warning: could not load or parse adjustment JSON: ${lyricAdjustmentUrl}`);
+      }
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      warnings.push(`lyric adjustment warning: ${detail}`);
+    }
+  }
 
   return {
     title,
@@ -315,7 +357,9 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
     duration,
     beats: beats.length >= 8 ? beats : generatedBeats(duration),
     chorus: chorus.length ? chorus : generatedChorus(usableMarkers, duration),
-    lyrics: timedLyrics.length ? timedLyrics : parseLyrics(lyricLines, duration),
+    lyrics,
+    rawLyrics,
+    lyricAdjustmentDiagnostics,
     lyricLines,
     markers: usableMarkers,
     palette: palette ?? DEFAULT_PALETTE,

@@ -55,6 +55,8 @@ system kitでは `createLyricCueFingerprint()` が `LyricCue[]` から `fnv1a32:
 ```json
 {
   "schema": "music-effect.lyric-adjustment.v1",
+  "encoding": "utf-8",
+  "messageLanguage": "en",
   "createdAt": "2026-05-26T00:00:00.000Z",
   "createdBy": "music-effect rehearsal helper",
   "target": {
@@ -91,6 +93,8 @@ UI上で全体シフトや途中以降シフトを提供しても、保存時は
 ```json
 {
   "schema": "music-effect.lyric-adjustment-bundle.v1",
+  "encoding": "utf-8",
+  "messageLanguage": "en",
   "createdAt": "2026-05-26T00:00:00.000Z",
   "createdBy": "music-effect rehearsal helper",
   "items": [
@@ -154,6 +158,14 @@ show-profiles/<show-id>/adjustments/
 
 URLパラメータは明示指定なので最優先です。show-profileはイベント運用の標準ルートです。手動読み込みはその場だけの一時適用とし、ブラウザを閉じたら消える扱いにします。永続化したい場合はダウンロードして配置します。
 
+最初の実装では、標準playerがURLパラメータ `lyricAdjustment` または `lyricAdjustmentUrl` を読みます。
+
+```text
+http://127.0.0.1:<deck-port>/?song=<manifest-url>&lyricAdjustment=<adjustment-json-url>
+```
+
+URLから読まれた補正は、曲パックから読み込んだ `LyricCue[]` へ適用されます。`musicMap.lyrics` は補正後、`musicMap.rawLyrics` は補正前として扱います。適用結果のdiagnosticsは `musicMap.lyricAdjustmentDiagnostics` に入ります。
+
 ## 適用ルール
 
 - `cueId` が一致する場合は `cueId` で適用する。
@@ -181,6 +193,31 @@ URLパラメータは明示指定なので最優先です。show-profileはイ�
 - 誤操作を避けるため、通常は操作UIを表示しない構成をサンプルとして用意する。
 - 必要な曲映像は独自UI、外部ツール、TouchDesigner、Unityなどから操作できる。
 - 補正状態のsnapshot / restoreを将来追加できる形にする。
+
+## 実装段階
+
+### system本体の責任
+
+- `system/kit/timing/lyricAdjustment.ts` にDOM非依存の純粋helperを置く。
+- `applyLyricAdjustment()` は `LyricCue[]` と補正JSONを受け取り、補正後の `LyricCue[]` とdiagnosticsを返す。
+- diagnosticsの `code` と `message` はASCII英語を正本にする。日本語表示はUI側で任意に翻訳する。
+- `encoding: "utf-8"` と `messageLanguage: "en"` は任意metadataとして扱う。
+- fingerprint mismatchでも完全拒否せず、警告しながら適用できるcueだけ適用する。
+- 補正後にcueの開始時刻が終了時刻を追い越す場合は、最小長へ丸めて警告する。
+
+### 標準playerのサンプル責任
+
+- URLパラメータ指定の補正ラッパーを読み込み、`musicMap.lyrics` を補正後にする。
+- `musicMap.rawLyrics` に補正前のcue列を残す。
+- `musicMap.lyricAdjustmentDiagnostics` に適用結果を残す。
+- show-profile指定、手動読み込み、制作UIは後続段階で追加する。
+
+### 後続候補
+
+- Launch Manager / show-profileから `lyricAdjustment` をDeck URLへ反映する。
+- 画面上の手動読み込みを追加する。
+- 制作、リハーサル用UIとして、下部シーケンスバーへcue stoneを統合する。
+- 本番用helperとして、誤操作を避ける最小UI、snapshot / restore、外部制御APIを検討する。
 
 ## Docs consistency
 

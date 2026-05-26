@@ -53,3 +53,5 @@ show-profile側の歌詞補正は、曲パック内の完成済みtiming JSONを
 ```
 
 `lyricOffsetMs` は最小のDeck-localな現場補正です。より細かいcue単位補正は `lyricAdjustment` などで補正ラッパーを参照する形にします。具体的な読み込み実装は段階的に追加します。
+
+現時点の標準playerは、URLパラメータ `lyricAdjustment` / `lyricAdjustmentUrl` から補正ラッパーを読めます。show-profileからDeck URLへこの値を渡すLaunch Manager連携は後続実装です。

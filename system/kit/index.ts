@@ -68,15 +68,22 @@ export {
   normalizeKeyframes
 } from "./timing/manualTiming";
 export type {
+  ApplyLyricAdjustmentOptions,
+  ApplyLyricAdjustmentResult,
   LyricAdjustmentBundle,
   LyricAdjustmentDocument,
+  LyricAdjustmentDiagnostics,
+  LyricAdjustmentIssue,
+  LyricAdjustmentIssueLevel,
   LyricAdjustmentSummary,
   LyricAdjustmentTarget,
   LyricCueAdjustment,
   LyricCueFingerprintItem
 } from "./timing/lyricAdjustment";
 export {
+  applyLyricAdjustment,
   createLyricCueFingerprint,
+  DEFAULT_LYRIC_ADJUSTMENT_MIN_CUE_DURATION_SEC,
   LYRIC_ADJUSTMENT_BUNDLE_SCHEMA_V1,
   LYRIC_ADJUSTMENT_SCHEMA_V1,
   normalizeLyricCueFingerprintItems,
