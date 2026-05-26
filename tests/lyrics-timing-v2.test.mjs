@@ -260,3 +260,28 @@ test("lyrics timing v2 warns when millisecond fields are not integers", async ()
   assert.match(warnings.join("\n"), /startTimeMs should be integer milliseconds/);
   assert.match(warnings.join("\n"), /endTimeMs should be integer milliseconds/);
 });
+
+test("music map duration can expand to installed lyric timing duration", async () => {
+  const { collectTimedLyrics, resolveDurationWithTimedLyrics } = await loadLyricsTimingModule();
+  const warnings = [];
+  const cues = collectTimedLyrics(
+    {
+      schema: "music-effect.lyrics-timing.v2",
+      durationMs: 181330,
+      timeUnit: "ms",
+      includesLyrics: true,
+      rightsNotice: "Synthetic test fixture. No real lyric rights are involved.",
+      phrases: [
+        { id: "phrase-0001", index: 0, sourceLine: 1, startTimeMs: 3701, endTimeMs: 7401, text: "alpha" },
+        { id: "phrase-0002", index: 1, sourceLine: 2, startTimeMs: 177000, endTimeMs: 181330, text: "omega" }
+      ]
+    },
+    { warnings }
+  );
+
+  const duration = resolveDurationWithTimedLyrics(10, cues, warnings);
+
+  assert.equal(duration, 181.33);
+  assert.match(warnings.join("\n"), /lyrics timing duration 181\.330s exceeds declared duration 10\.000s/);
+  assert.doesNotMatch(warnings.join("\n"), /endTimeMs exceeds duration/);
+});

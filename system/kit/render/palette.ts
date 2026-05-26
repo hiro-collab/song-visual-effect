@@ -9,6 +9,8 @@ export const DEFAULT_PALETTE: Palette = {
 
 type Rgb = [number, number, number];
 
+const isHexColor = (value: string) => /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
+
 const hexToRgb = (hex: string): Rgb => {
   const clean = hex.replace("#", "");
   const value = Number.parseInt(clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean, 16);
@@ -27,7 +29,8 @@ export class ColorRamp {
   private colors: Rgb[];
 
   constructor(palette: Palette) {
-    this.colors = [...palette.base, ...palette.accent].map(hexToRgb);
+    const colors = [...palette.base, ...palette.accent].filter(isHexColor).map(hexToRgb);
+    this.colors = colors.length ? colors : [...DEFAULT_PALETTE.base, ...DEFAULT_PALETTE.accent].map(hexToRgb);
   }
 
   sample(position: number, alpha = 1): string {

@@ -319,3 +319,22 @@ export const collectTimedLyrics = (json: unknown, options: LyricsTimingImportOpt
   }
   return collectLegacyTimedLyrics(json);
 };
+
+export const maxLyricCueEnd = (lyrics: readonly LyricCue[]) =>
+  lyrics.reduce((max, cue) => Math.max(max, cue.time, cue.end), 0);
+
+export const resolveDurationWithTimedLyrics = (
+  declaredDuration: number,
+  lyrics: readonly LyricCue[],
+  warnings?: string[]
+) => {
+  const safeDeclared = Number.isFinite(declaredDuration) && declaredDuration > 0 ? declaredDuration : 0;
+  const lyricDuration = maxLyricCueEnd(lyrics);
+  if (lyricDuration > safeDeclared + 0.05) {
+    warn(
+      warnings,
+      `lyrics timing duration ${lyricDuration.toFixed(3)}s exceeds declared duration ${safeDeclared.toFixed(3)}s; using lyrics duration`
+    );
+  }
+  return Math.max(safeDeclared, lyricDuration);
+};

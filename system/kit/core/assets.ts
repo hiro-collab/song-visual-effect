@@ -8,9 +8,26 @@ import {
   resolveHttpUrl,
   resolveWithinBaseUrl
 } from "./safeFetch";
-import { collectTimedLyrics } from "./lyricsTiming";
+import { collectTimedLyrics, resolveDurationWithTimedLyrics } from "./lyricsTiming";
 
 const compactPaths = (paths: Array<string | null | undefined>) => paths.filter((path): path is string => Boolean(path));
+const hexColorPattern = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+const cleanColorList = (value: unknown) =>
+  Array.isArray(value) ? value.filter((color): color is string => typeof color === "string" && hexColorPattern.test(color)) : [];
+
+const normalizePalette = (palette: Palette | null, warnings: string[]): Palette => {
+  if (!palette) return DEFAULT_PALETTE;
+  const base = cleanColorList(palette.base);
+  const accent = cleanColorList(palette.accent);
+  const shadow = cleanColorList(palette.shadow);
+  if (!base.length || !accent.length || !shadow.length) warnings.push("palette fallback");
+  return {
+    base: base.length ? base : DEFAULT_PALETTE.base,
+    accent: accent.length ? accent : DEFAULT_PALETTE.accent,
+    shadow: shadow.length ? shadow : DEFAULT_PALETTE.shadow
+  };
+};
 
 const fetchText = async (paths: Array<string | null | undefined>) => {
   for (const path of compactPaths(paths)) {
@@ -311,13 +328,16 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
   const usableMarkers = markers ?? {};
   const manifestDuration = readNumber(manifest as unknown as Record<string, unknown>, ["duration", "length"]);
   const songDuration = songJson ? readNumber(songJson, ["duration", "length"]) : null;
-  const duration = songDuration ?? manifestDuration ?? usableMarkers.estimatedDuration ?? 318;
+  const declaredDuration = songDuration ?? manifestDuration ?? usableMarkers.estimatedDuration ?? 318;
   const title = manifest.title;
   const artist = manifest.artist;
   const lyricLines = parseLyricLines(lyricText, title);
   const beats = beatJson ? collectBeats(beatJson) : [];
   const chorus = chorusJson ? collectRanges(chorusJson) : [];
-  const timedLyrics = lyricJson ? collectTimedLyrics(lyricJson, { lyricLines, duration, warnings }) : [];
+  const timedLyrics = lyricJson ? collectTimedLyrics(lyricJson, { lyricLines, warnings }) : [];
+  const duration = timedLyrics.length
+    ? resolveDurationWithTimedLyrics(declaredDuration, timedLyrics, warnings)
+    : declaredDuration;
   const rawLyrics = timedLyrics.length ? timedLyrics : parseLyrics(lyricLines, duration);
 
   if (!beatJson || beats.length < 8) warnings.push("beat fallback");
@@ -362,7 +382,7 @@ export const loadMusicMap = async (manifestUrl: string | null = getSongManifestU
     lyricAdjustmentDiagnostics,
     lyricLines,
     markers: usableMarkers,
-    palette: palette ?? DEFAULT_PALETTE,
+    palette: normalizePalette(palette, warnings),
     warnings,
     source: {
       manifestUrl: resolvedManifestUrl,

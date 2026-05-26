@@ -455,6 +455,25 @@ const remoteValueText = (value) => {
   return value.description ?? value.unserializableValue ?? "";
 };
 
+const formatExceptionDetails = (details) => {
+  if (!details) return "Runtime exception";
+  const parts = [
+    details.exception?.description,
+    details.exception?.value,
+    details.text
+  ].filter(Boolean);
+  const stack = details.stackTrace?.callFrames
+    ?.slice(0, 6)
+    .map((frame) => {
+      const location = [frame.url, frame.lineNumber + 1, frame.columnNumber + 1].filter(Boolean).join(":");
+      return `${frame.functionName || "(anonymous)"} ${location}`.trim();
+    })
+    .filter(Boolean)
+    .join(" <- ");
+  if (stack) parts.push(`stack: ${stack}`);
+  return parts.join(" / ") || "Runtime exception";
+};
+
 const pageAuditExpression = `(() => {
   const canvases = Array.from(document.querySelectorAll("canvas")).map((canvas, index) => {
     const rect = canvas.getBoundingClientRect();
@@ -539,7 +558,7 @@ const runBrowserSnapshot = async ({ options, config, snapshotDir }) => {
     consoleMessages.push({
       source: "exception",
       level: "error",
-      text: params.exceptionDetails?.text ?? "Runtime exception",
+      text: formatExceptionDetails(params.exceptionDetails),
       timestamp: new Date().toISOString()
     });
   });
