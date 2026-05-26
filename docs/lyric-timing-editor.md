@@ -38,6 +38,16 @@ song-packs/<song-id>/lyrics/timing.json
 
 Lyric Timing Editorのv2 exportを手元に用意したら、次のコマンドで曲パックへコピーし、`manifest.json` の `lyrics` と `analysis.timing` を更新できます。
 
+GUIで入れたい場合は、Launch Managerとは別の小さなローカルGUIを起動します。
+
+```powershell
+npm run song:lyrics:gui
+```
+
+表示されたURLを開き、曲パック、timing v2 JSON、必要ならlyrics txtを選んで投入します。このGUIは起動・再生管理をしません。Launch Managerとは責任を混ぜず、曲パックの歌詞データ投入だけを扱います。
+
+コマンドだけで入れる場合は次を使います。
+
 ```powershell
 npm run song:lyrics:install -- --id <song-id> --timing <path-to-timing-v2.json>
 ```

@@ -14,6 +14,7 @@
     "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1",
     "song:scaffold": "node scripts/create-song-pack.mjs",
     "song:lyrics:install": "node scripts/install-lyrics-data.mjs",
+    "song:lyrics:gui": "node scripts/dev-lyrics-installer.mjs",
     "song:validate": "node scripts/validate-song-pack.mjs",
     "song:smoke": "node scripts/smoke-song-pack.mjs",
     "song:smoke:all": "node scripts/smoke-all-song-packs.mjs",
