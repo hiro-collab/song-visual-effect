@@ -46,6 +46,15 @@ npm run song:lyrics:gui
 
 表示されたURLを開き、曲パック、timing v2 JSON、必要ならlyrics txtを選んで投入します。このGUIは起動・再生管理をしません。Launch Managerとは責任を混ぜず、曲パックの歌詞データ投入だけを扱います。
 
+GUIの「保存ファイル名（拡張子なし）」は、曲パック内に作るファイル名の `<name>` 部分です。たとえば `live` と入れると、次のように保存されます。
+
+```text
+song-packs/<song-id>/lyrics/live.timing.v2.json
+song-packs/<song-id>/lyrics/live.lyrics.txt
+```
+
+書き込み時には `manifest.json` も更新され、`analysis.timing` が新しいtiming JSONを参照します。timing-only exportでlyrics txtも入れた場合は、`lyrics` も新しいtxtへ向きます。ブラウザのファイル選択ではJSONのschemaまでは絞れないため、GUIは選択後と書き込み時に `music-effect.lyrics-timing.v2` かどうかを検査します。
+
 コマンドだけで入れる場合は次を使います。
 
 ```powershell

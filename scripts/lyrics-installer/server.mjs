@@ -269,7 +269,7 @@ const installerHtml = (nonce) => `<!doctype html>
 <body>
   <main>
     <h1>Lyrics Data Installer</h1>
-    <p>Launch Managerとは別の、曲パックへ歌詞タイミングJSONを入れるためだけのローカルGUIです。音源解析はしません。</p>
+    <p>Launch Managerとは別の、Lyric Timing Editorのv2 exportを曲パック内の<code>lyrics/</code>へ書き込み、<code>manifest.json</code>を更新するローカルGUIです。音源解析はしません。</p>
     <section class="layout">
       <form id="install-form" class="panel">
         <label>
@@ -278,14 +278,14 @@ const installerHtml = (nonce) => `<!doctype html>
           <span class="hint"><code>song-packs/&lt;song-id&gt;/manifest.json</code> がある曲だけ表示します。</span>
         </label>
         <label>
-          保存名
+          保存ファイル名（拡張子なし）
           <input id="name-input" type="text" placeholder="例: live / rehearsal / 2026-show" />
-          <span class="hint">空ならtiming JSONのslug、または曲IDを使います。同名を入れ直す場合は下の上書きを使います。</span>
+          <span class="hint">この名前で <code>song-packs/&lt;song-id&gt;/lyrics/&lt;name&gt;.timing.v2.json</code> を作ります。lyrics txtも入れる場合は <code>&lt;name&gt;.lyrics.txt</code> も作ります。空ならtiming JSONのslug、なければ曲IDを使います。</span>
         </label>
         <label>
-          timing v2 JSON
+          歌詞タイミング v2 JSON
           <input id="timing-file" type="file" accept=".json,application/json" required />
-          <span class="hint">Lyric Timing Editor の <code>music-effect.lyrics-timing.v2</code> exportを選びます。</span>
+          <span class="hint">Lyric Timing Editor の <code>music-effect.lyrics-timing.v2</code> exportを選びます。拡張子だけでは判定できないため、選択後と書き込み時にJSONのschemaを検査します。</span>
         </label>
         <label>
           lyrics txt
@@ -297,7 +297,7 @@ const installerHtml = (nonce) => `<!doctype html>
           既存ファイルを上書きする
         </label>
         <div class="row">
-          <button id="install-button" type="submit">曲パックへ入れる</button>
+          <button id="install-button" type="submit">曲パックへ書き込む</button>
           <button id="reload-button" class="secondary" type="button">曲一覧を更新</button>
         </div>
       </form>
@@ -316,6 +316,7 @@ const installerHtml = (nonce) => `<!doctype html>
     const form = document.querySelector("#install-form");
     const installButton = document.querySelector("#install-button");
     const reloadButton = document.querySelector("#reload-button");
+    const timingFileInput = document.querySelector("#timing-file");
     let songs = [];
 
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -366,6 +367,29 @@ const installerHtml = (nonce) => `<!doctype html>
       resultBox.innerHTML = html;
     };
 
+    const checkTimingFile = async () => {
+      const file = timingFileInput.files[0];
+      if (!file) {
+        setResult("まだ実行していません。");
+        return;
+      }
+      if (!file.name.toLowerCase().endsWith(".json")) {
+        setResult('<div class="warn">JSONファイルを選んでください。</div>', "warn");
+        return;
+      }
+      try {
+        const json = JSON.parse(await file.text());
+        if (json && json.schema === "music-effect.lyrics-timing.v2") {
+          const mode = json.includesLyrics === false ? "timing-only" : json.includesLyrics === true ? "with-lyrics" : "includesLyrics未指定";
+          setResult(\`<div class="ok">v2 timing JSONとして読めます。</div><div>\${escapeHtml(mode)}</div>\`, "ok");
+        } else {
+          setResult('<div class="warn">このJSONは <code>music-effect.lyrics-timing.v2</code> exportではありません。</div>', "warn");
+        }
+      } catch (error) {
+        setResult(\`<div class="warn">JSONとして読めません: \${escapeHtml(error.message || String(error))}</div>\`, "warn");
+      }
+    };
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       installButton.disabled = true;
@@ -406,6 +430,9 @@ const installerHtml = (nonce) => `<!doctype html>
       loadSongs().catch((error) => setResult(\`<div class="warn">\${escapeHtml(error.message)}</div>\`, "warn"));
     });
     songSelect.addEventListener("change", renderSongInfo);
+    timingFileInput.addEventListener("change", () => {
+      checkTimingFile().catch((error) => setResult(\`<div class="warn">\${escapeHtml(error.message)}</div>\`, "warn"));
+    });
     loadSongs().catch((error) => setResult(\`<div class="warn">\${escapeHtml(error.message)}</div>\`, "warn"));
   </script>
 </body>
