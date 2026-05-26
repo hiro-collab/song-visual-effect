@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { installLyricsDataFromText } from "../scripts/lyrics-installer/install.mjs";
+import { installerHtml } from "../scripts/lyrics-installer/server.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const songId = "lyrics-install-test";
@@ -207,4 +208,15 @@ test("shared lyrics installer helper installs from uploaded text", () => {
   } finally {
     clean();
   }
+});
+
+test("lyrics installer UI previews manifest changes before overwrite", () => {
+  const html = installerHtml("test-nonce");
+
+  assert.match(html, /書き込み前の確認/);
+  assert.match(html, /現在のlyrics/);
+  assert.match(html, /書き込み後timing/);
+  assert.match(html, /曲名・アーティスト・曲ID/);
+  assert.match(html, /music-effect\.lyrics-timing\.v2/);
+  assert.match(html, /サーバーが停止している可能性/);
 });

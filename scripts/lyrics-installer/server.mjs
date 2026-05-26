@@ -111,7 +111,7 @@ const installFromUpload = (payload) => {
   };
 };
 
-const installerHtml = (nonce) => `<!doctype html>
+export const installerHtml = (nonce) => `<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
@@ -255,6 +255,41 @@ const installerHtml = (nonce) => `<!doctype html>
     .ok {
       color: #91e0ad;
     }
+    .write-preview {
+      border: 1px solid rgba(145, 224, 173, 0.24);
+      border-radius: 8px;
+      background: rgba(145, 224, 173, 0.06);
+      padding: 12px;
+      margin: 8px 0 16px;
+    }
+    .write-preview.is-warn {
+      border-color: rgba(255, 207, 122, 0.34);
+      background: rgba(255, 207, 122, 0.07);
+    }
+    .write-preview h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 6px 10px;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+    .preview-grid dt {
+      color: #bbb2a5;
+      font-weight: 700;
+    }
+    .preview-grid dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    .preview-note {
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: #ded5c5;
+    }
     @media (max-width: 860px) {
       main {
         width: min(100vw - 24px, 1040px);
@@ -296,6 +331,9 @@ const installerHtml = (nonce) => `<!doctype html>
           <input id="force-input" type="checkbox" />
           既存ファイルを上書きする
         </label>
+        <div id="write-preview" class="write-preview is-warn">
+          歌詞タイミング v2 JSONを選ぶと、現在の設定と書き込み予定をここに表示します。
+        </div>
         <div class="row">
           <button id="install-button" type="submit">曲パックへ書き込む</button>
           <button id="reload-button" class="secondary" type="button">曲一覧を更新</button>
@@ -317,7 +355,13 @@ const installerHtml = (nonce) => `<!doctype html>
     const installButton = document.querySelector("#install-button");
     const reloadButton = document.querySelector("#reload-button");
     const timingFileInput = document.querySelector("#timing-file");
+    const lyricsFileInput = document.querySelector("#lyrics-file");
+    const nameInput = document.querySelector("#name-input");
+    const forceInput = document.querySelector("#force-input");
+    const writePreview = document.querySelector("#write-preview");
     let songs = [];
+    let timingState = { status: "empty", json: null, error: "" };
+    let installBusy = false;
 
     const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
       "&": "&amp;",
@@ -328,11 +372,28 @@ const installerHtml = (nonce) => `<!doctype html>
     })[char]);
 
     const selectedSong = () => songs.find((song) => song.id === songSelect.value);
+    const sanitizeName = (value) => {
+      const name = String(value ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, "-")
+        .replace(/^[._-]+|[._-]+$/g, "")
+        .slice(0, 64);
+      return name || "lyrics";
+    };
+    const inferredFileName = (song, timingJson) =>
+      sanitizeName(nameInput.value || timingJson?.slug || song?.id || "lyrics");
+    const pathForName = (song, fileName, suffix) =>
+      song ? \`./lyrics/\${fileName}\${suffix}\` : "";
+    const updateInstallButton = () => {
+      installButton.disabled = installBusy || timingState.status !== "valid";
+    };
 
     const renderSongInfo = () => {
       const song = selectedSong();
       if (!song) {
         songInfo.innerHTML = "曲パックが見つかりません。";
+        renderWritePreview();
         return;
       }
       songInfo.innerHTML = \`
@@ -342,6 +403,7 @@ const installerHtml = (nonce) => `<!doctype html>
         <div>lyrics: <code>\${escapeHtml(song.lyrics || "(none)")}</code></div>
         <div>timing: <code>\${escapeHtml(song.timing || "(none)")}</code></div>
       \`;
+      renderWritePreview();
     };
 
     const loadSongs = async (preferredId = songSelect.value) => {
@@ -367,32 +429,105 @@ const installerHtml = (nonce) => `<!doctype html>
       resultBox.innerHTML = html;
     };
 
+    const renderWritePreview = () => {
+      const song = selectedSong();
+      if (!song) {
+        writePreview.className = "write-preview is-warn";
+        writePreview.innerHTML = "曲パックを選ぶと、現在の設定と書き込み予定をここに表示します。";
+        updateInstallButton();
+        return;
+      }
+      if (timingState.status === "empty") {
+        writePreview.className = "write-preview is-warn";
+        writePreview.innerHTML = "歌詞タイミング v2 JSONを選ぶと、現在の設定と書き込み予定をここに表示します。";
+        updateInstallButton();
+        return;
+      }
+      if (timingState.status === "invalid") {
+        writePreview.className = "write-preview is-warn";
+        writePreview.innerHTML = \`
+          <h3>このファイルはまだ書き込めません</h3>
+          <p class="preview-note">\${escapeHtml(timingState.error)}</p>
+          <p class="preview-note">Lyric Timing Editorの <strong>Project保存</strong> ではなく、<strong>Export</strong> から出した <code>music-effect.lyrics-timing.v2</code> JSONを選んでください。</p>
+        \`;
+        updateInstallButton();
+        return;
+      }
+
+      const timingJson = timingState.json;
+      const fileName = inferredFileName(song, timingJson);
+      const nextTiming = pathForName(song, fileName, ".timing.v2.json");
+      const hasLyricsFile = Boolean(lyricsFileInput.files[0]);
+      const nextLyrics = hasLyricsFile
+        ? pathForName(song, fileName, ".lyrics.txt")
+        : timingJson.includesLyrics === true
+          ? "(timing JSON内のtextを使うためmanifest lyricsはnull)"
+          : (song.lyrics || "(現状維持)");
+      const mode = timingJson.includesLyrics === false ? "timing-only" : "with-lyrics";
+      const sourceTitle = timingJson.title || "(未記入)";
+      const sourceArtist = timingJson.artist || "(未記入)";
+      const overwriteNotice = forceInput.checked
+        ? "上書きON: 同じ保存ファイル名の timing/lyrics ファイルがあれば置き換えます。"
+        : "上書きOFF: 同じ保存ファイル名のファイルが既にあれば停止します。";
+
+      writePreview.className = "write-preview";
+      writePreview.innerHTML = \`
+        <h3>書き込み前の確認</h3>
+        <dl class="preview-grid">
+          <dt>曲パック</dt><dd><strong>\${escapeHtml(song.title)}</strong> / \${escapeHtml(song.artist || "Unknown artist")} / <code>\${escapeHtml(song.id)}</code></dd>
+          <dt>現在のlyrics</dt><dd><code>\${escapeHtml(song.lyrics || "(none)")}</code></dd>
+          <dt>現在のtiming</dt><dd><code>\${escapeHtml(song.timing || "(none)")}</code></dd>
+          <dt>書き込み後lyrics</dt><dd><code>\${escapeHtml(nextLyrics)}</code></dd>
+          <dt>書き込み後timing</dt><dd><code>\${escapeHtml(nextTiming)}</code></dd>
+          <dt>入力JSON</dt><dd>\${escapeHtml(mode)} / title: \${escapeHtml(sourceTitle)} / artist: \${escapeHtml(sourceArtist)}</dd>
+        </dl>
+        <p class="preview-note">曲名・アーティスト・曲IDなど、曲パック本体の情報はこの操作では変更しません。入力JSON側のtitleやartistが空欄でも、曲パックの表示名を空欄で上書きすることはありません。</p>
+        <p class="preview-note">\${escapeHtml(overwriteNotice)}</p>
+        <p class="preview-note">manifest.jsonで更新するのは基本的に <code>lyrics</code> と <code>analysis.timing</code> の参照先だけです。</p>
+      \`;
+      updateInstallButton();
+    };
+
     const checkTimingFile = async () => {
       const file = timingFileInput.files[0];
       if (!file) {
+        timingState = { status: "empty", json: null, error: "" };
         setResult("まだ実行していません。");
+        renderWritePreview();
         return;
       }
       if (!file.name.toLowerCase().endsWith(".json")) {
+        timingState = { status: "invalid", json: null, error: "JSONファイルを選んでください。" };
         setResult('<div class="warn">JSONファイルを選んでください。</div>', "warn");
+        renderWritePreview();
         return;
       }
       try {
         const json = JSON.parse(await file.text());
         if (json && json.schema === "music-effect.lyrics-timing.v2") {
           const mode = json.includesLyrics === false ? "timing-only" : json.includesLyrics === true ? "with-lyrics" : "includesLyrics未指定";
+          timingState = { status: "valid", json, error: "" };
           setResult(\`<div class="ok">v2 timing JSONとして読めます。</div><div>\${escapeHtml(mode)}</div>\`, "ok");
         } else {
+          timingState = { status: "invalid", json: null, error: "このJSONは music-effect.lyrics-timing.v2 exportではありません。" };
           setResult('<div class="warn">このJSONは <code>music-effect.lyrics-timing.v2</code> exportではありません。</div>', "warn");
         }
       } catch (error) {
+        timingState = { status: "invalid", json: null, error: "JSONとして読めません: " + (error.message || String(error)) };
         setResult(\`<div class="warn">JSONとして読めません: \${escapeHtml(error.message || String(error))}</div>\`, "warn");
       }
+      renderWritePreview();
     };
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      installButton.disabled = true;
+      if (timingState.status !== "valid") {
+        renderWritePreview();
+        setResult('<div class="warn">書き込み前に <code>music-effect.lyrics-timing.v2</code> export JSONを選んでください。</div>', "warn");
+        return;
+      }
+      installBusy = true;
+      updateInstallButton();
       setResult("投入中です...");
       try {
         const targetId = songSelect.value;
@@ -420,9 +555,13 @@ const installerHtml = (nonce) => `<!doctype html>
         \`, "ok");
         await loadSongs(targetId);
       } catch (error) {
-        setResult(\`<div class="warn">\${escapeHtml(error.message || String(error))}</div>\`, "warn");
+        const message = error instanceof TypeError && /fetch/i.test(error.message || "")
+          ? "Lyrics Data Installerサーバーに接続できません。古いタブを開いているか、サーバーが停止している可能性があります。ターミナルで npm run song:lyrics:gui を起動し直し、表示されたURLを開き直してください。"
+          : error.message || String(error);
+        setResult(\`<div class="warn">\${escapeHtml(message)}</div>\`, "warn");
       } finally {
-        installButton.disabled = false;
+        installBusy = false;
+        updateInstallButton();
       }
     });
 
@@ -430,10 +569,19 @@ const installerHtml = (nonce) => `<!doctype html>
       loadSongs().catch((error) => setResult(\`<div class="warn">\${escapeHtml(error.message)}</div>\`, "warn"));
     });
     songSelect.addEventListener("change", renderSongInfo);
+    nameInput.addEventListener("input", renderWritePreview);
+    lyricsFileInput.addEventListener("change", renderWritePreview);
+    forceInput.addEventListener("change", renderWritePreview);
     timingFileInput.addEventListener("change", () => {
       checkTimingFile().catch((error) => setResult(\`<div class="warn">\${escapeHtml(error.message)}</div>\`, "warn"));
     });
-    loadSongs().catch((error) => setResult(\`<div class="warn">\${escapeHtml(error.message)}</div>\`, "warn"));
+    updateInstallButton();
+    loadSongs().catch((error) => {
+      const message = error instanceof TypeError && /fetch/i.test(error.message || "")
+        ? "Lyrics Data Installerサーバーに接続できません。ターミナルで npm run song:lyrics:gui を起動し直し、表示されたURLを開き直してください。"
+        : error.message;
+      setResult(\`<div class="warn">\${escapeHtml(message)}</div>\`, "warn");
+    });
   </script>
 </body>
 </html>`;
