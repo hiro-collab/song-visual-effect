@@ -66,3 +66,15 @@ test("Launch Manager UI renders a LAN exposure warning and token field", () => {
   assert.match(html, /id="control-token"/);
   assert.doesNotMatch(html, /<script(?! nonce="test-nonce")/);
 });
+
+test("Launch Manager UI makes initial and startup loading states visible", () => {
+  const html = managerHtml({
+    title: "Test Manager",
+    nonce: "test-nonce"
+  });
+
+  assert.match(html, /id="startup-notice"/);
+  assert.match(html, /状態を読み込んでいます/);
+  assert.match(html, /起動確認中/);
+  assert.match(html, /残り目安/);
+});

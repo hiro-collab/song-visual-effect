@@ -227,6 +227,53 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         max-width: 420px;
       }
       .token-field[hidden] { display: none; }
+      .startup-notice {
+        display: grid;
+        gap: 10px;
+        border: 1px solid rgba(255, 217, 138, 0.56);
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        background:
+          linear-gradient(90deg, rgba(245, 195, 95, 0.18), rgba(159, 212, 255, 0.06)),
+          rgba(0, 0, 0, 0.18);
+        box-shadow: 0 0 24px rgba(245, 195, 95, 0.08);
+      }
+      .startup-notice[hidden] { display: none; }
+      .startup-title {
+        color: var(--text);
+        font-weight: 800;
+      }
+      .startup-notice p {
+        color: var(--text);
+      }
+      .startup-detail {
+        font-size: 13px;
+      }
+      .startup-progress {
+        position: relative;
+        height: 10px;
+        border: 1px solid rgba(255, 217, 138, 0.28);
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.24);
+      }
+      .startup-progress span {
+        display: block;
+        width: var(--progress, 24%);
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--primary), var(--info));
+        transition: width 0.25s ease;
+      }
+      .startup-progress.is-indeterminate span {
+        width: 42%;
+        animation: loading-sweep 1.4s ease-in-out infinite;
+      }
+      @keyframes loading-sweep {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(250%); }
+      }
       .runtime-strip {
         display: flex;
         gap: 10px;
@@ -641,6 +688,22 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       .is-running .dot { background: var(--ok); }
       .is-starting .dot, .is-stopping .dot { background: var(--warn); }
       .is-error .dot { background: var(--bad); }
+      .target-progress {
+        display: grid;
+        gap: 7px;
+        border: 1px solid rgba(255, 217, 138, 0.34);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 12px;
+        background: rgba(255, 217, 138, 0.06);
+      }
+      .target-progress strong {
+        color: var(--text);
+        font-size: 13px;
+      }
+      .target-progress p {
+        font-size: 12px;
+      }
       .target-summary {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -762,6 +825,13 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         </label>
       </section>
 
+      <section id="startup-notice" class="startup-notice" aria-live="polite">
+        <strong id="startup-title" class="startup-title">状態を読み込んでいます</strong>
+        <p id="startup-text">Launch Managerがサーバー状態と曲JSON一覧を確認中です。初回表示では数秒かかる場合があります。</p>
+        <div id="startup-progress" class="startup-progress is-indeterminate" role="progressbar" aria-label="起動状態の読み込み"><span></span></div>
+        <p id="startup-detail" class="startup-detail">この表示が消えるまで少し待ってください。</p>
+      </section>
+
       <section class="song-launcher" aria-label="Song launcher">
         <h2>Deck A/Bで再生</h2>
         <p>Deckごとに曲パッケージの manifest.json を選び、別々の再生画面URLを開くかコピーします。</p>
@@ -873,7 +943,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       <p id="runtime" class="footer"></p>
     </main>
     <script nonce="${escapeHtml(nonce)}">
-      const state = { status: null, sync: null, syncView: "open", syncParticipant: "", busy: false, stopAllArmed: false, stopAllTimer: null };
+      const state = { status: null, sync: null, syncView: "open", syncParticipant: "", busy: false, operation: null, stopAllArmed: false, stopAllTimer: null };
       const svgNs = "http://www.w3.org/2000/svg";
       const byId = (id) => document.getElementById(id);
       const make = (tag, className, text) => {
@@ -901,6 +971,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         { id: "deck-a", label: "Deck A", targetId: "deck-a-player", playerBaseUrl: "" },
         { id: "deck-b", label: "Deck B", targetId: "deck-b-player", playerBaseUrl: "" }
       ];
+      const startupWaitPaddingMs = 5000;
       const call = async (url, options = {}) => {
         const requestOptions = { ...options, headers: { ...(options.headers || {}) } };
         if (String(requestOptions.method || "GET").toUpperCase() === "POST") {
@@ -982,6 +1053,11 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         const ms = Number(value);
         if (!Number.isFinite(ms)) return "-";
         return ms < 1000 ? Math.round(ms) + "ms" : (ms / 1000).toFixed(1) + "秒";
+      };
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+      const liveElapsedMs = (startedAt) => {
+        const started = Date.parse(startedAt || "");
+        return Number.isFinite(started) ? Math.max(0, Date.now() - started) : null;
       };
       const formatMetrics = (metrics) => {
         if (!metrics || metrics.exists === false) return "CPU - / Memory -";
@@ -1128,6 +1204,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       const setBusy = (busy) => {
         state.busy = busy;
         document.querySelectorAll("button").forEach((button) => button.disabled = busy);
+        renderStartupNotice(state.status);
       };
       const setMessage = (text, level = "") => {
         const node = byId("message");
@@ -1363,6 +1440,29 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           .filter((target) => target?.status === "error" && !transientHealthError(target))
           .map((target) => target.label + ": " + (target.error || "error"));
       };
+      const targetIsWaiting = (target) =>
+        target?.status === "starting" ||
+        target?.status === "stopping" ||
+        (target?.running && target.health === "fail" && !target.error);
+      const targetWaitInfo = (target) => {
+        const timeout = Number(target?.startupTimeoutMs);
+        const elapsed = liveElapsedMs(target?.startedAt);
+        if (!target || !Number.isFinite(timeout) || elapsed === null) {
+          return {
+            elapsed: null,
+            timeout: null,
+            remaining: null,
+            progress: null
+          };
+        }
+        const total = Math.max(1000, timeout + startupWaitPaddingMs);
+        return {
+          elapsed,
+          timeout: total,
+          remaining: Math.max(0, total - elapsed),
+          progress: clamp((elapsed / total) * 100, 4, 98)
+        };
+      };
       const targetsStartupTimeoutMs = (ids) => {
         const targets = targetMap();
         const timing = state.status?.timing || {};
@@ -1373,6 +1473,70 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           return Number.isFinite(timeout) ? Math.max(maxTimeout, timeout) : maxTimeout;
         }, fallback);
         return maxTargetTimeout + padding;
+      };
+      const beginOperation = (label, targetIds, waitMs = null) => {
+        const startedAtMs = Date.now();
+        const timeoutMs = Number.isFinite(Number(waitMs)) ? Number(waitMs) : targetsStartupTimeoutMs(targetIds || []);
+        state.operation = {
+          label,
+          targetIds: targetIds || [],
+          startedAtMs,
+          deadlineAtMs: startedAtMs + timeoutMs
+        };
+        renderStartupNotice(state.status);
+      };
+      const endOperation = () => {
+        state.operation = null;
+        renderStartupNotice(state.status);
+      };
+      const renderStartupNotice = (status) => {
+        const box = byId("startup-notice");
+        const title = byId("startup-title");
+        const text = byId("startup-text");
+        const detail = byId("startup-detail");
+        const progress = byId("startup-progress");
+        if (!box || !title || !text || !detail || !progress) return;
+
+        const activeTargets = (status?.targets || []).filter(targetIsWaiting);
+        const operation = state.operation;
+        if (!status) {
+          box.hidden = false;
+          title.textContent = "状態を読み込んでいます";
+          text.textContent = "Launch Managerがサーバー状態と曲JSON一覧を確認中です。初回表示では数秒かかる場合があります。";
+          detail.textContent = "この表示が消えるまで少し待ってください。";
+          progress.className = "startup-progress is-indeterminate";
+          progress.style.setProperty("--progress", "42%");
+          progress.setAttribute("aria-valuetext", "状態読み込み中");
+          return;
+        }
+        if (!operation && !activeTargets.length) {
+          box.hidden = true;
+          return;
+        }
+
+        const waitingNames = activeTargets.map((target) => target.label).join("、");
+        const now = Date.now();
+        const elapsed = operation ? Math.max(0, now - operation.startedAtMs) : Math.max(0, ...activeTargets.map((target) => targetWaitInfo(target).elapsed || 0));
+        const timeout = operation ? Math.max(1000, operation.deadlineAtMs - operation.startedAtMs) : Math.max(0, ...activeTargets.map((target) => targetWaitInfo(target).timeout || 0));
+        const remaining = timeout ? Math.max(0, timeout - elapsed) : null;
+        const progressValue = timeout ? clamp((elapsed / timeout) * 100, 4, 98) : 42;
+
+        box.hidden = false;
+        title.textContent = operation?.label || "サーバーを起動確認中です";
+        text.textContent = activeTargets.length
+          ? "まだ起動中です。ブラウザ画面や曲データサーバーのhealth checkが正常になるまで待っています。"
+          : "操作を送信しました。サーバー状態を更新しています。";
+        detail.textContent =
+          "対象: " + (waitingNames || "確認中") +
+          " / 経過 " + formatElapsedMs(elapsed) +
+          (remaining !== null ? " / 残り目安 " + formatDurationMs(remaining) : "") +
+          (timeout ? " / 待ち上限 " + formatDurationMs(timeout) : "");
+        progress.className = "startup-progress";
+        progress.style.setProperty("--progress", progressValue.toFixed(0) + "%");
+        progress.setAttribute("aria-valuemin", "0");
+        progress.setAttribute("aria-valuemax", "100");
+        progress.setAttribute("aria-valuenow", String(Math.round(progressValue)));
+        progress.setAttribute("aria-valuetext", detail.textContent);
       };
       const formatSongLabel = (song) => song.title + (song.artist ? " / " + song.artist : "");
       const renderRuntimeStrip = (catalog) => {
@@ -1784,12 +1948,14 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         try {
           setBusy(true);
           setMessage(deck.label + " を起動しています...", "warn");
+          beginOperation(deck.label + " を起動確認中", deckRequiredTargetIds(deckId));
           await startDeckTargets(deckId);
           await waitForDeckTargets(deckId);
           setMessage(deck.label + " を起動しました。", "ok");
         } catch (error) {
           setMessage(error.message, "error");
         } finally {
+          endOperation();
           setBusy(false);
           renderDecks();
         }
@@ -1800,12 +1966,14 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         try {
           setBusy(true);
           setMessage(deck.label + " を停止しています...", "warn");
+          beginOperation(deck.label + " を停止中", [deck.targetId], 15000);
           await call("/api/targets/" + deck.targetId + "/stop", { method: "POST" });
           await refresh();
           setMessage(deck.label + " を停止しました。Song Data Serverと他Deckは止めていません。", "ok");
         } catch (error) {
           setMessage(error.message, "error");
         } finally {
+          endOperation();
           setBusy(false);
           renderDecks();
         }
@@ -1816,12 +1984,14 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         try {
           setBusy(true);
           setMessage(deck.label + " を再起動しています...", "warn");
+          beginOperation(deck.label + " を再起動確認中", deckRequiredTargetIds(deckId));
           await call("/api/targets/" + deck.targetId + "/restart", { method: "POST" });
           await waitForDeckTargets(deckId);
           setMessage(deck.label + " を再起動しました。", "ok");
         } catch (error) {
           setMessage(error.message, "error");
         } finally {
+          endOperation();
           setBusy(false);
           renderDecks();
         }
@@ -1864,6 +2034,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         try {
           setBusy(true);
           setMessage("Deck A/Bだけを停止しています。Song Data Serverは停止しません。", "warn");
+          beginOperation("Deck A/Bを停止中", decks.map((deck) => deck.targetId), 15000);
           for (const deck of [...decks].reverse()) {
             await call("/api/targets/" + deck.targetId + "/stop", { method: "POST" });
           }
@@ -1872,6 +2043,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         } catch (error) {
           setMessage(error.message, "error");
         } finally {
+          endOperation();
           setBusy(false);
           renderDecks();
         }
@@ -1889,6 +2061,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         try {
           setBusy(true);
           setMessage(deck.label + " に必要なサーバーを起動しています...", "warn");
+          beginOperation(deck.label + " の再生準備中", deckRequiredTargetIds(deckId));
           await startDeckTargets(deckId);
           await waitForDeckTargets(deckId);
           if (pendingWindow) {
@@ -1903,9 +2076,41 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           if (pendingWindow) pendingWindow.close();
           setMessage(error.message, "error");
         } finally {
+          endOperation();
           setBusy(false);
           renderDecks();
         }
+      };
+      const renderTargetProgress = (target) => {
+        if (!targetIsWaiting(target)) return null;
+        const info = targetWaitInfo(target);
+        const box = make("div", "target-progress");
+        const title = target.status === "stopping" ? "停止処理中" : "起動確認中";
+        box.append(make("strong", "", title));
+        box.append(make("p", "", target.status === "stopping"
+          ? "プロセス停止を待っています。"
+          : "サーバー起動後、health checkが正常になるまで待っています。"));
+        const progress = make("div", "startup-progress");
+        const bar = make("span");
+        progress.append(bar);
+        if (info.progress === null) {
+          progress.className = "startup-progress is-indeterminate";
+          progress.style.setProperty("--progress", "42%");
+          progress.setAttribute("aria-valuetext", "確認中");
+        } else {
+          progress.style.setProperty("--progress", info.progress.toFixed(0) + "%");
+          progress.setAttribute("aria-valuemin", "0");
+          progress.setAttribute("aria-valuemax", "100");
+          progress.setAttribute("aria-valuenow", String(Math.round(info.progress)));
+          progress.setAttribute("aria-valuetext", "経過 " + formatElapsedMs(info.elapsed) + " / 残り目安 " + formatDurationMs(info.remaining));
+        }
+        box.append(progress);
+        box.append(make("p", "startup-detail",
+          "経過 " + formatElapsedMs(info.elapsed) +
+          " / 残り目安 " + formatDurationMs(info.remaining) +
+          " / 待ち上限 " + formatDurationMs(info.timeout)
+        ));
+        return box;
       };
       const renderTarget = (target) => {
         const article = make("article", "target is-" + target.status + (target.error ? " has-error" : ""));
@@ -1929,6 +2134,8 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           metricNode("起動時刻", formatDate(target.startedAt))
         );
         body.append(summary);
+        const progress = renderTargetProgress(target);
+        if (progress) body.append(progress);
 
         const actions = make("div", "target-actions");
         actions.append(
@@ -2016,6 +2223,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
             pre.scrollTop = saved.scrollTops[index] || 0;
           });
         }
+        renderStartupNotice(status);
       };
       const refresh = async () => {
         const [status, sync] = await Promise.all([
