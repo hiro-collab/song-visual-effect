@@ -123,6 +123,47 @@ test("install-lyrics-data can install with-lyrics v2 without separate lyric text
   }
 });
 
+test("shared lyrics installer helper warns when timing duration differs from manifest", () => {
+  clean();
+  try {
+    mkdirSync(songRoot, { recursive: true });
+    writeFileSync(
+      join(songRoot, "manifest.json"),
+      `${JSON.stringify({
+        schema: "music-effect.song-manifest.v1",
+        id: songId,
+        title: "Synthetic Install Test",
+        artist: "Synthetic",
+        duration: 10,
+        lyrics: null,
+        analysis: { timing: null }
+      }, null, 2)}\n`,
+      "utf8"
+    );
+
+    const result = installLyricsDataFromText({
+      root: repoRoot,
+      id: songId,
+      name: "duration-mismatch",
+      timingText: `${JSON.stringify({
+        schema: "music-effect.lyrics-timing.v2",
+        slug: "duration-mismatch",
+        timeUnit: "ms",
+        includesLyrics: true,
+        rightsNotice: "Synthetic test fixture.",
+        durationMs: 181000,
+        phrases: [
+          { id: "phrase-0001", index: 0, sourceLine: 1, startTimeMs: 0, endTimeMs: 181000, text: "alpha" }
+        ]
+      })}\n`
+    });
+
+    assert.match(result.warnings.join("\n"), /timing duration 181\.000s differs from manifest duration 10\.000s/);
+  } finally {
+    clean();
+  }
+});
+
 test("shared lyrics installer helper installs from uploaded text", () => {
   clean();
   try {

@@ -174,6 +174,42 @@ test("lyrics timing v2 reports invalid timing and missing text", async () => {
   assert.match(warnings.join("\n"), /endTimeMs exceeds duration/);
 });
 
+test("lyrics timing v2 caps repeated duration warnings", async () => {
+  const { collectTimedLyrics } = await loadLyricsTimingModule();
+  const warnings = [];
+  const phrases = Array.from({ length: 12 }, (_, index) => ({
+    id: `phrase-${String(index + 1).padStart(4, "0")}`,
+    index,
+    sourceLine: index + 1,
+    startTimeMs: index * 1000,
+    endTimeMs: (index + 1) * 1000,
+    text: `synthetic ${index + 1}`
+  }));
+
+  collectTimedLyrics(
+    {
+      schema: "music-effect.lyrics-timing.v2",
+      durationMs: 1000,
+      timeUnit: "ms",
+      includesLyrics: true,
+      rightsNotice: "Synthetic test fixture. No real lyric rights are involved.",
+      phrases
+    },
+    {
+      duration: 1,
+      warnings
+    }
+  );
+
+  const text = warnings.join("\n");
+  const endDetailCount = text.match(/phrases\[\d+\]\.endTimeMs exceeds duration/g)?.length ?? 0;
+  const startDetailCount = text.match(/phrases\[\d+\]\.startTimeMs exceeds duration/g)?.length ?? 0;
+  assert.equal(endDetailCount, 6);
+  assert.equal(startDetailCount, 6);
+  assert.match(text, /additional phrase endTimeMs values exceed duration/);
+  assert.match(text, /additional phrase startTimeMs values exceed duration/);
+});
+
 test("lyrics timing v2 metadata stays optional but invalid metadata warns", async () => {
   const { collectTimedLyrics } = await loadLyricsTimingModule();
   const warnings = [];

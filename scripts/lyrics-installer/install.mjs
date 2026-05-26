@@ -162,6 +162,22 @@ const normalizeOptionalText = (text, label, maxLength) => {
   return text;
 };
 
+const finiteNumber = (value) => (typeof value === "number" && Number.isFinite(value) ? value : null);
+
+const collectDurationWarnings = (manifest, timingJson) => {
+  const manifestDuration = finiteNumber(manifest.duration);
+  const timingDurationMs = finiteNumber(timingJson.durationMs);
+  if (manifestDuration === null || timingDurationMs === null) return [];
+
+  const timingDuration = timingDurationMs / 1000;
+  const drift = Math.abs(manifestDuration - timingDuration);
+  if (drift <= 1) return [];
+
+  return [
+    `timing duration ${timingDuration.toFixed(3)}s differs from manifest duration ${manifestDuration.toFixed(3)}s; playback may warn or hide late lyrics.`
+  ];
+};
+
 export const installLyricsDataFromText = ({
   root = defaultRepoRoot,
   id,
@@ -189,6 +205,7 @@ export const installLyricsDataFromText = ({
   }
 
   const manifest = readJsonFile(manifestPath);
+  timingWarnings.push(...collectDurationWarnings(manifest, timingJson));
   const fileName = inferName({ explicitName: name, timingJson, id: songId });
   const lyricsDir = path.join(songRoot, "lyrics");
   const timingTarget = path.join(lyricsDir, `${fileName}.timing.v2.json`);

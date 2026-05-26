@@ -343,13 +343,16 @@ const installerHtml = (nonce) => `<!doctype html>
       \`;
     };
 
-    const loadSongs = async () => {
+    const loadSongs = async (preferredId = songSelect.value) => {
       const response = await fetch("/api/songs");
       const data = await response.json();
       songs = data.songs || [];
       songSelect.innerHTML = songs.map((song) =>
         \`<option value="\${escapeHtml(song.id)}">\${escapeHtml(song.title)} / \${escapeHtml(song.artist || song.id)}</option>\`
       ).join("");
+      if (preferredId && songs.some((song) => song.id === preferredId)) {
+        songSelect.value = preferredId;
+      }
       renderSongInfo();
     };
 
@@ -368,13 +371,14 @@ const installerHtml = (nonce) => `<!doctype html>
       installButton.disabled = true;
       setResult("投入中です...");
       try {
+        const targetId = songSelect.value;
         const timingText = await fileText("#timing-file");
         const lyricsText = await fileText("#lyrics-file");
         const response = await fetch("/api/install", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: songSelect.value,
+            id: targetId,
             name: document.querySelector("#name-input").value,
             timingText,
             lyricsText,
@@ -390,7 +394,7 @@ const installerHtml = (nonce) => `<!doctype html>
           <div>次に確認:</div>
           <pre>\${escapeHtml((data.next || []).join("\\n"))}</pre>
         \`, "ok");
-        await loadSongs();
+        await loadSongs(targetId);
       } catch (error) {
         setResult(\`<div class="warn">\${escapeHtml(error.message || String(error))}</div>\`, "warn");
       } finally {

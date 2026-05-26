@@ -12,6 +12,7 @@ type LyricsTimingImportOptions = {
 };
 
 const MIN_LYRIC_DURATION = 0.8;
+const MAX_REPEATED_TIMING_WARNINGS = 6;
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => (
@@ -193,6 +194,8 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
 
   const cues: LyricCue[] = [];
   let previousEnd: number | null = null;
+  let endAfterDurationCount = 0;
+  let startAfterDurationCount = 0;
   phrases.forEach((phraseValue, arrayIndex) => {
     if (!isRecord(phraseValue)) {
       warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}] is not an object`);
@@ -255,11 +258,17 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
 
     let cueEnd = end;
     if (duration !== null && cueEnd > duration + 0.05) {
-      warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].endTimeMs exceeds duration`);
+      endAfterDurationCount += 1;
+      if (endAfterDurationCount <= MAX_REPEATED_TIMING_WARNINGS) {
+        warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].endTimeMs exceeds duration`);
+      }
       cueEnd = Math.max(time + MIN_LYRIC_DURATION, duration);
     }
     if (duration !== null && time > duration + 0.05) {
-      warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].startTimeMs exceeds duration`);
+      startAfterDurationCount += 1;
+      if (startAfterDurationCount <= MAX_REPEATED_TIMING_WARNINGS) {
+        warn(warnings, `lyrics timing v2 warning: phrases[${arrayIndex}].startTimeMs exceeds duration`);
+      }
     }
 
     cues.push({
@@ -272,6 +281,19 @@ const collectLyricsTimingV2 = (json: Record<string, unknown>, options: LyricsTim
       text
     });
   });
+
+  if (endAfterDurationCount > MAX_REPEATED_TIMING_WARNINGS) {
+    warn(
+      warnings,
+      `lyrics timing v2 warning: ${endAfterDurationCount - MAX_REPEATED_TIMING_WARNINGS} additional phrase endTimeMs values exceed duration`
+    );
+  }
+  if (startAfterDurationCount > MAX_REPEATED_TIMING_WARNINGS) {
+    warn(
+      warnings,
+      `lyrics timing v2 warning: ${startAfterDurationCount - MAX_REPEATED_TIMING_WARNINGS} additional phrase startTimeMs values exceed duration`
+    );
+  }
 
   return uniqueSorted(cues, (cue) => cue.time);
 };
