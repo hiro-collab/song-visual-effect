@@ -28,7 +28,7 @@ const config = {
   sets: []
 };
 
-const withShowProfileFixture = async ({ songId, showId, show }, assertion) => {
+const withShowProfileFixture = async ({ songId, showId, show, songFiles = {} }, assertion) => {
   const songRoot = resolve(repoRoot, "song-packs", songId);
   const showRoot = resolve(repoRoot, "show-profiles", showId);
   rmSync(songRoot, { recursive: true, force: true });
@@ -43,6 +43,11 @@ const withShowProfileFixture = async ({ songId, showId, show }, assertion) => {
       artist: "Test Artist",
       audio: null
     });
+    for (const [relativePath, value] of Object.entries(songFiles)) {
+      const filePath = resolve(songRoot, relativePath);
+      mkdirSync(resolve(filePath, ".."), { recursive: true });
+      writeJson(filePath, value);
+    }
     writeJson(resolve(showRoot, "show.json"), show);
     await assertion(await listShowProfiles(config));
   } finally {
@@ -69,9 +74,17 @@ test("show profile loader reads local setlist items and ignores unknown fields",
             manifest: `song-packs/${songId}/manifest.json`,
             label: "Test setlist item",
             notes: "local only",
-            lyricOffsetMs: 120
+            lyricOffsetMs: 120,
+            lyricAdjustment: "adjustments/lyrics.test.json"
           }
-        ]
+        ],
+      },
+      songFiles: {
+        "adjustments/lyrics.test.json": {
+          schema: "music-effect.lyric-adjustment.v1",
+          target: { songPackId: songId },
+          adjustments: []
+        }
       }
     },
     (result) => {
@@ -82,7 +95,13 @@ test("show profile loader reads local setlist items and ignores unknown fields",
       assert.equal(profile.setlist[0].manifestUrl, `http://127.0.0.1:51002/${songId}/manifest.json`);
       assert.match(profile.setlist[0].playerUrl, /http:\/\/127\.0\.0\.1:51001\/\?song=/);
       assert.match(profile.setlist[0].playerUrl, /lyricOffsetMs=120/);
+      assert.match(profile.setlist[0].playerUrl, /lyricAdjustment=/);
       assert.equal(profile.setlist[0].lyricOffsetMs, 120);
+      assert.equal(profile.setlist[0].lyricAdjustmentPath, `song-packs/${songId}/adjustments/lyrics.test.json`);
+      assert.equal(
+        profile.setlist[0].lyricAdjustmentUrl,
+        `http://127.0.0.1:51002/${songId}/adjustments/lyrics.test.json`
+      );
     }
   );
 });
@@ -132,6 +151,36 @@ test("show profile loader rejects external manifest URLs", async () => {
           {
             manifest: "https://example.com/song/manifest.json",
             label: "External manifest"
+          }
+        ]
+      }
+    },
+    (result) => {
+      assert.ok(result.errors.some((error) => error.includes("must not be an absolute path or URL")));
+      const profile = result.profiles.find((item) => item.directoryName === showId);
+      assert.ok(profile, "bad show profile itself is still listed for diagnosis");
+      assert.equal(profile.setlist.length, 0);
+    }
+  );
+});
+
+test("show profile loader rejects external lyric adjustment URLs", async () => {
+  const songId = `test-show-song-adjustment-bad-${process.pid}`;
+  const showId = `test-show-adjustment-bad-${process.pid}`;
+  await withShowProfileFixture(
+    {
+      songId,
+      showId,
+      show: {
+        schemaVersion: 1,
+        id: showId,
+        title: "Bad Adjustment Test Show",
+        setlist: [
+          {
+            songId,
+            manifest: `song-packs/${songId}/manifest.json`,
+            label: "External adjustment",
+            lyricAdjustment: "https://example.com/adjustment.json"
           }
         ]
       }

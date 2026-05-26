@@ -5,11 +5,15 @@ import {
   buildLyricsFromKeyframes,
   clampTime,
   clamp,
+  createLyricCueFingerprint,
   lyricIndexAt,
+  LYRIC_ADJUSTMENT_SCHEMA_V1,
   makeTimingExport,
   normalizeAdjustments,
   normalizeKeyframes,
+  summarizeLyricAdjustments,
   type LyricCue,
+  type LyricCueAdjustment,
   type LyricKeyframe,
   type LyricTimingAdjustments,
   type MusicMap
@@ -101,6 +105,7 @@ export class LyricTimingTool {
     elements.timingUndo.addEventListener("click", () => this.undo());
     elements.timingClear.addEventListener("click", () => this.clearKeyframes());
     elements.timingExport.addEventListener("click", () => this.exportTiming());
+    elements.timingExportAdjustment.addEventListener("click", () => this.exportAdjustmentWrapper());
     elements.offsetAllEarlierBig.addEventListener("click", () => this.shiftAll(-1));
     elements.offsetAllEarlier.addEventListener("click", () => this.shiftAll(-0.1));
     elements.offsetAllReset.addEventListener("click", () => this.resetAllShift());
@@ -161,6 +166,13 @@ export class LyricTimingTool {
     const activeCue = this.workingLyrics[currentIndex];
     elements.sequenceReadout.textContent = activeCue ? `#${currentIndex + 1} / ${formatTime(activeCue.time)}` : "#1 / 0.000s";
     this.updateSequenceStones(time);
+  }
+
+  reloadBaseLyrics(message = "補正JSONを基準タイミングへ反映しました") {
+    this.baseLyrics = this.options.musicMap.lyrics.map((cue) => ({ ...cue }));
+    this.rebuildWorkingLyrics();
+    this.last.textContent = message;
+    this.update();
   }
 
   private get last() {
@@ -451,14 +463,63 @@ export class LyricTimingTool {
     this.applyState("手動キーフレームを消去しました");
   }
 
-  private exportTiming() {
-    const payload = makeTimingExport(this.options.musicMap, this.manualKeyframes, this.lyricAdjustments, this.workingLyrics);
+  private downloadJson(payload: unknown, filename: string) {
     const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: "application/json" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "lyrics_timing.manual.json";
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(link.href);
+  }
+
+  private exportTiming() {
+    const payload = makeTimingExport(this.options.musicMap, this.manualKeyframes, this.lyricAdjustments, this.workingLyrics);
+    this.downloadJson(payload, "lyrics_timing.manual.json");
     this.last.textContent = "lyrics_timing.manual.jsonを書き出しました";
+  }
+
+  private adjustmentRows(): LyricCueAdjustment[] {
+    const rows: LyricCueAdjustment[] = [];
+    for (let index = 0; index < this.workingLyrics.length; index += 1) {
+      const baseCue = this.baseLyrics[index];
+      const workingCue = this.workingLyrics[index];
+      if (!baseCue || !workingCue) continue;
+      const startOffsetMs = Math.round((workingCue.time - baseCue.time) * 1000);
+      const endOffsetMs = Math.round((workingCue.end - baseCue.end) * 1000);
+      if (startOffsetMs === 0 && endOffsetMs === 0) continue;
+      rows.push({
+        cueId: baseCue.id ?? workingCue.id,
+        index: baseCue.index ?? workingCue.index ?? index,
+        startOffsetMs,
+        endOffsetMs
+      });
+    }
+    return rows;
+  }
+
+  private exportAdjustmentWrapper() {
+    const musicMap = this.options.musicMap;
+    const songPackId = musicMap.source.manifest.id;
+    const safeId = songPackId.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase() || "song";
+    const adjustments = this.adjustmentRows();
+    const payload = {
+      schema: LYRIC_ADJUSTMENT_SCHEMA_V1,
+      encoding: "utf-8",
+      messageLanguage: "en",
+      createdAt: new Date().toISOString(),
+      createdBy: "music-effect rehearsal helper",
+      target: {
+        songPackId,
+        visualId: songPackId,
+        slug: songPackId,
+        timingSchema: "music-effect.lyrics-timing.v2",
+        sourceFingerprint: createLyricCueFingerprint(this.baseLyrics)
+      },
+      summary: summarizeLyricAdjustments(adjustments),
+      adjustments
+    };
+    const filename = `lyric-adjustment.${safeId}.json`;
+    this.downloadJson(payload, filename);
+    this.last.textContent = `${filename}を書き出しました`;
   }
 }

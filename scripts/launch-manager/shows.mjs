@@ -9,7 +9,9 @@ const FORBIDDEN_VALUE_PATTERN = /data:image\/|data:audio\/|data:video\/|base64,|
 const SECRET_VALUE_PATTERN =
   /-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{20,}|ghp_[0-9A-Za-z_]{20,}|hf_[0-9A-Za-z]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}/;
 const SAFE_TIMING_KEYS = new Set(["lyricOffsetMs", "lyricDisplayOffsetMs", "captionOffsetMs"]);
+const SAFE_LYRIC_ADJUSTMENT_KEYS = new Set(["lyricAdjustment", "lyricAdjustmentUrl"]);
 const MAX_LIVE_OFFSET_MS = 30000;
+const LYRIC_ADJUSTMENT_MAX_BYTES = 256 * 1024;
 
 const normalizeSlashes = (value) => value.replace(/\\/g, "/");
 
@@ -48,6 +50,10 @@ const scanProfileValue = (value, label) => {
       asLiveOffsetMs(nestedValue, `${label}.${key}`);
       continue;
     }
+    if (SAFE_LYRIC_ADJUSTMENT_KEYS.has(key)) {
+      assertShortString(nestedValue, `${label}.${key}`, 240);
+      continue;
+    }
     if (FORBIDDEN_KEY_PATTERN.test(key)) {
       throw new Error(`${label}.${key} is not allowed in show-profile metadata.`);
     }
@@ -83,11 +89,14 @@ const urlWithTrailingSlash = (value) => {
   return url.toString();
 };
 
-const playerUrlFor = (playerBaseUrl, manifestUrl, lyricOffsetMs = 0) => {
+const encodePathSegments = (value) => value.split("/").map((part) => encodeURIComponent(part)).join("/");
+
+const playerUrlFor = (playerBaseUrl, manifestUrl, lyricOffsetMs = 0, lyricAdjustmentUrl = null) => {
   if (!playerBaseUrl || !manifestUrl) return null;
   const url = new URL(playerBaseUrl);
   url.searchParams.set("song", manifestUrl);
   if (lyricOffsetMs) url.searchParams.set("lyricOffsetMs", String(lyricOffsetMs));
+  if (lyricAdjustmentUrl) url.searchParams.set("lyricAdjustment", lyricAdjustmentUrl);
   return url.toString();
 };
 
@@ -117,6 +126,60 @@ const resolveSongManifest = async ({ root, songPacksRootReal, value, label }) =>
   return {
     manifestPath: normalized,
     songDirectoryName: match[1]
+  };
+};
+
+const resolveLyricAdjustment = async ({
+  root,
+  songPacksRootReal,
+  songServerBaseUrl,
+  value,
+  label,
+  songDirectoryName
+}) => {
+  if (value === undefined || value === null || value === "") return { path: "", url: null };
+  const normalized = rejectExternalOrAbsolutePath(value, label);
+  if (!normalized.endsWith(".json")) {
+    throw new Error(`${label} must point to a .json file.`);
+  }
+
+  let pathInsideSongPack;
+  let targetSongDirectoryName = songDirectoryName;
+  const songPackMatch = /^song-packs\/([^/]+)\/(.+)$/.exec(normalized);
+  if (songPackMatch) {
+    targetSongDirectoryName = songPackMatch[1];
+    pathInsideSongPack = songPackMatch[2];
+    if (targetSongDirectoryName !== songDirectoryName) {
+      throw new Error(`${label} must stay inside the same song pack as the setlist item.`);
+    }
+  } else {
+    pathInsideSongPack = normalized;
+  }
+
+  if (!pathInsideSongPack || pathInsideSongPack.startsWith("../") || pathInsideSongPack.includes("/../")) {
+    throw new Error(`${label} must stay inside the song pack.`);
+  }
+
+  const target = resolve(root, "song-packs", targetSongDirectoryName, pathInsideSongPack);
+  const targetRealPath = await realpath(target);
+  if (!isInsidePath(songPacksRootReal, targetRealPath)) {
+    throw new Error(`${label} resolves outside song-packs.`);
+  }
+
+  const targetStat = await stat(targetRealPath);
+  if (!targetStat.isFile()) {
+    throw new Error(`${label} must point to a file.`);
+  }
+  if (targetStat.size > LYRIC_ADJUSTMENT_MAX_BYTES) {
+    throw new Error(`${label} is too large.`);
+  }
+
+  const url = songServerBaseUrl
+    ? new URL(`${encodeURIComponent(targetSongDirectoryName)}/${encodePathSegments(pathInsideSongPack)}`, songServerBaseUrl).toString()
+    : null;
+  return {
+    path: songPackMatch ? normalized : `song-packs/${targetSongDirectoryName}/${pathInsideSongPack}`,
+    url
   };
 };
 
@@ -194,6 +257,14 @@ const readShowProfileSummary = async ({
       const manifestUrl = songServerBaseUrl
         ? new URL(`${encodeURIComponent(resolved.songDirectoryName)}/manifest.json`, songServerBaseUrl).toString()
         : null;
+      const lyricAdjustment = await resolveLyricAdjustment({
+        root: config.root,
+        songPacksRootReal,
+        songServerBaseUrl,
+        value: item.lyricAdjustment ?? item.lyricAdjustmentUrl,
+        label: `setlist[${index}].lyricAdjustment`,
+        songDirectoryName: resolved.songDirectoryName
+      });
 
       setlist.push({
         index,
@@ -203,8 +274,10 @@ const readShowProfileSummary = async ({
         notes: asDisplayText(item.notes, ""),
         manifestPath: resolved.manifestPath,
         manifestUrl,
-        playerUrl: playerUrlFor(playerBaseUrl, manifestUrl, lyricOffsetMs),
-        lyricOffsetMs
+        playerUrl: playerUrlFor(playerBaseUrl, manifestUrl, lyricOffsetMs, lyricAdjustment.url),
+        lyricOffsetMs,
+        lyricAdjustmentPath: lyricAdjustment.path,
+        lyricAdjustmentUrl: lyricAdjustment.url
       });
     } catch (error) {
       itemErrors.push(`${directoryName} setlist[${index}]: ${error.message}`);

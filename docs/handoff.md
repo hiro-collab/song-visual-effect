@@ -58,6 +58,7 @@
 - 並行worktree間の連絡整理として、`npm run sync:brief` / `sync:ack` / `sync:note` / `sync:inbox` を使う。`sync:brief` は要対応のquestion/blockerと未merge readyの要約、`sync:ack` は自分のworktreeで確認済みにする記録、`sync:ready` はmerge可能commit、`sync:note` は質問やブロッカー共有として使い分ける。
 - Launch Manager GUIに担当メッセージ閲覧を追加した。`/api/sync-events` がGit共通ディレクトリの `codex-sync/events.jsonl` を読み、ready/note/ackを要対応、担当、種別で絞り込んで表示する。GUIは読み取り専用で、note/ack/mergeは既存の `sync:*` CLIで行う。
 - Lyric Timing Editorは別repo `https://github.com/hiro-collab/lyric-timing-editor` へ分離した。Music Effect側は完成済みtiming JSONを読む境界だけを残す。詳細は `docs/lyric-timing-editor.md`。
+- 歌詞補正ラッパーは `music-effect.lyric-adjustment.v1` / `music-effect.lyric-adjustment-bundle.v1` として扱う。標準playerはURLパラメータ `lyricAdjustment` と手動読み込みで補正JSONを適用でき、リハーサルUIの `Export Adj` でcue差分ラッパーを書き出せる。Launch Managerはshow-profile setlistの相対 `lyricAdjustment` を検証し、Deck URLへ反映する。詳細は `docs/lyric-adjustments.md` と `docs/show-profiles.md`。
 
 ## 新しいスレッドの開始手順
 

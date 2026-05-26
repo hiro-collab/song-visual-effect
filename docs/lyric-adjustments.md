@@ -128,10 +128,10 @@ bundle内では、現在の曲映像に対応する `target.songPackId` / `targe
 
 ## 配置例
 
-show-profile側に置く場合の典型例です。これは必須構成ではありません。
+標準ローカル運用で、show-profileからLaunch Manager経由でDeck URLへ渡す場合の典型例です。これは必須構成ではありません。
 
 ```text
-show-profiles/<show-id>/adjustments/
+song-packs/<song-id>/adjustments/
   lyrics.<songPackId>.json
   lyrics.bundle.json
 ```
@@ -139,7 +139,7 @@ show-profiles/<show-id>/adjustments/
 将来、歌詞以外の補正を追加する場合は同じディレクトリに名前を分けて置けます。
 
 ```text
-show-profiles/<show-id>/adjustments/
+song-packs/<song-id>/adjustments/
   beat.<songPackId>.json
   visual-time.<songPackId>.json
   input-latency.<songPackId>.json
@@ -165,6 +165,10 @@ http://127.0.0.1:<deck-port>/?song=<manifest-url>&lyricAdjustment=<adjustment-js
 ```
 
 URLから読まれた補正は、曲パックから読み込んだ `LyricCue[]` へ適用されます。`musicMap.lyrics` は補正後、`musicMap.rawLyrics` は補正前として扱います。適用結果のdiagnosticsは `musicMap.lyricAdjustmentDiagnostics` に入ります。
+
+show-profileのsetlist項目では、`lyricAdjustment` に `adjustments/lyrics.<songPackId>.json` のような相対パスを書けます。Launch Managerはこれを曲パック内のファイルとして検証し、Deck URLの `lyricAdjustment` へ変換します。外部URL、絶対パス、別曲パックへの参照は受け付けません。
+
+標準playerのリハーサルUIをOnにすると、画面上から補正JSONを手動読み込みできます。この手動読み込みはそのタブ内だけの一時適用です。永続化したい場合は `Export Adj` で補正ラッパーを書き出し、曲パック内やshow-profileから参照する運用ファイルへ配置します。
 
 ## 適用ルール
 
@@ -210,12 +214,11 @@ URLから読まれた補正は、曲パックから読み込んだ `LyricCue[]` 
 - URLパラメータ指定の補正ラッパーを読み込み、`musicMap.lyrics` を補正後にする。
 - `musicMap.rawLyrics` に補正前のcue列を残す。
 - `musicMap.lyricAdjustmentDiagnostics` に適用結果を残す。
-- show-profile指定、手動読み込み、制作UIは後続段階で追加する。
+- show-profile指定をLaunch ManagerからDeck URLへ反映する。
+- 手動読み込みと `Export Adj` をリハーサル用サンプルUIとして提供する。
 
 ### 後続候補
 
-- Launch Manager / show-profileから `lyricAdjustment` をDeck URLへ反映する。
-- 画面上の手動読み込みを追加する。
 - 制作、リハーサル用UIとして、下部シーケンスバーへcue stoneを統合する。
 - 本番用helperとして、誤操作を避ける最小UI、snapshot / restore、外部制御APIを検討する。
 

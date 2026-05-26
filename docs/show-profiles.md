@@ -19,10 +19,10 @@ show-profileには、イベント、展示、ライブ、検証会で複数の�
 
 show-profileは、イベントや会場ごとの歌詞補正ラッパーを任意で参照できます。詳しいJSON形式、fingerprint、適用順序、mismatch時の挙動は `docs/lyric-adjustments.md` を正本にします。
 
-配置例:
+配置例です。`show-profile` からLaunch Manager経由でDeck URLへ渡す場合、標準playerがHTTPで読める場所に置く必要があります。標準ローカル運用では、曲パック内の `adjustments/` を参照します。
 
 ```text
-show-profiles/<show-id>/adjustments/
+song-packs/<song-id>/adjustments/
   lyrics.<songPackId>.json
   lyrics.bundle.json
 ```
@@ -52,6 +52,8 @@ show-profile側の歌詞補正は、曲パック内の完成済みtiming JSONを
 }
 ```
 
-`lyricOffsetMs` は最小のDeck-localな現場補正です。より細かいcue単位補正は `lyricAdjustment` などで補正ラッパーを参照する形にします。具体的な読み込み実装は段階的に追加します。
+`lyricOffsetMs` は最小のDeck-localな現場補正です。より細かいcue単位補正は `lyricAdjustment` などで補正ラッパーを参照する形にします。
 
-現時点の標準playerは、URLパラメータ `lyricAdjustment` / `lyricAdjustmentUrl` から補正ラッパーを読めます。show-profileからDeck URLへこの値を渡すLaunch Manager連携は後続実装です。
+`lyricAdjustment` は外部URLや絶対パスではなく、相対パスだけを受け付けます。`adjustments/lyrics.monitoring.json` のように書くと、setlist項目の曲パック内のファイルとして扱います。`song-packs/<song-id>/adjustments/lyrics.monitoring.json` のように明示することもできますが、同じ曲パック内に限ります。
+
+標準playerは、URLパラメータ `lyricAdjustment` / `lyricAdjustmentUrl` から補正ラッパーを読めます。Launch Managerはshow-profileのsetlist項目に `lyricAdjustment` があれば、Deck URLへ反映します。

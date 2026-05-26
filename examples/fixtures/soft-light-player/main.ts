@@ -6,6 +6,7 @@ import { BeatStateTool } from "./tools/beatStateTool";
 import { isVisualSequencerToolEnabled, VisualSequencerTool } from "./tools/visualSequencerTool";
 import {
   Transport,
+  applyLyricAdjustment,
   clamp,
   createSongAdapterContext,
   createVisualHost,
@@ -47,6 +48,24 @@ let songApp: SongApp;
 let visualHost: SongVisualHost;
 let lastSongTime = 0;
 let lyricDisplayOffsetSec = 0;
+
+const adjustmentStatusText = () => {
+  const diagnostics = musicMap?.lyricAdjustmentDiagnostics;
+  if (!diagnostics) return "補正なし";
+  const issues = diagnostics.issues.length ? ` / issues ${diagnostics.issues.length}` : "";
+  return `補正 ${diagnostics.status}: applied ${diagnostics.appliedCount}${issues}`;
+};
+
+const updateLyricAdjustmentStatus = () => {
+  elements.lyricAdjustmentStatus.textContent = adjustmentStatusText();
+};
+
+const updateDataStatus = () => {
+  const adapterStatus = songApp?.status ? ` / ${songApp.status}` : "";
+  dataStatus.textContent = musicMap.warnings.length
+    ? `${musicMap.title}: ${musicMap.warnings.join(" / ")}${adapterStatus}`
+    : `${musicMap.title}: song pack ready${adapterStatus}`;
+};
 
 const isBeatStateToolEnabled = () => {
   const value = new URLSearchParams(window.location.search).get("beatState")?.toLowerCase();
@@ -150,6 +169,34 @@ const setupInput = () => {
     if (!file) return;
     transport.setLocalAudio(file);
   });
+
+  elements.lyricAdjustmentInput.addEventListener("change", async () => {
+    const file = elements.lyricAdjustmentInput.files?.[0];
+    if (!file) return;
+    try {
+      const json = JSON.parse(await file.text()) as unknown;
+      const baseLyrics = musicMap.rawLyrics ?? musicMap.lyrics;
+      const result = applyLyricAdjustment(baseLyrics, json, {
+        songPackId: musicMap.source.manifest.id,
+        visualId: musicMap.source.manifest.id,
+        slug: musicMap.source.manifest.id,
+        duration: musicMap.duration
+      });
+      musicMap.rawLyrics = baseLyrics.map((cue) => ({ ...cue }));
+      musicMap.lyrics = result.lyrics;
+      musicMap.lyricAdjustmentDiagnostics = result.diagnostics;
+      timingTool?.reloadBaseLyrics("手動読み込みした補正JSONを反映しました");
+      updateLyricAdjustmentStatus();
+      updateLyrics(lastSongTime);
+      updateDataStatus();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      elements.lyricAdjustmentStatus.textContent = `補正JSONエラー: ${message}`;
+      console.warn(error);
+    } finally {
+      elements.lyricAdjustmentInput.value = "";
+    }
+  });
 };
 
 const reportBootError = (error: unknown) => {
@@ -222,6 +269,7 @@ const boot = async () => {
     }
     timingTool?.bindControls();
     timingTool?.initialize();
+    updateLyricAdjustmentStatus();
     const audioPath = await findBundledAudio(musicMap);
     if (audioPath) transport.setAudioPath(audioPath);
     const previewTime = previewTimeFromUrl();
@@ -229,10 +277,7 @@ const boot = async () => {
       transport.seek(previewTime, musicMap.duration);
       updateLyrics(previewTime);
     }
-    const adapterStatus = songApp.status ? ` / ${songApp.status}` : "";
-    dataStatus.textContent = musicMap.warnings.length
-      ? `${musicMap.title}: ${musicMap.warnings.join(" / ")}${adapterStatus}`
-      : `${musicMap.title}: song pack ready${adapterStatus}`;
+    updateDataStatus();
     startFrameLoop(tick);
   } catch (error) {
     reportBootError(error);

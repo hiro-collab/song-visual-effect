@@ -893,6 +893,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
       const legacySelectedSongStorageKey = "music-effect.launch-manager.selectedSong";
       const deckSelectionStoragePrefix = "music-effect.launch-manager.deckSong.";
       const deckLyricOffsetStoragePrefix = "music-effect.launch-manager.deckLyricOffsetMs.";
+      const deckLyricAdjustmentStoragePrefix = "music-effect.launch-manager.deckLyricAdjustment.";
       const selectedShowStorageKey = "music-effect.launch-manager.selectedShow";
       const selectedSetlistStorageKey = "music-effect.launch-manager.selectedSetlist";
       const controlTokenStorageKey = "music-effect.launch-manager.controlToken";
@@ -1239,6 +1240,26 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         if (input) return rememberDeckLyricOffset(deckId, input.value);
         return storedDeckLyricOffsetMs(deckId);
       };
+      const storedDeckLyricAdjustment = (deckId) => {
+        try {
+          return localStorage.getItem(deckLyricAdjustmentStoragePrefix + deckId) || "";
+        } catch {
+          return "";
+        }
+      };
+      const rememberDeckLyricAdjustment = (deckId, value) => {
+        const text = String(value || "").trim();
+        try {
+          if (text) localStorage.setItem(deckLyricAdjustmentStoragePrefix + deckId, text);
+          else localStorage.removeItem(deckLyricAdjustmentStoragePrefix + deckId);
+        } catch {}
+        return text;
+      };
+      const selectedDeckLyricAdjustment = (deckId) => {
+        const input = byId(deckDomId(deckId, "lyric-adjustment"));
+        if (input) return rememberDeckLyricAdjustment(deckId, input.value);
+        return storedDeckLyricAdjustment(deckId);
+      };
       const selectedSongForDeck = (deckId) => {
         const catalog = state.status?.songCatalog;
         const select = byId(deckDomId(deckId, "song-select"));
@@ -1255,6 +1276,9 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         const lyricOffsetMs = selectedDeckLyricOffsetMs(deck.id);
         if (lyricOffsetMs) url.searchParams.set("lyricOffsetMs", String(lyricOffsetMs));
         else url.searchParams.delete("lyricOffsetMs");
+        const lyricAdjustment = selectedDeckLyricAdjustment(deck.id);
+        if (lyricAdjustment) url.searchParams.set("lyricAdjustment", lyricAdjustment);
+        else url.searchParams.delete("lyricAdjustment");
         return url.toString();
       };
       const selectedDeckUrl = (deckId) => deckUrlForSong(deckById(deckId), selectedSongForDeck(deckId));
@@ -1288,7 +1312,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         storeValue(selectedShowStorageKey, showValue);
         storeValue(selectedSetlistStorageKey, showValue + ":" + setlistValue);
       };
-      const applySongSelection = (songDirectoryName, { announce = true, lyricOffsetMs = null } = {}) => {
+      const applySongSelection = (songDirectoryName, { announce = true, lyricOffsetMs = null, lyricAdjustmentUrl = null } = {}) => {
         const catalog = state.status?.songCatalog || { songs: [] };
         const song = (catalog.songs || []).find((item) => item.directoryName === songDirectoryName);
         if (!song) {
@@ -1303,13 +1327,15 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         if (Number.isFinite(Number(lyricOffsetMs))) {
           rememberDeckLyricOffset("deck-a", lyricOffsetMs);
         }
+        rememberDeckLyricAdjustment("deck-a", lyricAdjustmentUrl || "");
         renderDecks();
         if (state.status) renderSystemMap(state.status);
         const offsetNote =
           Number.isFinite(Number(lyricOffsetMs)) && Number(lyricOffsetMs) !== 0
             ? " / 歌詞補正 " + Number(lyricOffsetMs) + "ms"
             : "";
-        if (announce) setMessage(formatSongLabel(song) + " をDeck Aへ反映しました。" + offsetNote, "ok");
+        const adjustmentNote = lyricAdjustmentUrl ? " / 補正JSONあり" : "";
+        if (announce) setMessage(formatSongLabel(song) + " をDeck Aへ反映しました。" + offsetNote + adjustmentNote, "ok");
         return true;
       };
       const targetMap = () => new Map((state.status?.targets || []).map((target) => [target.id, target]));
@@ -1538,6 +1564,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         }
         select.addEventListener("change", () => {
           rememberDeckSong(deck.id);
+          rememberDeckLyricAdjustment(deck.id, "");
           renderDecks();
           if (state.status) renderSystemMap(state.status);
         });
@@ -1560,6 +1587,21 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
         });
         offsetLabel.append(offsetInput);
         article.append(offsetLabel);
+
+        const adjustmentLabel = make("label", "deck-tuning", "歌詞補正JSON URL");
+        const adjustmentInput = make("input");
+        adjustmentInput.id = deckDomId(deck.id, "lyric-adjustment");
+        adjustmentInput.type = "text";
+        adjustmentInput.placeholder = "任意: lyric-adjustment JSON URL";
+        adjustmentInput.value = storedDeckLyricAdjustment(deck.id);
+        adjustmentInput.setAttribute("aria-label", deck.label + " lyric adjustment JSON URL");
+        adjustmentInput.addEventListener("change", () => {
+          adjustmentInput.value = rememberDeckLyricAdjustment(deck.id, adjustmentInput.value);
+          renderDecks();
+          if (state.status) renderSystemMap(state.status);
+        });
+        adjustmentLabel.append(adjustmentInput);
+        article.append(adjustmentLabel);
 
         const song = (catalog.songs || []).find((item) => item.directoryName === select.value) || null;
         const deckUrl = deckUrlForSong(deck, song);
@@ -1651,7 +1693,11 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           selected && selected.lyricOffsetMs
             ? " / 歌詞補正 " + selected.lyricOffsetMs + "ms"
             : "";
-        const selectedText = selected ? " / 選択: " + selected.label + " / " + selected.manifestPath + selectedOffset : "";
+        const selectedAdjustment =
+          selected && selected.lyricAdjustmentUrl
+            ? " / 補正JSON " + selected.lyricAdjustmentPath
+            : "";
+        const selectedText = selected ? " / 選択: " + selected.label + " / " + selected.manifestPath + selectedOffset + selectedAdjustment : "";
         meta.textContent = profile.title + description + " / " + profile.showPath + selectedText;
 
         const chips = setlist.slice(0, 12).map((item) => {
@@ -1662,7 +1708,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
             setlistSelect.value = String(item.index);
             rememberShowSelection();
             renderSelectedShow();
-            applySongSelection(item.songDirectoryName, { lyricOffsetMs: item.lyricOffsetMs });
+            applySongSelection(item.songDirectoryName, { lyricOffsetMs: item.lyricOffsetMs, lyricAdjustmentUrl: item.lyricAdjustmentUrl });
           });
           return chip;
         });
@@ -2011,7 +2057,7 @@ export const managerHtml = ({ title, nonce, networkExposure = { mode: "loopback"
           return;
         }
         rememberShowSelection();
-        applySongSelection(item.songDirectoryName, { lyricOffsetMs: item.lyricOffsetMs });
+        applySongSelection(item.songDirectoryName, { lyricOffsetMs: item.lyricOffsetMs, lyricAdjustmentUrl: item.lyricAdjustmentUrl });
       });
       byId("stop-decks").addEventListener("click", stopAllDecks);
       byId("copy-deck-urls").addEventListener("click", copyAllDeckUrls);

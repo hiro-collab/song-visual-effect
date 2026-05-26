@@ -58,10 +58,16 @@
           </div>
         </div>
         <p id="timing-last">Tで記録モード、A/Dで打刻</p>
+        <div class="timing-adjustment timing-mode-control">
+          <label class="mini-button timing-file-button" for="lyric-adjustment-input">Load Adj</label>
+          <input id="lyric-adjustment-input" type="file" accept="application/json,.json" />
+          <span id="lyric-adjustment-status">補正なし</span>
+        </div>
         <div class="timing-actions timing-mode-control">
           <button id="timing-undo" class="mini-button" type="button">Undo</button>
           <button id="timing-clear" class="mini-button" type="button">Clear</button>
-          <button id="timing-export" class="mini-button" type="button">Export</button>
+          <button id="timing-export-adjustment" class="mini-button" type="button">Export Adj</button>
+          <button id="timing-export" class="mini-button" type="button">Export v1</button>
         </div>
       </aside>
       <header class="topbar">

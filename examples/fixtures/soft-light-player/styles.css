@@ -302,6 +302,10 @@ input {
   gap: 8px;
 }
 
+.timing-actions {
+  flex-wrap: wrap;
+}
+
 .timing-panel strong {
   display: block;
   color: rgba(255, 250, 238, 0.94);
@@ -514,6 +518,35 @@ input {
   min-height: 1.3em;
   margin: 10px 0 12px;
   color: rgba(255, 248, 232, 0.6);
+}
+
+.timing-adjustment {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 10px;
+}
+
+#lyric-adjustment-status {
+  overflow: hidden;
+  color: rgba(255, 248, 232, 0.62);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#lyric-adjustment-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.timing-file-button {
+  display: inline-grid;
+  place-items: center;
+  text-align: center;
 }
 
 .mini-button {

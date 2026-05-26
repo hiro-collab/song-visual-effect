@@ -22,6 +22,9 @@ export type AppElements = {
   timingUndo: HTMLButtonElement;
   timingClear: HTMLButtonElement;
   timingExport: HTMLButtonElement;
+  timingExportAdjustment: HTMLButtonElement;
+  lyricAdjustmentInput: HTMLInputElement;
+  lyricAdjustmentStatus: HTMLSpanElement;
   timingOffsetReadout: HTMLSpanElement;
   timingFromLabel: HTMLSpanElement;
   sequenceReadout: HTMLSpanElement;
@@ -75,6 +78,9 @@ export const getAppElements = (): AppElements => {
     timingUndo: requireElement<HTMLButtonElement>("#timing-undo"),
     timingClear: requireElement<HTMLButtonElement>("#timing-clear"),
     timingExport: requireElement<HTMLButtonElement>("#timing-export"),
+    timingExportAdjustment: requireElement<HTMLButtonElement>("#timing-export-adjustment"),
+    lyricAdjustmentInput: requireElement<HTMLInputElement>("#lyric-adjustment-input"),
+    lyricAdjustmentStatus: requireElement<HTMLSpanElement>("#lyric-adjustment-status"),
     timingOffsetReadout: requireElement<HTMLSpanElement>("#timing-offset-readout"),
     timingFromLabel: requireElement<HTMLSpanElement>("#timing-from-label"),
     sequenceReadout: requireElement<HTMLSpanElement>("#timing-sequence-readout"),
