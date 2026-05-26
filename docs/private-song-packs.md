@@ -10,9 +10,10 @@
 
 private repo は、公開repoの `song-packs/` 直下へ clone します。
 private repo のルートが、そのまま旧 `song-packs/` の中身です。
+別PCでの全体セットアップ手順は `docs/remote-workstation-setup.md` を参照してください。
 
 ```powershell
-cd C:\Users\kawai\works\music-effect\_worktrees\system-main
+cd <music-effect repo>
 git clone https://github.com/hiro-collab/song-visual-effect-song-packs.git song-packs
 ```
 

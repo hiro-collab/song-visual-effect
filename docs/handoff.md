@@ -51,6 +51,7 @@
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
 - 追加セキュリティレビューで、Launch ManagerのLAN公開を `LAUNCH_MANAGER_ALLOW_LAN=1` の明示opt-inにし、LAN公開時の警告バナーとcontrol token検証を追加した。曲パック/show-profileの任意 `capabilities` と `security-notes.md` 方針は `docs/security.md` を正本にする。
 - docsの読み分けを `docs/README.md` に集約し、`examples/fixtures/soft-light-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
+- 別PCでGitHub cloneから作業を再開するための導線として `docs/remote-workstation-setup.md` を追加した。公開system repoとprivate `song-packs/` repoの二段階セットアップ、`codex/system-kit-refactor` を明示するclone、ローカル専用データの扱いを正本化した。
 - 古い作業候補、既知問題、beat sync詳細、旧レビューHTMLは `docs/archive/working-notes/` に退避した。通常の作業入口では正本docsを優先する。
 - `system/kit` は `core/`、`timing/`、`render/`、`song-app/` に分けた。曲アプリは基本的に `system/kit/index.ts` の公開APIから必要なhelperだけをimportする。
 - soft light fixtureは `examples/fixtures/soft-light-player/` に移動した。新曲の見た目を作るときは読まない。
@@ -154,6 +155,7 @@ http://127.0.0.1:<player-port>/docs/workflows.html
 - `AGENTS.md`: エージェント向け入口。
 - `README.md`: 利用方法。
 - `docs/thread-start.md`: 新しいスレッドの開始手順、ready確認、merge判断。
+- `docs/remote-workstation-setup.md`: 別PCでGitHub cloneから作業再開するための環境移行手順。
 - `docs/system-overview.md`: 特定曲に依存しないシステム概要。
 - `docs/song-authoring.md`: 新しい曲作成時のアンカー回避ルール。
 - `docs/song-visual-independence.md`: 既存fixtureの見た目に引っ張られないためのチェックリスト。

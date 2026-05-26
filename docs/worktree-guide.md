@@ -5,6 +5,8 @@
 
 ## 基本構成
 
+別PCへ新しく clone する場合は、まず `docs/remote-workstation-setup.md` を読んでください。既存PCの `_worktrees/` をコピーせず、GitHubから `codex/system-kit-refactor` を明示してcloneし、必要なworktreeを作り直します。
+
 - `C:\Users\kawai\works\music-effect`
   - 管理用のルート worktree。ここが常に最新基準とは限りません。
   - `_worktrees/` は `.gitignore` 済みなので、ルートの `git status` を汚しません。

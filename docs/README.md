@@ -10,6 +10,7 @@
 - `project-scope.md`: song-pack、system kit、show-profile、互換性方針の境界。
 - `show-profiles.md`: 任意のイベント運用層と歌詞補正ラッパーへの入口。
 - `deck-playback.md`: ライブ/VJ運用でDeck A/Bを使う再生仕様。
+- `remote-workstation-setup.md`: 別PCでGitHub cloneから作業再開するための環境移行手順。
 - `lyric-timing-editor.md`: 分離済みLyric Timing EditorとMusic Effect側のJSON受け渡し境界。
 - `lyric-adjustments.md`: 本番、リハーサル用の歌詞補正ラッパー仕様。
 - `private-song-packs.md`: 公開repoから分離したprivate song-packs repoの配置と運用。
@@ -55,6 +56,7 @@
 - `lyric-adjustments.md`
 - `show-profiles.md`
 - `private-song-packs.md`
+- `remote-workstation-setup.md`
 - `sync-onboarding.md`
 - `worktree-sync.md`
 - `thread-start.md`

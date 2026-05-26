@@ -6,6 +6,8 @@
 
 ## Setup
 
+別PCへ移す場合や新しいノートPCで作業を始める場合は、まず `docs/remote-workstation-setup.md` を読んでください。GitHubの既定branchに依存せず、作業基準 `codex/system-kit-refactor` を明示してcloneします。
+
 Windowsで普段使う場合は、リポジトリ直下の `start-music-effect.cmd` をダブルクリックします。同じworktreeのLaunch Managerが既に起動中なら管理画面を開くだけです。別worktreeのLaunch Managerが起動中でも、そのポートへ誤接続せず、このworktree用の空きポートを自動で使います。初回だけ `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得します。
 
 手動で起動する場合:
@@ -82,7 +84,7 @@ docs/song-visual-independence.md
 
 ## Song Package
 
-曲パッケージは `song-packs/<song-id>/` に置けます。ただし `song-packs/` は公開repoには含めず、private repo `hiro-collab/song-visual-effect-song-packs` をローカルに配置して使います。既存曲はテンプレートではなく、あくまで個別の実装例です。
+曲パッケージは `song-packs/<song-id>/` に置けます。ただし `song-packs/` は公開repoには含めず、private repo `hiro-collab/song-visual-effect-song-packs` をローカルに配置して使います。既存曲はテンプレートではなく、あくまで個別の実装例です。別PCで曲作業も行う場合は `docs/remote-workstation-setup.md` と `docs/private-song-packs.md` を確認してください。
 
 ```powershell
 git clone https://github.com/hiro-collab/song-visual-effect-song-packs.git song-packs
@@ -121,7 +123,7 @@ npm run song:validate -- --id song-id
 
 この節は動作確認用です。新しい曲を設計するときの入口ではありません。
 
-現在は動作確認用の曲パッケージとして、魔王魂「Shining Star」を同梱しています。
+private song-packs repo には、動作確認用の曲パッケージとして魔王魂「Shining Star」が入っています。公開system repoだけをcloneした状態では `song-packs/` は空または未配置です。
 
 ```text
 http://127.0.0.1:<player-port>/?song=http://127.0.0.1:<song-pack-port>/shining-star/manifest.json
