@@ -34,6 +34,8 @@ system側が曲の演出思想、曲固有のJSON文法、描画方式、外部�
 
 `show-profile` は、複数の曲映像をあるイベント、展示、ライブ、検証会でどう並べ、どう起動し、どう調整し、どう外部ツールとつないだかを記録する任意の運用パッケージです。
 
+show-profileから歌詞補正ラッパーを参照する場合の入口は `docs/show-profiles.md`、詳しい歌詞補正JSON仕様は `docs/lyric-adjustments.md` を参照してください。
+
 たとえば13曲連続のイベントでは、セットリスト、起動URL、表示解像度、当日のタイミング補正、使用ポート、TouchDesignerやUnity側の接続メモをまとめられます。
 
 重要な制約:
@@ -105,6 +107,8 @@ Deck A/Bを使う場合も、system側が保証するのはDeckごとのWeb URL�
 歌詞表示の現場補正は、最初の共通形式として `lyricOffsetMs` を使います。単位はmillisecondsで、正の値は歌詞表示を遅らせます。たとえば `lyricOffsetMs: 120` は基準タイミングより約120ms遅く表示する運用値です。
 
 この値は曲パック側の完成timing JSONを書き換えるものではありません。連日イベントや会場固有の遅延補正として、show-profileのsetlist項目やDeck側のURLに載せる一時ラッパーです。
+
+より細かいcue単位の補正が必要な場合は、`music-effect.lyric-adjustment.v1` または `music-effect.lyric-adjustment-bundle.v1` の補正ラッパーを使います。仕様の正本は `docs/lyric-adjustments.md` です。show-profileは任意の参照元であり、曲パックや曲映像の構成を縛りません。
 
 ## 互換性方針
 

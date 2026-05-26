@@ -67,5 +67,20 @@ export {
   normalizeAdjustments,
   normalizeKeyframes
 } from "./timing/manualTiming";
+export type {
+  LyricAdjustmentBundle,
+  LyricAdjustmentDocument,
+  LyricAdjustmentSummary,
+  LyricAdjustmentTarget,
+  LyricCueAdjustment,
+  LyricCueFingerprintItem
+} from "./timing/lyricAdjustment";
+export {
+  createLyricCueFingerprint,
+  LYRIC_ADJUSTMENT_BUNDLE_SCHEMA_V1,
+  LYRIC_ADJUSTMENT_SCHEMA_V1,
+  normalizeLyricCueFingerprintItems,
+  summarizeLyricAdjustments
+} from "./timing/lyricAdjustment";
 export { ColorRamp, DEFAULT_PALETTE } from "./render/palette";
 export { DampValue, clamp, decayPulse, smoothstep } from "./render/damping";

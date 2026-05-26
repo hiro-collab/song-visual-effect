@@ -1,0 +1,187 @@
+# Lyric Adjustments
+
+この文書は、完成済み歌詞timing JSONに対する制作、リハーサル、本番用の軽い補正ラッパーを定義します。
+
+正本の歌詞timingは Lyric Timing Editor が出力する `music-effect.lyrics-timing.v2` を優先します。Music Effect側の補正ラッパーは、そのJSONを直接書き換えず、別ファイルの差分として扱います。
+
+## 目的
+
+- 曲パック内の完成済みtiming JSONを汚さず、会場、機材、リハーサル、本番日の微補正を保存する。
+- 補正は曲映像ごとに独立させる。
+- Deck A/Bの実行中状態はDeckごとに独立させる。
+- 複数曲イベントでは、複数曲分の補正をbundleとしてまとめられる余地を残す。
+- 歌詞本文や分割構造は編集しない。
+
+## 非目的
+
+- 歌詞本文の修正。
+- フレーズ、ワード、文字への分割。
+- 完成済みtiming JSONの恒久修正。
+- 曲ごとのUI表現の固定。
+- 本番VJ卓や外部連携方式の標準化。
+
+歌詞本文の修正、行追加、削除、分割、結合は Lyric Timing Editor 側の責務です。Music Effect側は、読み込まれたtimed lyric cue列をそのまま補正対象にします。
+
+## 用語
+
+### Lyric cue
+
+表示タイミングを持つ最小単位です。現時点のv2 exportでは `phrases[]` が入力になりますが、Music Effect側ではフレーズ、ワード、文字を強く決め打ちせず、`LyricCue[]` に正規化されたcue列として扱います。
+
+### Adjustment wrapper
+
+単一の曲映像に対する補正ファイルです。schemaは `music-effect.lyric-adjustment.v1` です。
+
+### Adjustment bundle
+
+複数曲分の補正をまとめるファイルです。schemaは `music-effect.lyric-adjustment-bundle.v1` です。13曲連続イベントのように、曲ごとに別ファイルを手で指定する負担を減らしたい場合に使えます。
+
+## 対象識別
+
+補正対象は、表示名や曲名ではなく、次の順で結びつけます。
+
+1. `songPackId` / `visualId`
+2. `slug`
+3. `sourceFingerprint`
+
+`songPackId` と `visualId` は曲映像システムのIDです。通常は同じ値で構いません。`slug` は Lyric Timing Editor やファイル名由来の補助IDです。
+
+`sourceFingerprint` は、元timing JSON全体ではなく、正規化したcue列から作ります。歌詞本文はfingerprintに含めません。含める候補は `cueId`、`index`、`startTimeMs`、`endTimeMs`、`sourceLine` です。
+
+system kitでは `createLyricCueFingerprint()` が `LyricCue[]` から `fnv1a32:<hash>` 形式の軽い変更検出用fingerprintを作ります。これはセキュリティ用途のhashではありません。
+
+## 単一曲補正JSON
+
+```json
+{
+  "schema": "music-effect.lyric-adjustment.v1",
+  "createdAt": "2026-05-26T00:00:00.000Z",
+  "createdBy": "music-effect rehearsal helper",
+  "target": {
+    "songPackId": "ope",
+    "visualId": "ope",
+    "slug": "ope",
+    "timingSchema": "music-effect.lyrics-timing.v2",
+    "sourceFingerprint": "fnv1a32:1234abcd"
+  },
+  "summary": {
+    "adjustedCueCount": 12,
+    "maxAbsOffsetMs": 180,
+    "hasEndOffsets": false
+  },
+  "adjustments": [
+    {
+      "cueId": "phrase-36",
+      "index": 36,
+      "startOffsetMs": 120,
+      "endOffsetMs": 0
+    }
+  ]
+}
+```
+
+補正値は絶対時刻ではなく差分です。`startOffsetMs: 120` は、元のcue開始時刻より120ms遅らせることを意味します。
+
+UI上で全体シフトや途中以降シフトを提供しても、保存時は最終的なcueごとの差分へ展開します。再生側はcueごとの差分を足すだけで済むようにします。
+
+`summary` は任意です。読み込み側は `summary` がなくても動作します。保存側は、人間が補正量を把握しやすいように付けることを推奨します。
+
+## 複数曲補正bundle
+
+```json
+{
+  "schema": "music-effect.lyric-adjustment-bundle.v1",
+  "createdAt": "2026-05-26T00:00:00.000Z",
+  "createdBy": "music-effect rehearsal helper",
+  "items": [
+    {
+      "target": {
+        "songPackId": "ope",
+        "visualId": "ope",
+        "slug": "ope",
+        "timingSchema": "music-effect.lyrics-timing.v2",
+        "sourceFingerprint": "fnv1a32:1234abcd"
+      },
+      "summary": {
+        "adjustedCueCount": 12,
+        "maxAbsOffsetMs": 180,
+        "hasEndOffsets": false
+      },
+      "adjustments": [
+        {
+          "cueId": "phrase-36",
+          "index": 36,
+          "startOffsetMs": 120,
+          "endOffsetMs": 0
+        }
+      ]
+    }
+  ]
+}
+```
+
+bundle内では、現在の曲映像に対応する `target.songPackId` / `target.visualId` / `target.slug` を持つitemだけを取り出して適用します。
+
+## 配置例
+
+show-profile側に置く場合の典型例です。これは必須構成ではありません。
+
+```text
+show-profiles/<show-id>/adjustments/
+  lyrics.<songPackId>.json
+  lyrics.bundle.json
+```
+
+将来、歌詞以外の補正を追加する場合は同じディレクトリに名前を分けて置けます。
+
+```text
+show-profiles/<show-id>/adjustments/
+  beat.<songPackId>.json
+  visual-time.<songPackId>.json
+  input-latency.<songPackId>.json
+```
+
+今回は歌詞補正だけを扱います。
+
+## 読み込み優先順位
+
+補正ラッパーは次の順で探します。
+
+1. URLパラメータ指定。
+2. show-profile指定。
+3. 画面上での手動読み込み。
+4. 指定なし。
+
+URLパラメータは明示指定なので最優先です。show-profileはイベント運用の標準ルートです。手動読み込みはその場だけの一時適用とし、ブラウザを閉じたら消える扱いにします。永続化したい場合はダウンロードして配置します。
+
+## 適用ルール
+
+- `cueId` が一致する場合は `cueId` で適用する。
+- `cueId` がない、または一致しない場合は `index` でfallbackする。
+- `sourceFingerprint` が一致しない場合も完全拒否しない。
+- fingerprint mismatch時は警告を出し、mismatch状態をUIやログで明示する。
+- 適用できなかった補正はskippedとして数える。
+- 本番用helperではmismatchを制作、リハーサル用helperより目立つ状態にする。
+
+曲ごとの映像UIは固定しません。system側はDOMに依存しないhelperと、必要ならサンプルUIだけを提供します。
+
+## Helperの責務
+
+### 制作、リハーサル用helper
+
+- cue単位の石を表示、移動できる状態を作る。
+- 全体シフト、途中以降シフト、選択cueシフトを補助する。
+- undo、clear、exportを提供する。
+- 保存時はcueごとの差分へ展開する。
+- ダウンロード保存を最初の保存手段にする。
+
+### 本番用helper
+
+- Deckごとに独立した補正状態を持つ。
+- 誤操作を避けるため、通常は操作UIを表示しない構成をサンプルとして用意する。
+- 必要な曲映像は独自UI、外部ツール、TouchDesigner、Unityなどから操作できる。
+- 補正状態のsnapshot / restoreを将来追加できる形にする。
+
+## Docs consistency
+
+この文書と `docs/show-profiles.md` は同じschema名を参照します。更新時は `npm run docs:check` を実行して、schema名、JSON例、リンクの最低限の整合性を確認してください。

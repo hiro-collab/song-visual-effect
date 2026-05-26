@@ -8,8 +8,10 @@
 - `sync-onboarding.md`: 新しい担当や久しぶりに戻った担当が最初に使う短い導線。
 - `team-roster.md`: 担当名、branch、worktree、宛先ラベルの対応表。
 - `project-scope.md`: song-pack、system kit、show-profile、互換性方針の境界。
+- `show-profiles.md`: 任意のイベント運用層と歌詞補正ラッパーへの入口。
 - `deck-playback.md`: ライブ/VJ運用でDeck A/Bを使う再生仕様。
 - `lyric-timing-editor.md`: 分離済みLyric Timing EditorとMusic Effect側のJSON受け渡し境界。
+- `lyric-adjustments.md`: 本番、リハーサル用の歌詞補正ラッパー仕様。
 - `private-song-packs.md`: 公開repoから分離したprivate song-packs repoの配置と運用。
 - `system-overview.md`: 曲に依存しないシステムの考え方。
 - `song-authoring.md`: 新しい曲を作るときの手順と注意。
@@ -50,6 +52,8 @@
 - `launch-manager-spec.md`
 - `deck-playback.md`
 - `lyric-timing-editor.md`
+- `lyric-adjustments.md`
+- `show-profiles.md`
 - `private-song-packs.md`
 - `sync-onboarding.md`
 - `worktree-sync.md`
@@ -73,6 +77,7 @@
 - 一時的な引き継ぎは `handoff.md` へ書く。
 - 曲固有の設計メモ、再実装ブリーフ、演出方針は private repo 側の `song-packs/<song-id>/` 配下へ置く。
 - UIや処理フローを変えたら `workflows.json` も更新する。
+- 歌詞補正ラッパーやshow-profileの説明を変えたら、`lyric-adjustments.md` と `show-profiles.md` を両方確認し、`npm run docs:check` を実行する。
 - Launch Managerの起動、停止、管理範囲を変えたら `launch-manager-spec.md`、`deck-playback.md`、`architecture.md`、`thread-start.md` を確認する。
 - 新しい曲の作成ルールを変えたら `song-authoring.md` と `song-visual-independence.md` を確認する。
 - 曲担当のノウハウを共通化する場合は、先に `knowledge-review.md` で分類してから正本へ反映する。

@@ -67,7 +67,7 @@ Editor project JSONや歌詞込みexportは歌詞本文を含みうるため、�
 
 本番中の数十ミリ秒単位の調整は、完成済みtiming JSONを書き換えるより、show-profileやDeckごとの運用ラッパーとして別保存する方針を優先します。
 
-これにより、連日イベントで同じ補正を再利用しつつ、Lyric Timing Editorで作った基準timing JSONを保てます。より複雑なラッパーschemaは、イベント運用・Deck制御・外部ツール連携の仕様が固まってから追加します。
+これにより、連日イベントで同じ補正を再利用しつつ、Lyric Timing Editorで作った基準timing JSONを保てます。cue単位の補正ラッパー仕様は `docs/lyric-adjustments.md` を正本にします。
 
 最小の共通ラッパーとして、show-profileのsetlist項目とDeck URLで `lyricOffsetMs` を扱えます。単位はmillisecondsで、正の値は歌詞表示を遅らせます。
 

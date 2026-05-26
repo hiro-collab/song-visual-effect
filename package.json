@@ -10,6 +10,7 @@
     "dev:songs": "node scripts/serve-song-packs.mjs",
     "build": "tsc --noEmit && vite build",
     "test": "node --test",
+    "docs:check": "node --test tests/docs-consistency.test.mjs",
     "download:songle": "powershell -ExecutionPolicy Bypass -File scripts/download-songle-json.ps1",
     "song:scaffold": "node scripts/create-song-pack.mjs",
     "song:validate": "node scripts/validate-song-pack.mjs",
