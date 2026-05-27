@@ -10,6 +10,8 @@
 
 Windowsで普段使う場合は、リポジトリ直下の `start-music-effect.cmd` をダブルクリックします。同じworktreeのLaunch Managerが既に起動中なら管理画面を開くだけです。別worktreeのLaunch Managerが起動中でも、そのポートへ誤接続せず、このworktree用の空きポートを自動で使います。初回だけ `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得します。
 
+歌詞タイミングJSONを曲パックへ入れるだけなら、Launch Managerではなく `start-lyrics-data-installer.cmd` をダブルクリックします。これは別の小さなローカルGUIで、`song-packs/<song-id>/lyrics/` へtiming JSONを書き込み、必要に応じて `manifest.json` の参照先を更新します。再生サーバーやDeckは起動しません。
+
 手動で起動する場合:
 
 ```powershell
@@ -47,6 +49,7 @@ manifest URLを指定しない場合、特定の曲へ自動フォールバッ�
 ```powershell
 npm run dev:player
 npm run dev:songs
+npm run song:lyrics:gui
 ```
 
 別worktreeで同時に起動する場合も、通常は手でポートを割り当てる必要はありません。必要な場合だけ、環境変数で明示できます。

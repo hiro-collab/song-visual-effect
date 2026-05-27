@@ -57,6 +57,12 @@ npm run docs:check
 npm run dev
 ```
 
+歌詞タイミングJSONを曲パックへ入れるだけなら、`start-lyrics-data-installer.cmd` をダブルクリックします。これはLaunch Managerとは別のローカルGUIで、再生サーバーやDeckは起動しません。手動で起動する場合は次を使います。
+
+```powershell
+npm run song:lyrics:gui
+```
+
 `song-packs/` が未配置でも、system 側の build/test と Launch Manager の基本起動はできます。その場合、Launch Manager の曲一覧は空になります。
 
 ## 3. Private Song Packs を配置する

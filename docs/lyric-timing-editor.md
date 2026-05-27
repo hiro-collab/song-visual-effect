@@ -40,6 +40,8 @@ Lyric Timing Editorのv2 exportを手元に用意したら、次のコマンド�
 
 GUIで入れたい場合は、Launch Managerとは別の小さなローカルGUIを起動します。
 
+Windowsでは、リポジトリ直下の `start-lyrics-data-installer.cmd` をダブルクリックして起動できます。初回だけ `node_modules` が無ければ `npm ci` を実行し、起動後にブラウザを開きます。
+
 ```powershell
 npm run song:lyrics:gui
 ```
