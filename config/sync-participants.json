@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-24",
+  "updatedAt": "2026-05-27",
   "participants": [
     {
       "label": "system",
       "role": "system",
-      "branch": "codex/system-kit-refactor",
+      "branch": "main",
       "worktree": "_worktrees/system-main",
-      "aliases": ["system-main", "system-kit-refactor", "codex/system-kit-refactor"],
+      "aliases": ["system-main", "system-kit-refactor", "codex/system-kit-refactor", "main"],
       "status": "active",
-      "note": "System kit integration owner. Use this as the main baseline for shared system work."
+      "note": "System kit integration owner. main is the distribution and development baseline; codex/system-kit-refactor is an old branch name kept as an alias during migration."
     },
     {
       "label": "song-preview-lab",

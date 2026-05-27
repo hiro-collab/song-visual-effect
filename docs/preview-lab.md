@@ -13,7 +13,7 @@
 ## 作り方
 
 ```powershell
-git worktree add _worktrees/song-preview-lab -b codex/song-preview-lab codex/system-kit-refactor
+git worktree add _worktrees/song-preview-lab -b codex/song-preview-lab main
 ```
 
 既に存在する場合は、そのworktreeでsystem-mainのreadyを取り込みます。

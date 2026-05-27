@@ -6,7 +6,7 @@
 
 - 公開 system repo だけで、system kit の実装、docs更新、build/test、Launch Manager の基本起動確認はできます。
 - 曲ごとの manifest、analysis、design、adapter、asset は private repo 側です。曲制作や曲再生確認をするPCでは、別途 `song-packs/` へ private song-packs repo を clone します。
-- GitHub の既定branchに依存せず、作業基準は `codex/system-kit-refactor` を明示して clone します。
+- GitHub の既定branchに依存せず、作業基準は `main` を明示して clone します。
 - `node_modules/`、`dist/`、`.codex/runtime/`、`_worktrees/`、`song-packs/` はローカル再生成または別repo cloneで用意します。
 
 ## 必要なもの
@@ -24,7 +24,7 @@ APIキー、個人アクセストークン、音源ファイル、権利未確�
 新しいPCでは、まず system 側の公開repoを clone します。
 
 ```powershell
-git clone --branch codex/system-kit-refactor https://github.com/hiro-collab/song-visual-effect.git music-effect
+git clone --branch main https://github.com/hiro-collab/song-visual-effect.git music-effect
 cd music-effect
 git status --short --branch
 git remote -v
@@ -34,11 +34,11 @@ git remote -v
 
 ```powershell
 git fetch origin
-git switch --track origin/codex/system-kit-refactor
+git switch --track origin/main
 git status --short --branch
 ```
 
-既存PCではプロジェクトルートが別作業branchで、`_worktrees/system-main` が統合基準になっていることがあります。新しいPCでは、最初の単一cloneを `codex/system-kit-refactor` にしておけば、そのclone rootを基準作業場所として使えます。
+既存PCではプロジェクトルートが別作業branchで、`_worktrees/system-main` が統合基準になっていることがあります。新しいPCでは、最初の単一cloneを `main` にしておけば、そのclone rootを基準作業場所として使えます。
 
 ## 2. 依存関係を入れて確認する
 
@@ -110,11 +110,11 @@ Launch Manager の停止操作は、その Launch Manager 自身が起動した 
 
 ## 5. Worktree と Codex 作業を再開する
 
-単一作業だけなら、clone root の `codex/system-kit-refactor` 上で作業を始めて構いません。並行作業をする場合は、ローカルに worktree を作り直します。
+単一作業だけなら、clone root の `main` 上で作業を始めて構いません。並行作業をする場合は、ローカルに worktree を作り直します。
 
 ```powershell
 git worktree list
-git worktree add _worktrees/feature-topic -b codex/feature-topic codex/system-kit-refactor
+git worktree add _worktrees/feature-topic -b codex/feature-topic main
 cd _worktrees/feature-topic
 npm ci
 git status --short --branch
@@ -150,7 +150,7 @@ clone後に違うbranchにいる:
 
 ```powershell
 git branch -a
-git switch --track origin/codex/system-kit-refactor
+git switch --track origin/main
 ```
 
 private repo の認証で止まる:

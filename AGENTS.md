@@ -7,7 +7,7 @@
 - まず関連ファイルを調査し、既存の設計意図を確認する。
 - 変更が複数ファイルに及ぶ場合は、短い計画を立ててから実装する。
 - 実装は小さいステップに分け、既存挙動を壊さない。
-- 新しい作業や新しい曲の作業を始めるときは、現在の統合基準である `codex/system-kit-refactor` を土台にする。現時点の代表worktreeは `_worktrees/system-main`。
+- 新しい作業や新しい曲の作業を始めるときは、現在の統合基準である `main` を土台にする。現時点の代表worktreeは `_worktrees/system-main`。
 - プロジェクトルート直下のworktreeが常に最新基準とは限らない。作業開始時に `git status --short --branch` と `git worktree list` で自分のbranchを確認する。
 - 並行 worktree 作業では、作業開始時に `npm run sync:onboard -- --for <自分の担当>` を実行する。区切りごとに `npm run sync:brief` を確認し、必要なら詳細として `npm run sync:check` と `npm run sync:inbox` も見る。
 - 担当名、branch、worktree、宛先ラベルの対応は `config/sync-participants.json` と `docs/team-roster.md` を正本にする。迷ったら `npm run sync:roster` を実行する。
@@ -31,7 +31,7 @@
 
 ### 新しい曲を作る場合
 
-まず、作業branchが `codex/system-kit-refactor` の最新readyを取り込んだ状態から分岐していることを確認する。既存曲のworktree、古い実験branch、プロジェクトルート直下のbranchを基準にしない。
+まず、作業branchが `main` の最新readyを取り込んだ状態から分岐していることを確認する。既存曲のworktree、古い実験branch、プロジェクトルート直下のbranchを基準にしない。
 
 まず次だけを読む。
 

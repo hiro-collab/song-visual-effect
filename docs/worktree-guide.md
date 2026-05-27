@@ -5,14 +5,14 @@
 
 ## 基本構成
 
-別PCへ新しく clone する場合は、まず `docs/remote-workstation-setup.md` を読んでください。既存PCの `_worktrees/` をコピーせず、GitHubから `codex/system-kit-refactor` を明示してcloneし、必要なworktreeを作り直します。
+別PCへ新しく clone する場合は、まず `docs/remote-workstation-setup.md` を読んでください。既存PCの `_worktrees/` をコピーせず、GitHubから `main` を明示してcloneし、必要なworktreeを作り直します。
 
 - `C:\Users\kawai\works\music-effect`
   - 管理用のルート worktree。ここが常に最新基準とは限りません。
   - `_worktrees/` は `.gitignore` 済みなので、ルートの `git status` を汚しません。
 - `C:\Users\kawai\works\music-effect\_worktrees\system-main`
   - 現在のメイン相当の統合基準です。
-  - branchは `codex/system-kit-refactor` です。
+  - branchは `main` です。
   - 新しい作業や新しい曲のworktreeは、原則としてここから分岐します。
 - `C:\Users\kawai\works\music-effect\_worktrees\<name>`
   - 並行作業用の追加worktree。
@@ -49,18 +49,18 @@ git status --short --branch
 
 ## 新しい作業worktreeを作る
 
-新しい曲や新しい機能は、原則として `codex/system-kit-refactor` から分岐します。
+新しい曲や新しい機能は、原則として `main` から分岐します。
 
 プロジェクトルート `C:\Users\kawai\works\music-effect` で実行する例:
 
 ```powershell
-git worktree add _worktrees\song-new-song -b codex/song-new-song codex/system-kit-refactor
+git worktree add _worktrees\song-new-song -b codex/song-new-song main
 ```
 
 システム機能の場合:
 
 ```powershell
-git worktree add _worktrees\feature-launch-gui -b codex/feature-launch-gui codex/system-kit-refactor
+git worktree add _worktrees\feature-launch-gui -b codex/feature-launch-gui main
 ```
 
 作成後は、そのworktreeへ移動して `git status --short --branch` と `npm run sync:brief` を確認します。

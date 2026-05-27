@@ -26,15 +26,15 @@ npm run sync:inbox
 確認すること:
 
 - 自分がどのworktreeとbranchにいるか。
-- そのbranchが、現在の統合基準 `codex/system-kit-refactor` の最新readyを土台にしているか。
+- そのbranchが、現在の統合基準 `main` の最新readyを土台にしているか。
 - 未コミット変更があるか。
 - 他スレッドからready通知が来ているか。
 - 他スレッドから質問、ブロッカー、短い連絡が来ているか。
 - そのready通知が、今回の担当範囲に関係するか。
 
-現時点では、`codex/system-kit-refactor` がメイン相当の統合基準です。代表worktreeは `_worktrees/system-main` です。プロジェクトルート直下のworktreeは別branchである場合があるため、新しい曲作業の基準にしないでください。
+現時点では、`main` がメイン相当の統合基準です。代表worktreeは `_worktrees/system-main` です。プロジェクトルート直下のworktreeは別branchである場合があるため、新しい曲作業の基準にしないでください。
 
-新しい曲や曲固有エフェクトを始める場合は、既存曲worktreeではなく、`codex/system-kit-refactor` の最新readyを取り込んだ新しいworktree/branchから始めます。既存曲の `song-packs/*` は参考元にしません。
+新しい曲や曲固有エフェクトを始める場合は、既存曲worktreeではなく、`main` の最新readyを取り込んだ新しいworktree/branchから始めます。既存曲の `song-packs/*` は参考元にしません。
 
 ready通知は「必ず取り込むもの」ではなく、「取り込み候補」です。設計方針に合うか確認してからmergeします。readyは作業中の状態ではなく、他worktreeへ取り込んでよい、ひとまとまりのcommitを示します。
 note通知は「連絡」です。merge可能なcommitを示すものではないため、必要なら返答や相談だけ行います。

@@ -22,7 +22,7 @@
 
 ## 作り始める前に読むもの
 
-新しい曲の作業branchは、現在の統合基準 `codex/system-kit-refactor` の最新readyを取り込んだ状態から始めます。既存曲worktreeや古い実験branchを土台にしないでください。
+新しい曲の作業branchは、現在の統合基準 `main` の最新readyを取り込んだ状態から始めます。既存曲worktreeや古い実験branchを土台にしないでください。
 
 新しい曲を作るエージェントは、次の順に読みます。
 
@@ -47,7 +47,7 @@ npm run sync:inbox
 
 確認すること:
 
-- `codex/system-kit-refactor` からのreadyが来ているか。
+- `main` からのreadyが来ているか。
 - 自分の曲作業に関係するセキュリティ、Launch Manager、Songle取得、検証ツールの連絡があるか。
 - 自分が共有したノウハウ候補に対して、system担当から分類結果が返っているか。
 - 作業中または実装の区切りで、今回の曲制作で得たノウハウ候補を共有したか。

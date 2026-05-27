@@ -25,7 +25,7 @@ npm run sync:note -- --from system --to igaku-effect --level question --topic vi
 
 | label | role | song | branch | worktree | status |
 |---|---|---|---|---|---|
-| system | system |  | `codex/system-kit-refactor` | `_worktrees/system-main` | active |
+| system | system |  | `main` | `_worktrees/system-main` | active |
 | song-preview-lab | preview |  | `codex/song-preview-lab` | `_worktrees/song-preview-lab` | active |
 | security | system |  | `codex/download-security` | `_worktrees/download-security` | active |
 | beat-sync | system |  | `codex/beat-sync-kit` | project root | active |
@@ -44,6 +44,8 @@ npm run sync:note -- --from system --to igaku-effect --level question --topic vi
 
 ## ルール
 
+- `main` が配布・開発の正本です。`codex/system-kit-refactor` は旧名として一時的にaliasだけ残します。
+- 複数曲をまとめて動作確認する場合は `song-preview-lab` を使います。新しい曲制作の土台にはしません。
 - 新しい担当を増やしたら、まず `config/sync-participants.json` に追加します。
 - `status: rejected` と `status: reference-only` の branch は、明示指示がない限り merge しません。
 - 曲担当への連絡は、できるだけ曲IDではなく担当 `label` に送ります。例: `igaku` ではなく `igaku-effect`。

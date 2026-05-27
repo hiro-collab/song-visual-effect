@@ -35,7 +35,7 @@
 - `npm run song:validate` で、曲パックの `references.json` がURLと参照用途だけを持ち、歌詞本文、記事本文、画像データ、base64、HTML断片を含まないことを確認できる。
 - `docs/song-authoring.md` にSongle URLのcanonical選定、短縮URL回避、複数登録の比較、melody JSONをピッチ線と決めつけないための注意を追加した。
 - `npm run preview:snapshot` で、指定した曲manifestと時刻をヘッドレスブラウザで開き、スクリーンショット、console、Canvas簡易状態を `.codex/runtime/preview-snapshots/` へ保存できる。
-- メイン相当の統合基準worktreeを `_worktrees/system-main` として明示した。branchは `codex/system-kit-refactor`。新しい曲や機能worktreeはここを土台にする。
+- メイン相当の統合基準worktreeを `_worktrees/system-main` として明示した。branchは `main`。新しい曲や機能worktreeはここを土台にする。旧 `codex/system-kit-refactor` は移行用aliasとしてだけ扱い、正本は `main` に寄せる。
 - 各曲担当から届く共通ノウハウ候補は、`docs/knowledge-review.md` で `common` / `conditional` / `song-owned` / `reject` に分類してから正本docsへ反映する。曲固有のモチーフ、構図、色、数値、カメラ、演出名はsystem側へ昇格しない。
 - 曲担当は作業中にもノウハウ候補を共有し、最終報告前に未共有候補を棚卸しする。候補がある場合は `knowledge-candidate`、ない場合は `knowledge-candidate: none` を明記する。
 - Canvas2Dを選んだ曲adapter向けに `system/kit/render/contentRect.ts` を追加した。DPR resize、safe area clip、pointer正規化、文字fitを任意で使える補助で、曲の見た目は決めない。
@@ -51,7 +51,7 @@
 - 追加セキュリティレビューで、Launch Manager管理画面にCSP/frame拒否/権限拒否ヘッダーを付け、target command/args/envの検証を強化し、`.codex/runtime/` の生成ログをGit対象外にした。
 - 追加セキュリティレビューで、Launch ManagerのLAN公開を `LAUNCH_MANAGER_ALLOW_LAN=1` の明示opt-inにし、LAN公開時の警告バナーとcontrol token検証を追加した。曲パック/show-profileの任意 `capabilities` と `security-notes.md` 方針は `docs/security.md` を正本にする。
 - docsの読み分けを `docs/README.md` に集約し、`examples/fixtures/soft-light-player/README.md` でfixture playerが標準テンプレートではないことを明示した。
-- 別PCでGitHub cloneから作業を再開するための導線として `docs/remote-workstation-setup.md` を追加した。公開system repoとprivate `song-packs/` repoの二段階セットアップ、`codex/system-kit-refactor` を明示するclone、ローカル専用データの扱いを正本化した。
+- 別PCでGitHub cloneから作業を再開するための導線として `docs/remote-workstation-setup.md` を追加した。公開system repoとprivate `song-packs/` repoの二段階セットアップ、`main` を明示するclone、ローカル専用データの扱いを正本化した。
 - 古い作業候補、既知問題、beat sync詳細、旧レビューHTMLは `docs/archive/working-notes/` に退避した。通常の作業入口では正本docsを優先する。
 - `system/kit` は `core/`、`timing/`、`render/`、`song-app/` に分けた。曲アプリは基本的に `system/kit/index.ts` の公開APIから必要なhelperだけをimportする。
 - soft light fixtureは `examples/fixtures/soft-light-player/` に移動した。新曲の見た目を作るときは読まない。

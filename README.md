@@ -6,9 +6,11 @@
 
 ## Setup
 
-別PCへ移す場合や新しいノートPCで作業を始める場合は、まず `docs/remote-workstation-setup.md` を読んでください。GitHubの既定branchに依存せず、作業基準 `codex/system-kit-refactor` を明示してcloneします。
+別PCへ移す場合や新しいノートPCで作業を始める場合は、まず `docs/remote-workstation-setup.md` を読んでください。GitHubの既定branchに依存せず、作業基準 `main` を明示してcloneします。
 
 Windowsで普段使う場合は、リポジトリ直下の `start-music-effect.cmd` をダブルクリックします。同じworktreeのLaunch Managerが既に起動中なら管理画面を開くだけです。別worktreeのLaunch Managerが起動中でも、そのポートへ誤接続せず、このworktree用の空きポートを自動で使います。初回だけ `node_modules` が無ければ `npm ci` を実行し、npm registryから依存パッケージを取得します。
+
+開発や配布の正本は `main` です。複数曲をまとめて動作確認する開発者は、必要に応じて `codex/song-preview-lab` も確認してください。ただし `song-preview-lab` は検証場であり、新しい曲制作のテンプレートではありません。
 
 歌詞タイミングJSONを曲パックへ入れるだけなら、Launch Managerではなく `start-lyrics-data-installer.cmd` をダブルクリックします。これは別の小さなローカルGUIで、`song-packs/<song-id>/lyrics/` へtiming JSONを書き込み、必要に応じて `manifest.json` の参照先を更新します。再生サーバーやDeckは起動しません。
 
