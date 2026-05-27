@@ -247,8 +247,11 @@ test("lyrics installer UI previews manifest changes before overwrite", () => {
   const html = installerHtml("test-nonce");
 
   assert.match(html, /書き込み前の確認/);
-  assert.match(html, /現在のlyrics/);
-  assert.match(html, /書き込み後timing/);
+  assert.match(html, /manifest書き込み前後の比較/);
+  assert.match(html, /manifest項目/);
+  assert.match(html, /analysis\.timing/);
+  assert.match(html, /歌詞本文の取得元/);
+  assert.match(html, /歌詞が消えるわけではありません/);
   assert.match(html, /曲名・アーティスト・曲ID/);
   assert.match(html, /music-effect\.lyrics-timing\.v2/);
   assert.match(html, /lyric-timing-editor\.project\.v1/);

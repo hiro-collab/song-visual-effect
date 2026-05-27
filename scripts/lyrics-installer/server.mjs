@@ -270,20 +270,43 @@ export const installerHtml = (nonce) => `<!doctype html>
       margin: 0 0 8px;
       font-size: 15px;
     }
-    .preview-grid {
-      display: grid;
-      grid-template-columns: 150px minmax(0, 1fr);
-      gap: 6px 10px;
-      margin: 8px 0;
+    .manifest-compare {
+      width: 100%;
+      border-collapse: collapse;
       font-size: 13px;
+      margin: 10px 0;
+      table-layout: fixed;
     }
-    .preview-grid dt {
-      color: #bbb2a5;
-      font-weight: 700;
-    }
-    .preview-grid dd {
-      margin: 0;
+    .manifest-compare th,
+    .manifest-compare td {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 8px 9px;
+      vertical-align: top;
       overflow-wrap: anywhere;
+    }
+    .manifest-compare thead th {
+      color: #fff7e7;
+      background: rgba(255, 255, 255, 0.07);
+      text-align: left;
+    }
+    .manifest-compare tbody th {
+      width: 150px;
+      color: #d8cebf;
+      font-weight: 700;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .cell-note {
+      display: block;
+      margin-top: 5px;
+      color: #bdb4a7;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .input-summary {
+      margin: 8px 0 0;
+      color: #d8cebf;
+      font-size: 13px;
     }
     .preview-note {
       margin: 8px 0 0;
@@ -464,11 +487,24 @@ export const installerHtml = (nonce) => `<!doctype html>
       const fileName = inferredFileName(song, timingJson);
       const nextTiming = pathForName(song, fileName, ".timing.v2.json");
       const hasLyricsFile = Boolean(lyricsFileInput.files[0]);
-      const nextLyrics = hasLyricsFile
+      const currentLyrics = song.lyrics || "(none)";
+      const currentTiming = song.timing || "(none)";
+      const nextManifestLyrics = hasLyricsFile
         ? pathForName(song, fileName, ".lyrics.txt")
         : timingJson.includesLyrics === true
-          ? "(timing JSON内のtextを使うためmanifest lyricsはnull)"
+          ? "null"
           : (song.lyrics || "(現状維持)");
+      const currentLyricSource = song.lyrics ? "manifest lyrics のtxt" : "(未設定)";
+      const nextLyricSource = hasLyricsFile
+        ? \`\${pathForName(song, fileName, ".lyrics.txt")} のtxt\`
+        : timingJson.includesLyrics === true
+          ? "timing JSON内の phrases[].text"
+          : (song.lyrics ? "既存のmanifest lyricsを使う" : "(未設定)");
+      const nextLyricsNote = hasLyricsFile
+        ? "選択したlyrics txtをコピーし、manifestのlyrics参照に設定します。"
+        : timingJson.includesLyrics === true
+          ? "歌詞本文はtiming JSON内にあります。manifestのlyrics参照はnullになりますが、歌詞が消えるわけではありません。"
+          : "timing-only exportなので、既存のmanifest lyrics参照を使います。";
       const mode = timingJson.includesLyrics === false ? "timing-only" : "with-lyrics";
       const sourceTitle = timingJson.title || "(未記入)";
       const sourceArtist = timingJson.artist || "(未記入)";
@@ -482,14 +518,37 @@ export const installerHtml = (nonce) => `<!doctype html>
       writePreview.className = "write-preview";
       writePreview.innerHTML = \`
         <h3>書き込み前の確認</h3>
-        <dl class="preview-grid">
-          <dt>曲パック</dt><dd><strong>\${escapeHtml(song.title)}</strong> / \${escapeHtml(song.artist || "Unknown artist")} / <code>\${escapeHtml(song.id)}</code></dd>
-          <dt>現在のlyrics</dt><dd><code>\${escapeHtml(song.lyrics || "(none)")}</code></dd>
-          <dt>現在のtiming</dt><dd><code>\${escapeHtml(song.timing || "(none)")}</code></dd>
-          <dt>書き込み後lyrics</dt><dd><code>\${escapeHtml(nextLyrics)}</code></dd>
-          <dt>書き込み後timing</dt><dd><code>\${escapeHtml(nextTiming)}</code></dd>
-          <dt>入力JSON</dt><dd>\${escapeHtml(mode)} / title: \${escapeHtml(sourceTitle)} / artist: \${escapeHtml(sourceArtist)}</dd>
-        </dl>
+        <p class="input-summary">曲パック: <strong>\${escapeHtml(song.title)}</strong> / \${escapeHtml(song.artist || "Unknown artist")} / <code>\${escapeHtml(song.id)}</code></p>
+        <table class="manifest-compare" aria-label="manifest書き込み前後の比較">
+          <thead>
+            <tr>
+              <th>manifest項目</th>
+              <th>現在</th>
+              <th>書き込み後</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th><code>lyrics</code></th>
+              <td><code>\${escapeHtml(currentLyrics)}</code></td>
+              <td>
+                <code>\${escapeHtml(nextManifestLyrics)}</code>
+                <span class="cell-note">\${escapeHtml(nextLyricsNote)}</span>
+              </td>
+            </tr>
+            <tr>
+              <th><code>analysis.timing</code></th>
+              <td><code>\${escapeHtml(currentTiming)}</code></td>
+              <td><code>\${escapeHtml(nextTiming)}</code></td>
+            </tr>
+            <tr>
+              <th>歌詞本文の取得元</th>
+              <td>\${escapeHtml(currentLyricSource)}</td>
+              <td>\${escapeHtml(nextLyricSource)}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="input-summary">入力JSON: \${escapeHtml(mode)} / title: \${escapeHtml(sourceTitle)} / artist: \${escapeHtml(sourceArtist)}</p>
         <p class="preview-note">曲名・アーティスト・曲IDなど、曲パック本体の情報はこの操作では変更しません。入力JSON側のtitleやartistが空欄でも、曲パックの表示名を空欄で上書きすることはありません。</p>
         \${slugNotice}
         <p class="preview-note">\${escapeHtml(overwriteNotice)}</p>
